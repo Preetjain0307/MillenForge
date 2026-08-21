@@ -1,13 +1,14 @@
 /**
  * PreviewPage — /preview/:pageName
  *
- * Displays the preview container for a named page.
- * AI-generated content will be rendered here in a future task.
+ * Task 3: Renders AI-generated UIPage data via UIRenderer.
+ * Falls back to empty state if no data is available.
  */
 import { useParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectPageByName } from '../features/pages/pagesSlice';
 import PreviewContainer from '../components/PreviewContainer';
+import UIRenderer from '../components/UIRenderer';
 import NmButton from '../components/NmButton';
 
 const PreviewPage = () => {
@@ -51,7 +52,7 @@ const PreviewPage = () => {
         </span>
         {pageData ? (
           <span className="text-xs px-2.5 py-1 rounded-full bg-[rgba(34,197,94,0.15)] text-[var(--nm-success)] border border-[rgba(34,197,94,0.3)]">
-            Sections loaded: {pageData.sections?.length ?? 0}
+            {pageData.sections?.length ?? 0} section{pageData.sections?.length !== 1 ? 's' : ''} · AI generated
           </span>
         ) : (
           <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--nm-bg-surface)] text-[var(--nm-text-muted)] border border-[var(--nm-border-subtle)]">
@@ -62,7 +63,9 @@ const PreviewPage = () => {
 
       {/* Preview container */}
       <div className="flex-1 flex" style={{ minHeight: '500px' }}>
-        <PreviewContainer pageName={decodedName} isEmpty={!pageData} />
+        <PreviewContainer pageName={decodedName} isEmpty={!pageData}>
+          {pageData && <UIRenderer pageData={pageData} />}
+        </PreviewContainer>
       </div>
     </main>
   );

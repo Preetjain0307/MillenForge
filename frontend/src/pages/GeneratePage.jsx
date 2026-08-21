@@ -1,8 +1,9 @@
 /**
  * GeneratePage — /generate
  *
- * Implements end-to-end wireframe upload pipeline (Task 2).
- * AI generation is NOT implemented yet.
+ * End-to-end pipeline:
+ *   Task 2: wireframe upload (preserved)
+ *   Task 3: prompt + wireframe → AI → UIPage JSON → Redux → navigate to preview
  */
 import { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,7 +12,7 @@ import NmCard from '../components/NmCard';
 import NmButton from '../components/NmButton';
 import NmInput from '../components/NmInput';
 import NmUploadArea from '../components/NmUploadArea';
-import { uploadWireframe } from '../services/api';
+import { uploadWireframe, generateUI } from '../services/api';
 import {
   setPrompt,
   setExistingCode,
@@ -22,11 +23,17 @@ import {
   setUploadedFile,
   setUploadError,
   clearUpload,
+  setStatus,
+  setError,
+  setResult,
   selectGeneration,
   selectUploadStatus,
   selectUploadedFile,
   selectUploadError,
+  selectGenerationStatus,
+  selectGenerationError,
 } from '../features/generation/generationSlice';
+import { setPage } from '../features/pages/pagesSlice';
 
 const GeneratePage = () => {
   const dispatch = useDispatch();
@@ -35,23 +42,23 @@ const GeneratePage = () => {
   const uploadStatus = useSelector(selectUploadStatus);
   const uploadedFile = useSelector(selectUploadedFile);
   const uploadError = useSelector(selectUploadError);
+  const generationStatus = useSelector(selectGenerationStatus);
+  const generationError = useSelector(selectGenerationError);
 
   // wireframeFile lives in local state — File objects are not serialisable to Redux
   const [wireframeFile, setWireframeFile] = useState(null);
   const [activeTab, setActiveTab] = useState('prompt');
 
-  // ── Upload handlers ──────────────────────────────────────────────────────────
+  const isGenerating = generationStatus === 'loading';
+
+  // ── Upload handlers (Task 2 — preserved) ──────────────────────────────────
 
   const handleFileSelect = useCallback(async (file) => {
-    // Reset any previous upload state, store the new file locally
     dispatch(clearUpload());
     setWireframeFile(file);
-
-    // Immediately begin upload
     dispatch(setUploadStatus('uploading'));
     try {
       const response = await uploadWireframe(file);
-      // response.file = { filename, originalName, mimetype, size, url }
       dispatch(setUploadedFile(response.file));
       dispatch(setUploadedWireframePath(response.file.filename));
       dispatch(setUploadStatus('success'));
@@ -72,12 +79,55 @@ const GeneratePage = () => {
     }
   }, [wireframeFile, handleFileSelect]);
 
-  // ── Generate (AI — future task) ──────────────────────────────────────────────
+  // ── Generation handler (Task 3) ───────────────────────────────────────────
 
-  const handleGenerate = (e) => {
+  const handleGenerate = async (e) => {
     e.preventDefault();
-    const page = generation.pageName || 'Home';
-    navigate(`/preview/${encodeURIComponent(page)}`);
+
+    const prompt = generation.prompt?.trim();
+    if (!prompt) {
+      dispatch(setError('Please enter a prompt describing the UI you want to generate.'));
+      dispatch(setStatus('failed'));
+      return;
+    }
+
+    const pageName = generation.pageName?.trim() || 'Home';
+
+    dispatch(setStatus('loading'));
+    dispatch(setError(null));
+    dispatch(setResult(null));
+
+    try {
+      const payload = {
+        prompt,
+        pageName,
+        existingCode: generation.existingCode || undefined,
+        architectureFlow: generation.architectureFlow || undefined,
+      };
+
+      // Attach wireframe info if uploaded
+      if (uploadStatus === 'success' && uploadedFile) {
+        payload.wireframe = {
+          filename: uploadedFile.filename,
+          originalName: uploadedFile.originalName,
+        };
+      }
+
+      const response = await generateUI(payload);
+
+      if (response.success && response.page) {
+        dispatch(setResult(response.page));
+        dispatch(setPage({ pageName, data: response.page }));
+        dispatch(setStatus('succeeded'));
+        navigate(`/preview/${encodeURIComponent(pageName)}`);
+      } else {
+        dispatch(setError(response.message || 'Generation failed.'));
+        dispatch(setStatus('failed'));
+      }
+    } catch (err) {
+      dispatch(setError(err.message || 'Generation failed. Please try again.'));
+      dispatch(setStatus('failed'));
+    }
   };
 
   const tabs = [
@@ -112,6 +162,7 @@ const GeneratePage = () => {
                 placeholder="e.g. Home, Dashboard, Landing"
                 value={generation.pageName}
                 onChange={(e) => dispatch(setPageName(e.target.value))}
+                disabled={isGenerating}
               />
             </NmCard>
 
@@ -128,7 +179,6 @@ const GeneratePage = () => {
                 onRemove={handleRemoveFile}
               />
 
-              {/* File metadata row (shown after successful upload) */}
               {uploadStatus === 'success' && uploadedFile && (
                 <div
                   id="upload-success-banner"
@@ -163,7 +213,6 @@ const GeneratePage = () => {
                 </div>
               )}
 
-              {/* Retry button on error */}
               {uploadStatus === 'error' && wireframeFile && (
                 <button
                   id="wireframe-retry-btn"
@@ -189,7 +238,6 @@ const GeneratePage = () => {
 
             {/* Tabbed input area */}
             <NmCard>
-              {/* Tabs */}
               <div className="flex gap-1 mb-5 border-b border-[var(--nm-border-subtle)] pb-3">
                 {tabs.map((tab) => (
                   <button
@@ -221,6 +269,7 @@ const GeneratePage = () => {
                   onChange={(e) => dispatch(setPrompt(e.target.value))}
                   multiline
                   rows={8}
+                  disabled={isGenerating}
                 />
               )}
 
@@ -233,6 +282,7 @@ const GeneratePage = () => {
                   onChange={(e) => dispatch(setExistingCode(e.target.value))}
                   multiline
                   rows={8}
+                  disabled={isGenerating}
                 />
               )}
 
@@ -245,33 +295,70 @@ const GeneratePage = () => {
                   onChange={(e) => dispatch(setArchitectureFlow(e.target.value))}
                   multiline
                   rows={8}
+                  disabled={isGenerating}
                 />
               )}
             </NmCard>
 
-            {/* Notice banner */}
-            <div className="nm-glass rounded-[var(--nm-radius-sm)] px-4 py-3 flex items-start gap-3">
-              <i className="pi pi-info-circle text-[var(--nm-accent)] text-lg mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-[var(--nm-text-primary)] mb-0.5">
-                  AI Generation — Coming Next
-                </p>
-                <p className="text-xs text-[var(--nm-text-secondary)]">
-                  Wireframe upload is live. Full LLM/Vision generation will be wired in a future task.
-                  Clicking Generate navigates to the preview placeholder.
-                </p>
+            {/* Generation error banner */}
+            {generationStatus === 'failed' && generationError && (
+              <div
+                id="generation-error-banner"
+                role="alert"
+                className="rounded-[var(--nm-radius-sm)] px-4 py-3 flex items-start gap-3 bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)]"
+              >
+                <i className="pi pi-exclamation-triangle text-[var(--nm-error)] text-lg mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-[var(--nm-error)] mb-0.5">
+                    Generation Failed
+                  </p>
+                  <p className="text-xs text-[var(--nm-text-secondary)]">
+                    {generationError}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Generating indicator */}
+            {isGenerating && (
+              <div className="nm-glass rounded-[var(--nm-radius-sm)] px-4 py-4 flex items-center gap-4">
+                <div className="w-8 h-8 border-2 border-[var(--nm-accent)] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-[var(--nm-text-primary)] mb-0.5">
+                    Generating UI…
+                  </p>
+                  <p className="text-xs text-[var(--nm-text-muted)]">
+                    AI is analysing your inputs and building the page structure. This may take 10–30 seconds.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Info banner (only when idle) */}
+            {!isGenerating && generationStatus !== 'failed' && (
+              <div className="nm-glass rounded-[var(--nm-radius-sm)] px-4 py-3 flex items-start gap-3">
+                <i className="pi pi-sparkles text-[var(--nm-accent)] text-lg mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-[var(--nm-text-primary)] mb-0.5">
+                    AI-Powered Generation
+                  </p>
+                  <p className="text-xs text-[var(--nm-text-secondary)]">
+                    Enter a prompt describing your UI and optionally upload a wireframe.
+                    Click Generate to create a structured UI preview.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Generate button */}
             <NmButton
               id="generate-btn"
               variant="primary"
               type="submit"
-              label="Generate UI"
-              icon="pi pi-sparkles"
-              loading={uploadStatus === 'uploading'}
-              disabled={uploadStatus === 'uploading'}
+              label={isGenerating ? 'Generating…' : 'Generate UI'}
+              icon={isGenerating ? undefined : 'pi pi-sparkles'}
+              loading={isGenerating}
+              disabled={isGenerating || uploadStatus === 'uploading'}
               className="w-full justify-center py-3 text-base"
             />
 
