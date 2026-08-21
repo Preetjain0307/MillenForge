@@ -1,0 +1,105 @@
+/* NeuraMind — Global Styles */
+@import "tailwindcss";
+
+/* PrimeReact theme */
+@import "primereact/resources/themes/lara-dark-indigo/theme.css";
+@import "primereact/resources/primereact.min.css";
+@import "primeicons/primeicons.css";
+
+/* Design tokens */
+:root {
+  --nm-bg-primary: #0a0a0f;
+  --nm-bg-secondary: #111118;
+  --nm-bg-surface: #1a1a2e;
+  --nm-bg-card: #16213e;
+  --nm-accent: #6c63ff;
+  --nm-accent-light: #8b83ff;
+  --nm-accent-glow: rgba(108, 99, 255, 0.3);
+  --nm-text-primary: #e8e8f0;
+  --nm-text-secondary: #9898b0;
+  --nm-text-muted: #5a5a72;
+  --nm-border: rgba(108, 99, 255, 0.2);
+  --nm-border-subtle: rgba(255, 255, 255, 0.06);
+  --nm-success: #22c55e;
+  --nm-error: #ef4444;
+  --nm-warning: #f59e0b;
+  --nm-radius: 12px;
+  --nm-radius-sm: 8px;
+  --nm-radius-lg: 16px;
+}
+
+/* Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--nm-bg-primary);
+  color: var(--nm-text-primary);
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--nm-bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--nm-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--nm-accent); }
+
+/* Utility classes */
+.nm-gradient-text {
+  background: linear-gradient(135deg, var(--nm-accent-light) 0%, #a78bfa 50%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nm-glass {
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--nm-border-subtle);
+}
+
+.nm-card {
+  background: var(--nm-bg-card);
+  border: 1px solid var(--nm-border-subtle);
+  border-radius: var(--nm-radius);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nm-card:hover {
+  border-color: var(--nm-border);
+  box-shadow: 0 0 24px var(--nm-accent-glow);
+}
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid var(--nm-accent);
+  outline-offset: 2px;
+}
+
+/* Animation utilities */
+@keyframes nm-pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px var(--nm-accent-glow); }
+  50% { box-shadow: 0 0 24px var(--nm-accent-glow), 0 0 48px var(--nm-accent-glow); }
+}
+
+@keyframes nm-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.nm-animate-in {
+  animation: nm-fade-in 0.4s ease both;
+}
