@@ -1,6 +1,6 @@
 // Multer configuration for wireframe image uploads
 // Stores files locally to backend/uploads/
-// Supports: jpg, jpeg, png, gif, bmp, webp, svg
+// Supported types: jpg, jpeg, png, webp  (task 2 scope)
 
 const multer = require('multer');
 const path = require('path');
@@ -24,15 +24,17 @@ const storage = multer.diskStorage({
   },
 });
 
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const ALLOWED_EXT = /\.(jpg|jpeg|png|webp)$/i;
+
 const fileFilter = (_req, file, cb) => {
-  const ALLOWED_TYPES = /jpeg|jpg|png|gif|bmp|webp|svg/;
-  const extOk = ALLOWED_TYPES.test(path.extname(file.originalname).toLowerCase());
-  const mimeOk = ALLOWED_TYPES.test(file.mimetype);
+  const extOk = ALLOWED_EXT.test(path.extname(file.originalname));
+  const mimeOk = ALLOWED_MIME_TYPES.includes(file.mimetype);
 
   if (extOk && mimeOk) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed (jpg, jpeg, png, gif, bmp, webp, svg)'));
+    cb(new Error('Unsupported file type. Only JPG, JPEG, PNG, and WEBP are accepted.'));
   }
 };
 
@@ -41,6 +43,7 @@ const upload = multer({
   fileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10 MB max
+    files: 1,                   // one file only
   },
 });
 
