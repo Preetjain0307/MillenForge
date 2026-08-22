@@ -15,6 +15,7 @@
  */
 
 import { ELEMENT_TYPES, createElement } from './ui.js';
+import { resolveDisplayString } from '../utils/valueNormalizer.js';
 
 /**
  * @typedef {string | {
@@ -71,26 +72,7 @@ import { ELEMENT_TYPES, createElement } from './ui.js';
  * @returns {string}
  */
 export const resolveCmsContent = (content, fallback = '', preferredKey = 'text') => {
-  if (typeof content === 'string' && content.trim() !== '') {
-    return content;
-  }
-  if (content && typeof content === 'object') {
-    // Try preferred key first
-    if (typeof content[preferredKey] === 'string' && content[preferredKey].trim() !== '') {
-      return content[preferredKey];
-    }
-    // Try common keys in order
-    const candidateKeys = ['text', 'label', 'title', 'description', 'src', 'content', 'value'];
-    for (const key of candidateKeys) {
-      if (typeof content[key] === 'string' && content[key].trim() !== '') {
-        return content[key];
-      }
-    }
-  }
-  if (typeof fallback === 'string' && fallback.trim() !== '') {
-    return fallback;
-  }
-  return '';
+  return resolveDisplayString(content, fallback, preferredKey);
 };
 
 /**
@@ -223,7 +205,8 @@ export const bindCmsData = (uiPage, cmsDataMap = {}) => {
 
           // Case 3: Updating with a structured object
           if (update && typeof update === 'object') {
-            const newContent = resolveCmsContent(update, el.fallback || '');
+            const preferredKey = el.type === 'image' ? 'src' : (el.type === 'button' ? 'label' : (el.type === 'card' ? 'description' : 'text'));
+            const newContent = resolveCmsContent(update, el.fallback || '', preferredKey);
             const newProps = { ...(el.props || {}) };
             if (update.items && Array.isArray(update.items)) {
               newProps.items = update.items;

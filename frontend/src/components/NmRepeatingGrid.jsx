@@ -2,19 +2,24 @@
  * NmRepeatingGrid — Reusable Repeating Loop Component
  *
  * Implements the requirement for repeating collections to use proper data arrays
- * and loops rather than hard-coded duplicate component blocks.
+ * and loops with safe value normalization and card image support.
  */
 
 import NmCard from './NmCard.jsx';
+import { resolveDisplayString } from '../utils/valueNormalizer.js';
 
 /**
  * @typedef {Object} RepeatingItem
  * @property {string} id             - Stable item identifier
- * @property {string} [title]        - Item title
- * @property {string} [description]  - Item description/subtitle
- * @property {string} [content]      - Fallback or generic text content
+ * @property {string|object} [title]        - Item title
+ * @property {string|object} [description]  - Item description/subtitle
+ * @property {string|object} [content]      - Fallback or generic text content
  * @property {string} [icon]         - PrimeIcons icon name (e.g. "pi pi-bolt")
  * @property {string} [badge]        - Badge or chip label
+ * @property {string} [price]        - Item price e.g. "$14.99"
+ * @property {string} [src]          - Item image URL
+ * @property {string} [image]        - Alternative image URL
+ * @property {string} [alt]          - Image alt text
  * @property {string} [className]    - Optional custom card styling
  */
 
@@ -52,7 +57,7 @@ const NmRepeatingGrid = ({
         role="status"
       >
         <i className="pi pi-inbox text-xl text-[var(--nm-text-muted)]" aria-hidden="true" />
-        <span>{fallback}</span>
+        <span>{resolveDisplayString(fallback, 'No items available')}</span>
       </div>
     );
   }
@@ -64,7 +69,7 @@ const NmRepeatingGrid = ({
       role="list"
     >
       {items.map((item, index) => {
-        const itemKey = item.id || (id ? `${id}-item-${index}` : `repeat-item-${index}`);
+        const itemKey = (item && item.id) ? item.id : (id ? `${id}-item-${index}` : `repeat-item-${index}`);
 
         if (typeof renderItem === 'function') {
           return (
@@ -74,31 +79,73 @@ const NmRepeatingGrid = ({
           );
         }
 
-        const displayText = item.description || item.content || '';
+        if (!item || typeof item !== 'object') {
+          return (
+            <div key={itemKey} role="listitem">
+              <NmCard title={resolveDisplayString(item, `Item ${index + 1}`)} />
+            </div>
+          );
+        }
+
+        const titleText = resolveDisplayString(item.title, `Item ${index + 1}`, 'title');
+        const displayText = resolveDisplayString(item.description || item.content, '', 'description');
+        const badgeText = resolveDisplayString(item.badge, '', 'badge');
+        const priceText = resolveDisplayString(item.price, '', 'price');
+        const iconClass = typeof item.icon === 'string' ? item.icon : (item.icon?.name || item.icon?.icon || '');
+        const imgSrc = item.src || item.image || (typeof item.content === 'object' ? item.content.src : '') || '';
+        const imgAlt = resolveDisplayString(item.alt || titleText, 'Card image');
 
         return (
           <div key={itemKey} role="listitem">
             <NmCard
-              title={item.title}
-              className={`h-full flex flex-col transition-all duration-200 hover:border-[var(--nm-accent)] ${item.className || ''}`}
+              title={titleText}
+              className={`h-full flex flex-col transition-all duration-200 hover:border-[var(--nm-accent)] overflow-hidden ${item.className || ''}`}
             >
-              {item.icon && (
+              {/* Optional card top image */}
+              {imgSrc && (
+                <div className="w-full h-40 rounded-t-[var(--nm-radius-sm)] -mt-6 -mx-6 mb-3 overflow-hidden bg-[var(--nm-bg-surface)]">
+                  <img
+                    src={imgSrc}
+                    alt={imgAlt}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+
+              {iconClass && (
                 <div
                   className="w-10 h-10 rounded-lg bg-[var(--nm-accent-glow)] flex items-center justify-center mb-3 text-[var(--nm-accent-light)]"
                   aria-hidden="true"
                 >
-                  <i className={`${item.icon} text-lg`} />
+                  <i className={`${iconClass} text-lg`} />
                 </div>
               )}
-              {item.badge && (
+
+              {badgeText && (
                 <span className="nm-badge self-start mb-2 text-xs font-semibold px-2 py-0.5 rounded bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)]">
-                  {item.badge}
+                  {badgeText}
                 </span>
               )}
+
               {displayText && (
                 <p className="text-sm text-[var(--nm-text-secondary)] leading-relaxed flex-1">
                   {displayText}
                 </p>
+              )}
+
+              {priceText && (
+                <div className="flex items-center justify-between mt-auto pt-3 border-t border-[var(--nm-border-subtle)]">
+                  <span className="font-bold text-base text-[var(--nm-accent-light)] font-mono">
+                    {priceText}
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] font-medium">
+                    Select
+                  </span>
+                </div>
               )}
             </NmCard>
           </div>

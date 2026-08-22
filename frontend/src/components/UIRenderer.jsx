@@ -14,27 +14,32 @@
  *   text | image | button | input | textfield | card | cards |
  *   carousel | wizard | icon | divider | link | list | badge
  *
- * Unknown types: renders a safe placeholder — never crashes.
- * Malformed elements: caught by ElementErrorBoundary — never crashes.
+ * Safety Guarantees:
+ * - Never throws "Objects are not valid as a React child".
+ * - Intelligently resolves display fields: text, label, title, name, description, value, content, src, alt.
+ * - Handles string, number, boolean, null, undefined, object, and array values gracefully.
+ * - Unknown types: renders a safe placeholder — never crashes.
+ * - Malformed elements: caught by ElementErrorBoundary — never crashes.
  */
 
 import { Component } from 'react';
 import NmButton from './NmButton';
+import { resolveDisplayString, normalizeElementData } from '../utils/valueNormalizer';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
 /**
- * Safely resolve the display text for an element.
- * Falls back through content → fallback → empty string.
+ * Safely resolve display content from string, object, or fallback.
  * @param {object} element
+ * @param {string} [preferredKey=null]
  * @returns {string}
  */
-const safeContent = (element) => {
+const safeContent = (element, preferredKey = null) => {
   if (!element) return '';
-  const c = element.content;
-  const f = element.fallback;
-  if (typeof c === 'string' && c.trim() !== '') return c;
-  if (typeof f === 'string' && f.trim() !== '') return f;
+  const c = resolveDisplayString(element.content, '', preferredKey);
+  if (c.trim() !== '') return c;
+  const f = resolveDisplayString(element.fallback, '', preferredKey);
+  if (f.trim() !== '') return f;
   return '';
 };
 
@@ -44,34 +49,22 @@ const safeContent = (element) => {
  * @returns {object}
  */
 const safeProps = (element) =>
-  element && typeof element.props === 'object' && element.props !== null
+  element && typeof element.props === 'object' && element.props !== null && !Array.isArray(element.props)
     ? element.props
     : {};
 
 /**
- * Normalize an element object so all downstream renderers
- * can access fields without null-checking everywhere.
+ * Normalize an element object using the central value normalizer.
  * @param {*} raw
- * @returns {{ id: string, type: string, content: string, fallback: string, props: object }}
+ * @returns {object}
  */
-const normalizeElement = (raw) => {
-  if (!raw || typeof raw !== 'object') {
-    return { id: 'unknown', type: 'unknown', content: '', fallback: '', props: {} };
-  }
-  return {
-    id: typeof raw.id === 'string' ? raw.id : `el-${Math.random().toString(36).slice(2, 8)}`,
-    type: typeof raw.type === 'string' ? raw.type.toLowerCase().trim() : 'unknown',
-    content: typeof raw.content === 'string' ? raw.content : '',
-    fallback: typeof raw.fallback === 'string' ? raw.fallback : '',
-    props: (raw.props && typeof raw.props === 'object') ? raw.props : {},
-  };
-};
+const normalizeElement = (raw) => normalizeElementData(raw);
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
 
 /**
  * Wraps each individual element render.
- * If one element throws, the rest of the page still renders.
+ * If one element throws, the rest of the page still renders safely.
  */
 class ElementErrorBoundary extends Component {
   constructor(props) {
@@ -92,7 +85,7 @@ class ElementErrorBoundary extends Component {
                      text-xs text-[var(--nm-error)] flex items-center gap-2"
         >
           <i className="pi pi-exclamation-triangle" aria-hidden="true" />
-          Element render error: {this.state.message}
+          Element render error: {resolveDisplayString(this.state.message, 'Render error')}
         </div>
       );
     }
@@ -102,17 +95,16 @@ class ElementErrorBoundary extends Component {
 
 // ─── Element Registry ─────────────────────────────────────────────────────────
 // Each entry is a function: (element) => JSX
-// This is the single source of truth for supported element types.
 
 const ELEMENT_REGISTRY = {
 
   // ── Text ──────────────────────────────────────────────────────────────────
   text: (element) => {
-    const display = safeContent(element);
+    const display = safeContent(element, 'text');
     const props = safeProps(element);
-    // Whitelist allowed heading/paragraph tags
     const ALLOWED_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'label', 'strong', 'em'];
     const Tag = ALLOWED_TAGS.includes(props.tag) ? props.tag : 'p';
+
     return (
       <Tag
         id={element.id}
@@ -126,8 +118,20 @@ const ELEMENT_REGISTRY = {
   // ── Image ─────────────────────────────────────────────────────────────────
   image: (element) => {
     const props = safeProps(element);
-    const src = safeContent(element) || props.src || 'https://placehold.co/600x400/1a1a2e/6c63ff?text=Image';
-    const alt = props.alt || element.fallback || 'Generated image';
+    let src = '';
+    if (typeof element.content === 'string' && element.content.trim() !== '') {
+      src = element.content;
+    } else if (element.content && typeof element.content === 'object') {
+      src = element.content.src || element.content.url || '';
+    }
+    if (!src) src = props.src || 'https://placehold.co/600x400/1a1a2e/6c63ff?text=Image';
+
+    const alt = resolveDisplayString(
+      props.alt || (typeof element.content === 'object' ? element.content.alt : '') || element.fallback,
+      'Generated image',
+      'alt'
+    );
+
     return (
       <img
         id={element.id}
@@ -145,16 +149,19 @@ const ELEMENT_REGISTRY = {
 
   // ── Button ────────────────────────────────────────────────────────────────
   button: (element) => {
-    const display = safeContent(element) || 'Button';
+    const display = resolveDisplayString(element.content || element.fallback, 'Button', 'label');
     const props = safeProps(element);
+    const label = resolveDisplayString(props.label || display, 'Button', 'label');
+    const icon = typeof props.icon === 'string' ? props.icon : (props.icon?.name || props.icon?.icon || '');
+
     return (
       <NmButton
         id={element.id}
         variant={props.variant || 'primary'}
-        label={display}
-        icon={props.icon}
+        label={label}
+        icon={icon || undefined}
         className={props.className || ''}
-        aria-label={props['aria-label'] || display}
+        aria-label={resolveDisplayString(props['aria-label'] || label, 'Button')}
         onClick={() => {}}
         type="button"
       />
@@ -165,8 +172,10 @@ const ELEMENT_REGISTRY = {
   input: (element) => {
     const display = safeContent(element);
     const props = safeProps(element);
-    const labelText = props.label || display || 'Input';
+    const labelText = resolveDisplayString(props.label || display, 'Input', 'label');
+    const placeholderText = resolveDisplayString(props.placeholder || display || labelText, labelText, 'placeholder');
     const inputId = element.id;
+
     return (
       <div className={`flex flex-col gap-1.5 ${props.className || ''}`}>
         <label
@@ -178,7 +187,7 @@ const ELEMENT_REGISTRY = {
         <input
           id={inputId}
           type={props.inputType || 'text'}
-          placeholder={props.placeholder || display || labelText}
+          placeholder={placeholderText}
           aria-label={labelText}
           className="
             w-full px-4 py-2.5 rounded-[var(--nm-radius-sm)]
@@ -193,48 +202,109 @@ const ELEMENT_REGISTRY = {
   },
 
   // textfield is an alias for input
-  textfield: null, // resolved to 'input' in getRenderer()
+  textfield: null,
 
   // ── Card (single) ─────────────────────────────────────────────────────────
   card: (element) => {
-    const display = safeContent(element);
     const props = safeProps(element);
+    const rawContent = element.content;
+
+    const title = resolveDisplayString(
+      props.title || (typeof rawContent === 'object' ? rawContent.title : ''),
+      '',
+      'title'
+    );
+    const description = resolveDisplayString(
+      props.description || rawContent || element.fallback,
+      '',
+      'description'
+    );
+    const badge = resolveDisplayString(
+      props.badge || (typeof rawContent === 'object' ? rawContent.badge : ''),
+      '',
+      'badge'
+    );
+    const price = resolveDisplayString(
+      props.price || (typeof rawContent === 'object' ? rawContent.price : ''),
+      '',
+      'price'
+    );
+    const icon = typeof props.icon === 'string' ? props.icon : (props.icon?.name || props.icon?.icon || '');
+
+    const imgSrc = props.src || props.image || (typeof rawContent === 'object' ? (rawContent.src || rawContent.image) : '') || '';
+    const imgAlt = resolveDisplayString(props.alt || title || 'Card image', 'Card image');
+
     return (
       <article
         id={element.id}
-        className={`nm-card p-5 flex flex-col gap-3 ${props.className || ''}`}
-        aria-label={props.title || display || 'Card'}
+        className={`nm-card p-5 flex flex-col gap-3 h-full transition-all duration-200 hover:border-[var(--nm-accent)] ${props.className || ''}`}
+        aria-label={title || description || 'Card'}
       >
-        {props.icon && (
-          <div
-            className="w-10 h-10 rounded-lg bg-[var(--nm-accent-glow)] flex items-center justify-center"
-            aria-hidden="true"
-          >
-            <i className={`${props.icon} text-[var(--nm-accent-light)] text-lg`} />
+        {/* Card Top Image if present (for food/travel/product cards) */}
+        {imgSrc && (
+          <div className="w-full h-44 rounded-t-[var(--nm-radius-sm)] -mt-5 -mx-5 mb-2 overflow-hidden bg-[var(--nm-bg-surface)] self-center">
+            <img
+              src={imgSrc}
+              alt={imgAlt}
+              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
           </div>
         )}
-        {props.title && (
+
+        {/* Badge & Icon Header */}
+        <div className="flex items-center justify-between gap-2">
+          {icon && (
+            <div
+              className="w-10 h-10 rounded-lg bg-[var(--nm-accent-glow)] flex items-center justify-center text-[var(--nm-accent-light)]"
+              aria-hidden="true"
+            >
+              <i className={`${icon} text-lg`} />
+            </div>
+          )}
+          {badge && (
+            <span className="nm-badge ml-auto">{badge}</span>
+          )}
+        </div>
+
+        {/* Card Title */}
+        {title && (
           <h4 className="font-semibold text-[var(--nm-text-primary)] text-base leading-snug">
-            {props.title}
+            {title}
           </h4>
         )}
-        {(props.description || display) && (
-          <p className="text-sm text-[var(--nm-text-secondary)] leading-relaxed">
-            {props.description || display}
+
+        {/* Card Description */}
+        {description && (
+          <p className="text-sm text-[var(--nm-text-secondary)] leading-relaxed flex-1">
+            {description}
           </p>
         )}
-        {props.badge && (
-          <span className="nm-badge self-start">{props.badge}</span>
+
+        {/* Price & Action Footer (for food menu / products / bookings) */}
+        {price && (
+          <div className="flex items-center justify-between mt-auto pt-3 border-t border-[var(--nm-border-subtle)]">
+            <span className="font-bold text-base text-[var(--nm-accent-light)] font-mono">
+              {price}
+            </span>
+            <span className="text-xs px-2.5 py-1 rounded bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] font-medium">
+              Select
+            </span>
+          </div>
         )}
       </article>
     );
   },
 
   // ── Cards — repeating loop ────────────────────────────────────────────────
-  // element.props.items: Array<{ id, title, description, icon, badge }>
   cards: (element) => {
     const props = safeProps(element);
-    const items = Array.isArray(props.items) ? props.items : [];
+    const items = Array.isArray(props.items)
+      ? props.items
+      : (Array.isArray(element.items) ? element.items : []);
     const cols = props.columns || 3;
     const colClass = {
       1: 'grid-cols-1',
@@ -256,20 +326,22 @@ const ELEMENT_REGISTRY = {
       );
     }
 
-    // Each item is rendered through the card renderer for consistency
     return (
       <div id={element.id} className={`grid ${colClass} gap-5`}>
         {items.map((item, idx) => {
           const cardElement = normalizeElement({
             id: item.id || `${element.id}-card-${idx}`,
             type: 'card',
-            content: item.description || item.content || '',
+            content: resolveDisplayString(item.description || item.content || item.title || '', ''),
             fallback: '',
             props: {
-              title: item.title,
-              description: item.description || item.content,
-              icon: item.icon,
-              badge: item.badge,
+              title: resolveDisplayString(item.title, `Item ${idx + 1}`, 'title'),
+              description: resolveDisplayString(item.description || item.content, '', 'description'),
+              icon: typeof item.icon === 'string' ? item.icon : (item.icon?.name || item.icon?.icon || ''),
+              badge: resolveDisplayString(item.badge, '', 'badge'),
+              price: resolveDisplayString(item.price, '', 'price'),
+              src: item.src || item.image || '',
+              alt: resolveDisplayString(item.alt || item.title, 'Card image', 'alt'),
               className: item.className,
             },
           });
@@ -284,7 +356,6 @@ const ELEMENT_REGISTRY = {
   },
 
   // ── Carousel ──────────────────────────────────────────────────────────────
-  // element.props.slides: Array<{ id, title, description, src, alt }>
   carousel: (element) => {
     const props = safeProps(element);
     const slides = Array.isArray(props.slides) ? props.slides : [];
@@ -307,47 +378,54 @@ const ELEMENT_REGISTRY = {
         <div
           className="nm-carousel"
           role="region"
-          aria-label={props['aria-label'] || safeContent(element) || 'Image carousel'}
+          aria-label={resolveDisplayString(props['aria-label'] || safeContent(element), 'Image carousel')}
           tabIndex={0}
         >
-          {slides.map((slide, idx) => (
-            <div
-              key={slide.id || `${element.id}-slide-${idx}`}
-              className="nm-carousel__slide"
-              role="group"
-              aria-label={`Slide ${idx + 1} of ${slides.length}: ${slide.title || ''}`}
-            >
-              {slide.src ? (
-                <img
-                  src={slide.src}
-                  alt={slide.alt || slide.title || `Slide ${idx + 1}`}
-                  className="nm-carousel__img"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://placehold.co/800x400/1a1a2e/6c63ff?text=Slide';
-                  }}
-                />
-              ) : (
-                <div className="nm-carousel__placeholder" aria-hidden="true">
-                  <i className="pi pi-image text-[var(--nm-accent)] text-3xl" />
-                </div>
-              )}
-              {(slide.title || slide.description) && (
-                <div className="nm-carousel__caption">
-                  {slide.title && (
-                    <p className="text-sm font-semibold text-[var(--nm-text-primary)]">
-                      {slide.title}
-                    </p>
-                  )}
-                  {slide.description && (
-                    <p className="text-xs text-[var(--nm-text-secondary)]">
-                      {slide.description}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+          {slides.map((slide, idx) => {
+            const slideTitle = resolveDisplayString(slide.title, '', 'title');
+            const slideDesc = resolveDisplayString(slide.description || slide.content, '', 'description');
+            const slideSrc = slide.src || slide.image || '';
+            const slideAlt = resolveDisplayString(slide.alt || slideTitle || `Slide ${idx + 1}`, `Slide ${idx + 1}`);
+
+            return (
+              <div
+                key={slide.id || `${element.id}-slide-${idx}`}
+                className="nm-carousel__slide"
+                role="group"
+                aria-label={`Slide ${idx + 1} of ${slides.length}: ${slideTitle}`}
+              >
+                {slideSrc ? (
+                  <img
+                    src={slideSrc}
+                    alt={slideAlt}
+                    className="nm-carousel__img"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/800x400/1a1a2e/6c63ff?text=Slide';
+                    }}
+                  />
+                ) : (
+                  <div className="nm-carousel__placeholder" aria-hidden="true">
+                    <i className="pi pi-image text-[var(--nm-accent)] text-3xl" />
+                  </div>
+                )}
+                {(slideTitle || slideDesc) && (
+                  <div className="nm-carousel__caption">
+                    {slideTitle && (
+                      <p className="text-sm font-semibold text-[var(--nm-text-primary)]">
+                        {slideTitle}
+                      </p>
+                    )}
+                    {slideDesc && (
+                      <p className="text-xs text-[var(--nm-text-secondary)]">
+                        {slideDesc}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
         <p className="text-xs text-[var(--nm-text-muted)] text-center mt-2">
           ← scroll to see more →
@@ -357,8 +435,6 @@ const ELEMENT_REGISTRY = {
   },
 
   // ── Wizard ────────────────────────────────────────────────────────────────
-  // element.props.steps: Array<{ id, label, description, icon }>
-  // element.props.activeStep: number (0-indexed, default 0)
   wizard: (element) => {
     const props = safeProps(element);
     const steps = Array.isArray(props.steps) ? props.steps : [];
@@ -382,33 +458,24 @@ const ELEMENT_REGISTRY = {
         id={element.id}
         className={`nm-wizard ${props.className || ''}`}
         role="list"
-        aria-label={safeContent(element) || 'Wizard steps'}
+        aria-label={resolveDisplayString(safeContent(element), 'Wizard steps')}
       >
-        {/* Step indicators */}
-        <div className="nm-wizard__track" aria-hidden="true">
-          {steps.map((_, idx) => (
-            <div
-              key={idx}
-              className={`nm-wizard__connector ${idx < activeStep ? 'nm-wizard__connector--done' : idx === activeStep ? 'nm-wizard__connector--active' : ''}`}
-            />
-          ))}
-        </div>
-
-        {/* Steps list */}
         <ol className="nm-wizard__steps">
           {steps.map((step, idx) => {
             const isDone = idx < activeStep;
             const isActive = idx === activeStep;
+            const stepLabel = resolveDisplayString(step.label || step.title, `Step ${idx + 1}`, 'label');
+            const stepDesc = resolveDisplayString(step.description || step.content, '', 'description');
             const statusLabel = isDone ? 'Completed' : isActive ? 'Current step' : 'Upcoming';
+
             return (
               <li
                 key={step.id || `${element.id}-step-${idx}`}
                 className={`nm-wizard__step ${isDone ? 'nm-wizard__step--done' : ''} ${isActive ? 'nm-wizard__step--active' : ''}`}
                 role="listitem"
-                aria-label={`Step ${idx + 1}: ${step.label || ''} — ${statusLabel}`}
+                aria-label={`Step ${idx + 1}: ${stepLabel} — ${statusLabel}`}
                 aria-current={isActive ? 'step' : undefined}
               >
-                {/* Circle */}
                 <div className={`nm-wizard__circle ${isDone ? 'nm-wizard__circle--done' : isActive ? 'nm-wizard__circle--active' : ''}`}>
                   {isDone ? (
                     <i className="pi pi-check text-xs" aria-hidden="true" />
@@ -417,14 +484,13 @@ const ELEMENT_REGISTRY = {
                   )}
                 </div>
 
-                {/* Label + description */}
                 <div className="nm-wizard__content">
                   <p className={`text-sm font-semibold ${isActive ? 'text-[var(--nm-accent-light)]' : isDone ? 'text-[var(--nm-text-secondary)]' : 'text-[var(--nm-text-muted)]'}`}>
-                    {step.label || `Step ${idx + 1}`}
+                    {stepLabel}
                   </p>
-                  {step.description && (
+                  {stepDesc && (
                     <p className="text-xs text-[var(--nm-text-muted)] mt-0.5">
-                      {step.description}
+                      {stepDesc}
                     </p>
                   )}
                 </div>
@@ -439,8 +505,11 @@ const ELEMENT_REGISTRY = {
   // ── Icon ──────────────────────────────────────────────────────────────────
   icon: (element) => {
     const props = safeProps(element);
-    const iconClass = safeContent(element) || props.icon || 'pi pi-star';
-    const label = props['aria-label'] || props.label || '';
+    const iconClass = typeof element.content === 'string' && element.content.trim() !== ''
+      ? element.content
+      : (props.icon || 'pi pi-star');
+    const label = resolveDisplayString(props['aria-label'] || props.label, '');
+
     return (
       <i
         id={element.id}
@@ -467,7 +536,7 @@ const ELEMENT_REGISTRY = {
 
   // ── Link ──────────────────────────────────────────────────────────────────
   link: (element) => {
-    const display = safeContent(element) || 'Link';
+    const display = resolveDisplayString(element.content || element.fallback, 'Link', 'label');
     const props = safeProps(element);
     return (
       <a
@@ -475,7 +544,7 @@ const ELEMENT_REGISTRY = {
         href={props.href || '#'}
         className={`text-[var(--nm-accent-light)] hover:underline text-sm ${props.className || ''}`}
         onClick={(e) => e.preventDefault()}
-        aria-label={props['aria-label'] || display}
+        aria-label={resolveDisplayString(props['aria-label'] || display, 'Link')}
         rel="noopener noreferrer"
       >
         {display}
@@ -489,17 +558,24 @@ const ELEMENT_REGISTRY = {
     const props = safeProps(element);
     const items = Array.isArray(props.items)
       ? props.items
-      : display.split(',').map((s) => s.trim()).filter(Boolean);
+      : (Array.isArray(element.items)
+          ? element.items
+          : display.split(',').map((s) => s.trim()).filter(Boolean));
     const isOrdered = props.ordered === true;
     const Tag = isOrdered ? 'ol' : 'ul';
+
     return (
       <Tag
         id={element.id}
         className={`${isOrdered ? 'list-decimal' : 'list-disc'} list-inside text-sm text-[var(--nm-text-secondary)] space-y-1 ${props.className || ''}`}
-        aria-label={props['aria-label'] || undefined}
+        aria-label={resolveDisplayString(props['aria-label'], undefined)}
       >
         {items.length > 0 ? (
-          items.map((item, i) => <li key={i}>{item}</li>)
+          items.map((item, i) => (
+            <li key={i}>
+              {resolveDisplayString(item, `Item ${i + 1}`, 'label')}
+            </li>
+          ))
         ) : (
           <li className="text-[var(--nm-text-muted)] italic">(no items)</li>
         )}
@@ -509,13 +585,14 @@ const ELEMENT_REGISTRY = {
 
   // ── Badge ─────────────────────────────────────────────────────────────────
   badge: (element) => {
-    const display = safeContent(element) || 'Badge';
+    const display = resolveDisplayString(propsLabel(element), 'Badge', 'label');
     const props = safeProps(element);
+
     return (
       <span
         id={element.id}
         className={`nm-badge ${props.className || ''}`}
-        aria-label={props['aria-label'] || display}
+        aria-label={resolveDisplayString(props['aria-label'] || display, 'Badge')}
       >
         {display}
       </span>
@@ -523,9 +600,14 @@ const ELEMENT_REGISTRY = {
   },
 };
 
+const propsLabel = (element) => {
+  if (!element) return 'Badge';
+  const props = safeProps(element);
+  return props.label || element.content || element.fallback || 'Badge';
+};
+
 /**
  * Resolve the renderer function for a given element type.
- * Aliases and unknown types are handled here.
  * @param {string} type
  * @returns {function|null}
  */
@@ -584,7 +666,7 @@ const getLayoutClasses = (section) => {
     return 'flex flex-col items-center text-center gap-6';
   }
 
-  if (type === 'features' || type === 'cards' || type === 'pricing' || type === 'testimonials') {
+  if (type === 'features' || type === 'cards' || type === 'pricing' || type === 'testimonials' || type === 'gallery') {
     const cols = section.props?.columns || 3;
     const colMap = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4' };
     return `grid grid-cols-1 md:grid-cols-2 ${colMap[cols] || 'lg:grid-cols-3'} gap-6`;
@@ -600,14 +682,13 @@ const getLayoutClasses = (section) => {
 // ─── Section Renderer ─────────────────────────────────────────────────────────
 
 const SectionRenderer = ({ section }) => {
-  // Guard against completely malformed section
   if (!section || typeof section !== 'object') return null;
 
   const safeSection = {
     id: section.id || `sec-${Math.random().toString(36).slice(2, 8)}`,
     type: typeof section.type === 'string' ? section.type : 'custom',
     elements: Array.isArray(section.elements) ? section.elements : [],
-    props: (section.props && typeof section.props === 'object') ? section.props : {},
+    props: (section.props && typeof section.props === 'object' && !Array.isArray(section.props)) ? section.props : {},
   };
 
   const layoutClasses = getLayoutClasses(safeSection);
@@ -637,7 +718,7 @@ const SectionRenderer = ({ section }) => {
   return (
     <section
       id={safeSection.id}
-      aria-label={safeSection.props['aria-label'] || `${safeSection.type} section`}
+      aria-label={resolveDisplayString(safeSection.props['aria-label'] || `${safeSection.type} section`)}
       className={`py-10 px-6 rounded-[var(--nm-radius)] ${bgClass}`}
     >
       <div className={layoutClasses}>

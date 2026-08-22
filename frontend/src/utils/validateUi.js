@@ -18,6 +18,7 @@
  */
 
 import { ELEMENT_TYPES, SECTION_TYPES } from '../types/ui.js';
+import { resolveDisplayString } from './valueNormalizer.js';
 
 // --- Constants ----------------------------------------------------------------
 
@@ -98,12 +99,14 @@ function validateElement(element, sectionRef, index) {
   }
 
   const type      = element.type.toLowerCase().trim();
-  const props     = element.props || {};
+  const props     = (element.props && typeof element.props === 'object' && !Array.isArray(element.props)) ? element.props : {};
   const content   = element.content;
   const fallback  = element.fallback;
-  const hasContent  = isNonEmptyString(content);
-  const hasFallback = isNonEmptyString(fallback);
-  const usableText  = hasContent ? content : hasFallback ? fallback : null;
+  const strContent  = resolveDisplayString(content, '');
+  const strFallback = resolveDisplayString(fallback, '');
+  const hasContent  = strContent.trim().length > 0;
+  const hasFallback = strFallback.trim().length > 0;
+  const usableText  = hasContent ? strContent : hasFallback ? strFallback : (typeof props.label === 'string' && props.label.trim().length > 0 ? props.label : null);
 
   // Unknown type
   if (!KNOWN_ELEMENT_TYPES.has(type)) {

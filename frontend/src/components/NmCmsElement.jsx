@@ -12,7 +12,7 @@
  */
 
 import { ELEMENT_TYPES } from '../types/ui.js';
-import { resolveCmsContent } from '../types/cms.js';
+import { resolveDisplayString } from '../utils/valueNormalizer.js';
 import NmButton from './NmButton.jsx';
 import NmInput from './NmInput.jsx';
 import NmCard from './NmCard.jsx';
@@ -38,7 +38,7 @@ const NmCmsElement = ({ element, cmsData, className = '' }) => {
   switch (type) {
     // ─── 1. TEXT ────────────────────────────────────────────────────────────
     case ELEMENT_TYPES.TEXT: {
-      const text = resolveCmsContent(activeContentSource, fallback, 'text');
+      const text = resolveDisplayString(activeContentSource, fallback, 'text');
       const ALLOWED_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'label', 'strong', 'em'];
       const Tag = ALLOWED_TAGS.includes(baseProps.tag) ? baseProps.tag : 'p';
 
@@ -55,19 +55,19 @@ const NmCmsElement = ({ element, cmsData, className = '' }) => {
     // ─── 2. IMAGE ───────────────────────────────────────────────────────────
     case ELEMENT_TYPES.IMAGE: {
       let src = '';
-      let alt = fallback || 'Image';
+      let alt = resolveDisplayString(fallback, 'Image');
 
       if (typeof activeContentSource === 'string' && activeContentSource.trim() !== '') {
         src = activeContentSource;
       } else if (activeContentSource && typeof activeContentSource === 'object') {
         src = activeContentSource.src || activeContentSource.url || '';
-        alt = activeContentSource.alt || activeContentSource.title || alt;
+        alt = resolveDisplayString(activeContentSource.alt || activeContentSource.title || alt, 'Image');
       }
 
       if (!src) {
         src = baseProps.src || 'https://placehold.co/600x400/1a1a2e/6c63ff?text=Image';
       }
-      if (baseProps.alt) alt = baseProps.alt;
+      if (baseProps.alt) alt = resolveDisplayString(baseProps.alt, 'Image');
 
       return (
         <img
@@ -85,16 +85,16 @@ const NmCmsElement = ({ element, cmsData, className = '' }) => {
 
     // ─── 3. BUTTON ──────────────────────────────────────────────────────────
     case ELEMENT_TYPES.BUTTON: {
-      const label = resolveCmsContent(activeContentSource, fallback || 'Button', 'label');
+      const label = resolveDisplayString(activeContentSource, fallback || 'Button', 'label');
 
       return (
         <NmButton
           id={id}
           variant={baseProps.variant || 'primary'}
           label={label}
-          icon={baseProps.icon}
+          icon={typeof baseProps.icon === 'string' ? baseProps.icon : undefined}
           className={`${baseProps.className || ''} ${className}`}
-          aria-label={baseProps['aria-label'] || label}
+          aria-label={resolveDisplayString(baseProps['aria-label'] || label, 'Button')}
           onClick={baseProps.onClick || (() => {})}
           type={baseProps.type || 'button'}
         />
@@ -114,13 +114,14 @@ const NmCmsElement = ({ element, cmsData, className = '' }) => {
         placeholder = activeContentSource.placeholder || placeholder;
       }
 
-      label = label || fallback || 'Field';
+      const resolvedLabel = resolveDisplayString(label || fallback, 'Field', 'label');
+      const resolvedPlaceholder = resolveDisplayString(placeholder || resolvedLabel, resolvedLabel, 'placeholder');
 
       return (
         <NmInput
           id={id}
-          label={label}
-          placeholder={placeholder || label}
+          label={resolvedLabel}
+          placeholder={resolvedPlaceholder}
           className={`${baseProps.className || ''} ${className}`}
           multiline={Boolean(baseProps.multiline)}
           disabled={Boolean(baseProps.disabled)}
@@ -157,14 +158,17 @@ const NmCmsElement = ({ element, cmsData, className = '' }) => {
         description = activeContentSource.description || activeContentSource.text || description;
       }
 
+      const resolvedTitle = resolveDisplayString(title, '', 'title');
+      const resolvedDesc = resolveDisplayString(description, '', 'description');
+
       return (
         <NmCard
-          title={title}
-          subtitle={baseProps.subtitle}
+          title={resolvedTitle}
+          subtitle={resolveDisplayString(baseProps.subtitle, '')}
           className={`${baseProps.className || ''} ${className}`}
         >
-          {description && (
-            <p className="text-sm text-[var(--nm-text-secondary)] leading-relaxed">{description}</p>
+          {resolvedDesc && (
+            <p className="text-sm text-[var(--nm-text-secondary)] leading-relaxed">{resolvedDesc}</p>
           )}
         </NmCard>
       );
@@ -172,7 +176,7 @@ const NmCmsElement = ({ element, cmsData, className = '' }) => {
 
     // ─── DEFAULT / FALLBACK ─────────────────────────────────────────────────
     default: {
-      const text = resolveCmsContent(activeContentSource, fallback);
+      const text = resolveDisplayString(activeContentSource, fallback);
       return (
         <div id={id} className={`nm-element nm-element--${type} ${className}`}>
           {text}

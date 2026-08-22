@@ -10,6 +10,7 @@
  */
 
 const { generateUIFromPrompt, generateUIFromWireframe } = require('../services/aiService');
+const { enrichPageImages } = require('../services/imageService');
 const { validateUIPage } = require('../utils/validateUI');
 
 const generate = async (req, res) => {
@@ -46,8 +47,11 @@ const generate = async (req, res) => {
       });
     }
 
+    // ── Enrich with contextual images ─────────────────────────────────────────
+    const enrichedPage = enrichPageImages(rawPage, prompt);
+
     // ── Validate AI output ────────────────────────────────────────────────────
-    const validation = validateUIPage(rawPage);
+    const validation = validateUIPage(enrichedPage);
 
     if (!validation.valid) {
       console.error('[GENERATE] AI output failed validation:', validation.errors);

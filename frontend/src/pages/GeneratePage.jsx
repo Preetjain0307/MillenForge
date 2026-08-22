@@ -56,9 +56,11 @@ const GENERATION_STAGES = [
 const friendlyError = (raw = '') => {
   const msg = String(raw).toLowerCase();
   if (msg.includes('api key') || msg.includes('not configured') || msg.includes('503'))
-    return 'AI service is temporarily unavailable. Please try again later or contact support.';
-  if (msg.includes('prompt'))
-    return 'Please enter a prompt describing the UI you want to generate.';
+    return 'AI generation is currently unavailable. Please check the AI configuration.';
+  if (msg.includes('prompt') || msg.includes('describe'))
+    return 'Please describe the UI you want to generate.';
+  if (msg.includes('wireframe') && msg.includes('required'))
+    return 'Please upload a wireframe first.';
   if (msg.includes('network') || msg.includes('failed to fetch') || msg.includes('econnrefused'))
     return 'Cannot reach the server. Check your connection or try again.';
   if (msg.includes('413') || msg.includes('too large'))
@@ -158,7 +160,7 @@ const GeneratePage = () => {
     const pageName = generation.pageName?.trim() || 'Home';
 
     if (!prompt) {
-      setPromptError('Please describe the UI you want to generate before clicking Generate.');
+      setPromptError('Please describe the UI you want to generate.');
       return;
     }
 
@@ -403,12 +405,12 @@ const GeneratePage = () => {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-[var(--nm-text-primary)]">
-                      Wireframe
+                      Upload your wireframe
                       <span className="ml-1.5 text-[10px] px-1.5 py-0.5 rounded bg-[var(--nm-bg-surface)] text-[var(--nm-text-muted)] font-normal border border-[var(--nm-border-subtle)]">
                         Optional
                       </span>
                     </h3>
-                    <p className="text-xs text-[var(--nm-text-secondary)]">JPG, PNG, WEBP — up to 10 MB</p>
+                    <p className="text-xs text-[var(--nm-text-secondary)]">Supported formats: JPG, JPEG, PNG, WEBP — up to 10 MB</p>
                   </div>
                 </div>
                 {uploadStatus === 'success' && (
@@ -521,7 +523,7 @@ const GeneratePage = () => {
                     disabled={isGenerating}
                     maxLength={1000}
                     rows={8}
-                    placeholder="Describe how the generated UI should look and behave.&#10;&#10;Example: Create a responsive SaaS landing page with a split hero section, a primary CTA button, and three feature cards in a dark theme."
+                    placeholder="Describe how you want the generated UI to behave...&#10;&#10;Example: Create a responsive landing page with a split hero, primary CTA and three feature cards."
                     className={`w-full px-3.5 py-2.5 rounded-[var(--nm-radius-sm)] bg-[var(--nm-bg-surface)] border text-[var(--nm-text-primary)] placeholder-[var(--nm-text-muted)] text-sm focus:outline-none focus:ring-1 transition-all resize-y disabled:opacity-50 font-[inherit] leading-relaxed ${
                       promptError
                         ? 'border-[var(--nm-error)] focus:border-[var(--nm-error)] focus:ring-[var(--nm-error)]'
