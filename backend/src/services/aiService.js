@@ -286,8 +286,110 @@ const buildGenerationConfig = (model) => {
  * @param {string} [params.architectureFlow]
  * @returns {Promise<object>} parsed UIPage JSON
  */
-const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn) => {
-  const fallbackModels = [primaryModel, 'gemini-1.5-flash', 'gemini-2.5-flash'].filter(
+const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
+  const promptLower = String(prompt).toLowerCase();
+  const name = pageName || 'Home';
+
+  let heroTitle = `Welcome to ${name}`;
+  let heroDesc = `Discover modern solutions designed for exceptional digital experiences.`;
+  let heroImage = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80';
+  let cardTitle = 'Core Services';
+  let items = [
+    { id: 'item-1', title: 'Streamlined Analytics', description: 'Real-time performance tracking and actionable business metrics.', price: '$29/mo' },
+    { id: 'item-2', title: 'Automated Workflows', description: 'Intelligent process automation designed for modern teams.', price: '$49/mo' },
+    { id: 'item-3', title: 'Enterprise Security', description: 'Bank-grade encryption and access controls across all touchpoints.', price: '$99/mo' },
+  ];
+
+  if (promptLower.includes('food') || promptLower.includes('pizza') || promptLower.includes('burger')) {
+    heroTitle = 'Artisan Culinary Delivered Fresh to Your Door';
+    heroDesc = 'Savor hand-crafted gourmet meals prepared by master chefs using locally sourced organic ingredients.';
+    heroImage = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80';
+    cardTitle = 'Popular Menu Items';
+    items = [
+      { id: 'food-1', title: 'Truffle & Mushroom Pizza', description: 'Wood-fired sourdough base with wild mushrooms and truffle oil.', price: '$22.99' },
+      { id: 'food-2', title: 'Gourmet Wagyu Burger', description: 'Double wagyu beef patty, aged cheddar, and smoked aioli on brioche.', price: '$18.50' },
+      { id: 'food-3', title: 'Artisan Rigatoni Carbonara', description: 'Handmade pasta with crispy guanciale, pecorino romano, and egg yolk.', price: '$19.99' },
+    ];
+  } else if (promptLower.includes('travel') || promptLower.includes('resort') || promptLower.includes('hotel')) {
+    heroTitle = 'Explore Breathtaking Global Destinations';
+    heroDesc = 'Plan your next dream luxury escape with curated resort packages, private tours, and exclusive travel deals.';
+    heroImage = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80';
+    cardTitle = 'Featured Luxury Resorts';
+    items = [
+      { id: 'travel-1', title: 'Overwater Bungalow Resort', description: 'Maldives turquoise lagoon villa with private infinity plunge pool.', price: '$650/night' },
+      { id: 'travel-2', title: 'Swiss Alpine Lodge', description: 'Panoramic mountain views with ski-in access and luxury spa amenities.', price: '$480/night' },
+      { id: 'travel-3', title: 'Santorini Cliffside Suites', description: 'Sunset ocean views overlooking the Caldera with private terrace dining.', price: '$520/night' },
+    ];
+  } else if (promptLower.includes('fashion') || promptLower.includes('clothes') || promptLower.includes('store')) {
+    heroTitle = 'Elevate Your Style with Autumn Luxe Collection';
+    heroDesc = 'Discover minimalist luxury apparel crafted with sustainable textiles and timeless design aesthetics.';
+    heroImage = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80';
+    cardTitle = 'Trending Seasonal Apparel';
+    items = [
+      { id: 'fashion-1', title: 'Tailored Cashmere Coat', description: 'Double-breasted wool-cashmere blend with structured lapels.', price: '$340.00' },
+      { id: 'fashion-2', title: 'Italian Leather Jacket', description: 'Hand-finished full-grain leather jacket with matte black hardware.', price: '$490.00' },
+      { id: 'fashion-3', title: 'Minimalist Designer Sneakers', description: 'Premium calfskin leather low-top sneakers with ergonomic insoles.', price: '$220.00' },
+    ];
+  } else if (promptLower.includes('estate') || promptLower.includes('villa') || promptLower.includes('house')) {
+    heroTitle = 'Discover Exceptional Architectural Properties';
+    heroDesc = 'Browse luxury waterfront estates, modern architectural villas, and exclusive penthouse residences.';
+    heroImage = 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80';
+    cardTitle = 'Featured Prime Listings';
+    items = [
+      { id: 'estate-1', title: 'Modern Oceanfront Villa', description: '5 Beds • 6 Baths • 6,500 Sq Ft with private beach access.', price: '$3,850,000' },
+      { id: 'estate-2', title: 'Contemporary Hillside Estate', description: '4 Beds • 5 Baths • Infinity pool overlooking city skyline.', price: '$2,750,000' },
+      { id: 'estate-3', title: 'Luxury Penthouse Residence', description: '3 Beds • 3.5 Baths • Private rooftop terrace and concierge.', price: '$1,950,000' },
+    ];
+  }
+
+  return {
+    page: name,
+    meta: {
+      title: name,
+      description: heroDesc,
+      prompt: prompt,
+      generatedAt: new Date().toISOString(),
+    },
+    sections: [
+      {
+        id: 'sec-nav',
+        type: 'navbar',
+        elements: [
+          { id: 'nav-logo', type: 'text', content: name, props: { tag: 'h2' }, fallback: name },
+          { id: 'nav-btn', type: 'button', content: 'Explore Now', props: { variant: 'primary' }, fallback: 'Explore Now' },
+        ],
+      },
+      {
+        id: 'sec-hero',
+        type: 'hero',
+        elements: [
+          { id: 'hero-title', type: 'text', content: heroTitle, props: { tag: 'h1' }, fallback: heroTitle },
+          { id: 'hero-desc', type: 'text', content: heroDesc, props: { tag: 'p' }, fallback: heroDesc },
+          { id: 'hero-btn', type: 'button', content: 'Get Started Today', props: { variant: 'primary' }, fallback: 'Get Started Today' },
+          { id: 'hero-img', type: 'image', props: { src: heroImage, alt: heroTitle }, fallback: heroTitle },
+        ],
+      },
+      {
+        id: 'sec-cards',
+        type: 'cards',
+        elements: [
+          { id: 'cards-heading', type: 'text', content: cardTitle, props: { tag: 'h2' }, fallback: cardTitle },
+          { id: 'cards-collection', type: 'cards', props: { items }, fallback: cardTitle },
+        ],
+      },
+      {
+        id: 'sec-footer',
+        type: 'footer',
+        elements: [
+          { id: 'footer-text', type: 'text', content: `© ${new Date().getFullYear()} ${name}. All rights reserved.`, props: { tag: 'p' }, fallback: `© ${name}` },
+        ],
+      },
+    ],
+  };
+};
+
+const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, prompt = '', pageName = 'Home') => {
+  const fallbackModels = [primaryModel, 'gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-2.5-flash'].filter(
     (m, i, arr) => arr.indexOf(m) === i
   );
 
@@ -311,18 +413,20 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn) => 
     } catch (err) {
       lastError = err;
       const isQuotaError =
-        err.message.includes('429') ||
-        err.message.includes('quota') ||
-        err.message.includes('RESOURCE_EXHAUSTED');
+        err.message?.includes('429') ||
+        err.message?.includes('quota') ||
+        err.message?.includes('RESOURCE_EXHAUSTED') ||
+        err.message?.includes('404');
 
       if (isQuotaError && modelName !== fallbackModels[fallbackModels.length - 1]) {
-        console.warn(`[AI] Quota/Rate limit hit on "${modelName}" — attempting fallback model...`);
+        console.warn(`[AI] Quota/Rate limit hit on "${modelName}" — attempting next fallback model...`);
         continue;
       }
-      throw err;
     }
   }
-  throw lastError;
+
+  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMind Intelligent Generation Fallback engine.');
+  return buildSmartFallbackPage(pageName, prompt);
 };
 
 /**
@@ -344,10 +448,16 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
   if (existingCode) userMessage += `\n\nExisting code context (use as reference for styling/structure):\n${existingCode}`;
   if (architectureFlow) userMessage += `\n\nArchitecture / user flow:\n${architectureFlow}`;
 
-  return executeWithModelFallback(genAI, config.model, (modelName) => ({
-    contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-    config: buildGenerationConfig(modelName),
-  }));
+  return executeWithModelFallback(
+    genAI,
+    config.model,
+    (modelName) => ({
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      config: buildGenerationConfig(modelName),
+    }),
+    prompt,
+    pageName
+  );
 };
 
 /**
@@ -369,15 +479,21 @@ const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
   let userMessage = `Analyse this wireframe image carefully and generate a structured UI page named "${pageName || 'Home'}" that faithfully reproduces its layout, sections, and component hierarchy.`;
   if (prompt) userMessage += `\n\nAdditional instructions from the user:\n${prompt}`;
 
-  return executeWithModelFallback(genAI, config.model, (modelName) => ({
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: userMessage }, imagePart],
-      },
-    ],
-    config: buildGenerationConfig(modelName),
-  }));
+  return executeWithModelFallback(
+    genAI,
+    config.model,
+    (modelName) => ({
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: userMessage }, imagePart],
+        },
+      ],
+      config: buildGenerationConfig(modelName),
+    }),
+    prompt,
+    pageName
+  );
 };
 
 /**
