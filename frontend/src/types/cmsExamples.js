@@ -165,6 +165,67 @@ export const EXAMPLE_CMS_BOUND_PAGE = {
       ],
       props: {},
     },
+    {
+      id: 'sec-showcase',
+      type: SECTION_TYPES.CUSTOM,
+      elements: [
+        {
+          id: 'demo-carousel',
+          type: ELEMENT_TYPES.CAROUSEL,
+          content: 'Product Showcase Carousel',
+          fallback: 'Product Carousel',
+          props: {
+            slides: [
+              {
+                id: 'slide-1',
+                title: 'AI Generation Engine',
+                description: 'Instant wireframe-to-code compilation',
+                src: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
+                alt: 'AI Engine',
+              },
+              {
+                id: 'slide-2',
+                title: 'Visual CMS Binding',
+                description: 'Decoupled presentation & real-time content sync',
+                src: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
+                alt: 'CMS Binding',
+              },
+            ],
+          },
+        },
+        {
+          id: 'demo-wizard',
+          type: 'wizard',
+          content: 'Setup Progress Wizard',
+          fallback: 'Setup Progress',
+          props: {
+            activeStep: 1,
+            steps: [
+              { id: 'step-1', label: 'Upload Wireframe', description: 'PNG/JPG layout sketch' },
+              { id: 'step-2', label: 'AI Code Generation', description: 'Structured UIPage compilation' },
+              { id: 'step-3', label: 'CMS Live Edit', description: 'Tune content in real time' },
+            ],
+          },
+        },
+        {
+          id: 'demo-unknown',
+          type: 'chart_widget',
+          content: 'Analytics Performance Metric (Custom Component)',
+          fallback: 'Custom Widget Placeholder',
+          props: {},
+        },
+        {
+          id: 'demo-missing-img',
+          type: ELEMENT_TYPES.IMAGE,
+          content: '',
+          fallback: 'Placeholder Image Fallback',
+          props: {
+            alt: 'Missing image placeholder test',
+          },
+        },
+      ],
+      props: {},
+    },
   ],
   meta: {
     title: 'NeuraMind — Landing Page',
