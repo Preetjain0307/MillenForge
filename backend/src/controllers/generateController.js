@@ -90,6 +90,27 @@ const generate = async (req, res) => {
       console.warn('[GENERATE] Validation warnings:', validation.warnings);
     }
 
+    // ── Non-blocking history auto-persistence ─────────────────────────────────
+    try {
+      const History = require('../models/History');
+      const { getConnectionStatus } = require('../services/db');
+      const status = getConnectionStatus();
+
+      if (status.connected && status.state === 1) {
+        const genId = `gen-${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+        History.create({
+          generationId: genId,
+          prompt: prompt.trim(),
+          pageName: resolvedPageName,
+          status: 'success',
+          wireframe: wireframe && wireframe.filename ? { filename: wireframe.filename, originalName: wireframe.originalName } : undefined,
+          page: validation.page,
+          meta: { executionTimeMs: Date.now() - t0 },
+          createdAt: new Date(),
+        }).catch(err => console.warn('[GENERATE] Non-blocking history save notice:', err.message));
+      }
+    } catch (_) { /* ignore DB auto-save errors to guarantee zero impact on response */ }
+
     // ── Return validated UIPage ───────────────────────────────────────────────
     console.log(`[GENERATION] response sent (${Date.now() - t0}ms total)`);
     res.status(200).json({
