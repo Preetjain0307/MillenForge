@@ -102,11 +102,20 @@ npm run dev:backend
 
 | Method | Path | Status | Description |
 |---|---|---|---|
-| GET | `/api/health` | ✅ Implemented | Health check + DB + AI status |
-| POST | `/api/upload` | ✅ Implemented | Wireframe image upload (Multer) |
-| POST | `/api/generate` | ✅ Implemented | Gemini Vision UI generation |
-| GET | `/api/pages` | ✅ Implemented | List all generated pages |
-| GET | `/api/pages/:pageName` | ✅ Implemented | Get page schema by pageName |
+| GET | `/api/health` | ✅ Implemented | Basic health check, uptime, & DB status |
+| GET | `/api/health/deployment` | ✅ Implemented | Production deployment readiness audit & checklist |
+| POST | `/api/upload` | ✅ Implemented | Multipart wireframe image upload (Multer) |
+| POST | `/api/generate` | ✅ Implemented | Gemini Vision UI page generation |
+| GET | `/api/pages` | ✅ Implemented | List all saved UIPage schemas |
+| GET | `/api/pages/:pageName` | ✅ Implemented | Retrieve UIPage schema by pageName |
+| POST | `/api/pages` | ✅ Implemented | Create/Update UIPage schema in storage |
+| POST | `/api/analyze-requirements` | ✅ Implemented | AI Requirement Gap Detector & Priority Matrix |
+| POST | `/api/architecture-recommendation` | ✅ Implemented | Frontend Architecture & State Management Recommendation |
+| POST | `/api/pattern-recommendation` | ✅ Implemented | Application Design Pattern (MVC vs MVVM) Analysis |
+| POST | `/api/quality-score` | ✅ Implemented | UI Quality Score (0-100) & 10 Category Breakdown |
+| POST | `/api/design-validation` | ✅ Implemented | Semantic Design-to-Code Intent Validator |
+| POST | `/api/product-intelligence` | ✅ Implemented | Unified AI Product Intelligence payload |
+| POST | `/api/review/*` | ✅ Implemented | AI Multi-Agent Code Review & Self-Healing Engine |
 
 ---
 

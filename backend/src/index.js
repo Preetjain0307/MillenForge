@@ -62,6 +62,8 @@ app.use('/api/*', (_req, res) => {
   res.status(404).json({ success: false, error: 'API route not found.' });
 });
 
+const { printStartupAudit } = require('./utils/deploymentChecker');
+
 // ── Error Handler ───────────────────────────────────────────────────────────
 app.use(errorHandler);
 
@@ -70,9 +72,7 @@ const start = async () => {
   await connectDB(); // Gracefully handles missing/unreachable MongoDB
 
   app.listen(PORT, () => {
-    console.log(`[SERVER] NeuraMind API running on http://localhost:${PORT}`);
-    console.log(`[SERVER] CORS allowed origin: ${CLIENT_URL}`);
-    console.log(`[SERVER] Environment: ${process.env.NODE_ENV || 'development'}`);
+    printStartupAudit();
   });
 };
 

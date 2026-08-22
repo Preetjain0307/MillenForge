@@ -1,9 +1,10 @@
-// Health controller
+// Health & Deployment Controller
 const { getConnectionStatus } = require('../services/db');
+const { runDeploymentAudit } = require('../utils/deploymentChecker');
 
 /**
  * GET /api/health
- * Returns API status and DB connection state.
+ * Basic API health check.
  */
 const health = (_req, res) => {
   const db = getConnectionStatus();
@@ -21,4 +22,17 @@ const health = (_req, res) => {
   });
 };
 
-module.exports = { health };
+/**
+ * GET /api/health/deployment
+ * Production-safe deployment checklist & health readiness report.
+ */
+const deploymentHealth = (_req, res) => {
+  const audit = runDeploymentAudit();
+  const statusCode = audit.status === 'unhealthy' ? 503 : 200;
+  res.status(statusCode).json({
+    success: audit.status !== 'unhealthy',
+    ...audit,
+  });
+};
+
+module.exports = { health, deploymentHealth };
