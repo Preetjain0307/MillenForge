@@ -109,16 +109,17 @@ const ELEMENT_REGISTRY = {
       h1: 'text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight nm-gradient-text leading-tight mb-3',
       h2: 'text-2xl sm:text-3xl font-bold tracking-tight text-[var(--nm-text-primary)] mb-2.5',
       h3: 'text-xl sm:text-2xl font-bold text-[var(--nm-text-primary)] mb-2',
-      h4: 'text-lg font-semibold text-[var(--nm-text-primary)]',
-      p: 'text-sm sm:text-base text-[var(--nm-text-secondary)] leading-relaxed',
+      h4: 'text-lg font-semibold text-[var(--nm-text-primary)] mb-1',
+      p: 'text-sm sm:text-base text-[var(--nm-text-secondary)] leading-relaxed mb-1',
       span: 'text-sm text-[var(--nm-text-secondary)]',
       label: 'text-xs font-semibold text-[var(--nm-text-muted)] uppercase tracking-wider',
-    }[Tag] || 'text-[var(--nm-text-primary)] leading-relaxed';
+    }[Tag] || 'text-sm text-[var(--nm-text-primary)] leading-relaxed';
 
     return (
       <Tag
         id={element.id}
         className={`${tagClasses} ${props.className || ''}`}
+      >
       >
         {display || <span className="text-[var(--nm-text-muted)] italic">(empty text)</span>}
       </Tag>
@@ -134,26 +135,28 @@ const ELEMENT_REGISTRY = {
     } else if (element.content && typeof element.content === 'object') {
       src = element.content.src || element.content.url || '';
     }
-    if (!src) src = props.src || 'https://placehold.co/600x400/1a1a2e/6c63ff?text=Image';
+    if (!src) src = props.src || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80';
 
     const alt = resolveDisplayString(
       props.alt || (typeof element.content === 'object' ? element.content.alt : '') || element.fallback,
-      'Generated image',
+      'Generated visual',
       'alt'
     );
 
     return (
-      <img
-        id={element.id}
-        src={src}
-        alt={alt}
-        className={`max-w-full rounded-[var(--nm-radius-sm)] object-cover ${props.className || ''}`}
-        loading="lazy"
-        onError={(e) => {
-          e.currentTarget.src = 'https://placehold.co/600x400/1a1a2e/6c63ff?text=Image+Error';
-          e.currentTarget.alt = 'Image failed to load';
-        }}
-      />
+      <div className="relative w-full overflow-hidden rounded-2xl shadow-xl border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-surface)] group">
+        <img
+          id={element.id}
+          src={src}
+          alt={alt}
+          className={`w-full h-auto max-h-[480px] object-cover transition-transform duration-500 group-hover:scale-102 ${props.className || ''}`}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80';
+            e.currentTarget.alt = 'Visual asset';
+          }}
+        />
+      </div>
     );
   },
 
@@ -170,7 +173,7 @@ const ELEMENT_REGISTRY = {
         variant={props.variant || 'primary'}
         label={label}
         icon={icon || undefined}
-        className={props.className || ''}
+        className={`font-semibold shadow-md ${props.className || ''}`}
         aria-label={resolveDisplayString(props['aria-label'] || label, 'Button')}
         onClick={() => {}}
         type="button"
@@ -708,18 +711,16 @@ const SectionRenderer = ({ section }) => {
 
   const safeSection = {
     id: section.id || `sec-${Math.random().toString(36).slice(2, 8)}`,
-    type: typeof section.type === 'string' ? section.type : 'custom',
+    type: typeof section.type === 'string' ? section.type.toLowerCase() : 'custom',
     elements: Array.isArray(section.elements) ? section.elements : [],
     props: (section.props && typeof section.props === 'object' && !Array.isArray(section.props)) ? section.props : {},
   };
 
-  const layoutClasses = getLayoutClasses(safeSection);
   const bg = safeSection.props.background || '';
-
   const bgClass =
-    bg === 'gradient' ? 'bg-gradient-to-br from-[var(--nm-bg-card)] to-[var(--nm-bg-surface)]'
-    : bg === 'surface' ? 'bg-[var(--nm-bg-surface)]'
-    : bg === 'accent'  ? 'bg-[var(--nm-accent-glow)]'
+    bg === 'gradient' ? 'bg-gradient-to-br from-[var(--nm-bg-card)] to-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]'
+    : bg === 'surface' ? 'bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]'
+    : bg === 'accent'  ? 'bg-[var(--nm-accent-glow)] border border-[rgba(108,99,255,0.3)]'
     : '';
 
   if (safeSection.elements.length === 0) {
@@ -737,11 +738,142 @@ const SectionRenderer = ({ section }) => {
     );
   }
 
+  // 1. Special Layout: HERO Section Intelligence
+  if (safeSection.type === 'hero') {
+    const mediaTypes = new Set(['image', 'carousel']);
+    const mediaElements = safeSection.elements.filter((el) => mediaTypes.has((el?.type || '').toLowerCase()));
+    const nonMediaElements = safeSection.elements.filter((el) => !mediaTypes.has((el?.type || '').toLowerCase()));
+
+    const textElements = nonMediaElements.filter((el) => (el?.type || '').toLowerCase() !== 'button');
+    const buttonElements = nonMediaElements.filter((el) => (el?.type || '').toLowerCase() === 'button');
+
+    const hasMedia = mediaElements.length > 0;
+
+    return (
+      <section
+        id={safeSection.id}
+        aria-label={resolveDisplayString(safeSection.props['aria-label'] || 'Hero Section')}
+        className={`py-12 px-6 sm:px-8 rounded-2xl ${bgClass || 'bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)]'}`}
+      >
+        {hasMedia ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full min-h-[380px]">
+            {/* Left Content Column */}
+            <div className="flex flex-col items-start text-left gap-3.5">
+              {textElements.map((el) => (
+                <ElementRenderer
+                  key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                  element={el}
+                />
+              ))}
+
+              {buttonElements.length > 0 && (
+                <div className="flex items-center gap-3.5 flex-wrap pt-3">
+                  {buttonElements.map((el) => (
+                    <ElementRenderer
+                      key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                      element={el}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right Media Column */}
+            <div className="w-full flex items-center justify-center">
+              {mediaElements.map((el) => (
+                <ElementRenderer
+                  key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                  element={el}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center text-center max-w-3xl mx-auto gap-4 py-4">
+            {textElements.map((el) => (
+              <ElementRenderer
+                key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                element={el}
+              />
+            ))}
+
+            {buttonElements.length > 0 && (
+              <div className="flex items-center justify-center gap-4 flex-wrap pt-3">
+                {buttonElements.map((el) => (
+                  <ElementRenderer
+                    key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                    element={el}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  // 2. Special Layout: CARDS / FEATURES / PRICING / TESTIMONIALS / GALLERY Sections
+  if (['features', 'cards', 'pricing', 'testimonials', 'gallery'].includes(safeSection.type)) {
+    const gridTypes = new Set(['cards', 'card', 'carousel', 'list']);
+    const gridElements = safeSection.elements.filter((el) => gridTypes.has((el?.type || '').toLowerCase()));
+    const headerElements = safeSection.elements.filter((el) => !gridTypes.has((el?.type || '').toLowerCase()));
+
+    return (
+      <section
+        id={safeSection.id}
+        aria-label={resolveDisplayString(safeSection.props['aria-label'] || `${safeSection.type} section`)}
+        className={`py-12 px-6 sm:px-8 rounded-2xl ${bgClass || 'bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)]'}`}
+      >
+        {headerElements.length > 0 && (
+          <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-2.5 mb-8">
+            {headerElements.map((el) => (
+              <ElementRenderer
+                key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                element={el}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="w-full">
+          {gridElements.map((el) => (
+            <ElementRenderer
+              key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+              element={el}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  // 3. Special Layout: CTA Section
+  if (safeSection.type === 'cta') {
+    return (
+      <section
+        id={safeSection.id}
+        aria-label={resolveDisplayString(safeSection.props['aria-label'] || 'CTA section')}
+        className={`py-12 px-8 rounded-2xl text-center flex flex-col items-center gap-4 max-w-4xl mx-auto my-4 w-full bg-gradient-to-br from-[var(--nm-bg-card)] via-[rgba(108,99,255,0.12)] to-[var(--nm-bg-surface)] border border-[rgba(108,99,255,0.3)] shadow-2xl ${bgClass}`}
+      >
+        {safeSection.elements.map((el) => (
+          <ElementRenderer
+            key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+            element={el}
+          />
+        ))}
+      </section>
+    );
+  }
+
+  // Standard Section Fallback
+  const layoutClasses = getLayoutClasses(safeSection);
+
   return (
     <section
       id={safeSection.id}
       aria-label={resolveDisplayString(safeSection.props['aria-label'] || `${safeSection.type} section`)}
-      className={`py-10 px-6 rounded-[var(--nm-radius)] ${bgClass}`}
+      className={`py-10 px-6 rounded-2xl ${bgClass || 'bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)]'}`}
     >
       <div className={layoutClasses}>
         {safeSection.elements.map((el) => (
