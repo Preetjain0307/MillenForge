@@ -8,7 +8,7 @@
 
 const VALID_ELEMENT_TYPES = new Set([
   'text', 'image', 'button', 'input', 'icon', 'divider', 'custom',
-  'card', 'carousel', 'wizard', 'textfield', 'link', 'list',
+  'card', 'cards', 'carousel', 'wizard', 'textfield', 'link', 'list', 'badge',
 ]);
 
 const VALID_SECTION_TYPES = new Set([

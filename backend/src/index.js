@@ -12,6 +12,7 @@ const healthRoutes = require('./routes/health');
 const generateRoutes = require('./routes/generate');
 const uploadRoutes = require('./routes/upload');
 const pagesRoutes = require('./routes/pages');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -48,6 +49,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/generate', generateRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/pages', pagesRoutes);
+app.use('/api/review', reviewRoutes);
 
 // 404 handler for unmatched API routes
 app.use('/api/*', (_req, res) => {
