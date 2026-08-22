@@ -14,6 +14,9 @@ const { enrichPageImages } = require('../services/imageService');
 const { validateUIPage } = require('../utils/validateUI');
 
 const generate = async (req, res) => {
+  const t0 = Date.now();
+  console.log(`[GENERATION] request received (t=0ms)`);
+
   try {
     const { prompt, pageName, wireframe, existingCode, architectureFlow } = req.body;
 
@@ -31,27 +34,35 @@ const generate = async (req, res) => {
     let rawPage;
 
     if (wireframe && wireframe.filename) {
-      // Wireframe + prompt path (vision)
+      console.log(`[GENERATION] wireframe ready (${Date.now() - t0}ms) — file: "${wireframe.filename}"`);
+      console.log(`[GENERATION] Gemini request started (${Date.now() - t0}ms)`);
       rawPage = await generateUIFromWireframe({
         imagePath: wireframe.filename,
         prompt: prompt.trim(),
         pageName: resolvedPageName,
       });
+      console.log(`[GENERATION] Gemini request completed (${Date.now() - t0}ms)`);
     } else {
-      // Prompt-only path
+      console.log(`[GENERATION] Gemini request started (${Date.now() - t0}ms) — prompt-only`);
       rawPage = await generateUIFromPrompt({
         prompt: prompt.trim(),
         pageName: resolvedPageName,
         existingCode,
         architectureFlow,
       });
+      console.log(`[GENERATION] Gemini request completed (${Date.now() - t0}ms)`);
     }
 
+    console.log(`[GENERATION] response parsed (${Date.now() - t0}ms)`);
+
     // ── Enrich with contextual images ─────────────────────────────────────────
+    console.log(`[GENERATION] image enrichment started (${Date.now() - t0}ms)`);
     const enrichedPage = enrichPageImages(rawPage, prompt);
+    console.log(`[GENERATION] image enrichment completed (${Date.now() - t0}ms)`);
 
     // ── Validate AI output ────────────────────────────────────────────────────
     const validation = validateUIPage(enrichedPage);
+    console.log(`[GENERATION] validation completed (${Date.now() - t0}ms) — valid: ${validation.valid}`);
 
     if (!validation.valid) {
       console.error('[GENERATE] AI output failed validation:', validation.errors);
@@ -70,6 +81,7 @@ const generate = async (req, res) => {
     }
 
     // ── Return validated UIPage ───────────────────────────────────────────────
+    console.log(`[GENERATION] response sent (${Date.now() - t0}ms total)`);
     res.status(200).json({
       success: true,
       message: 'UI generated successfully.',
