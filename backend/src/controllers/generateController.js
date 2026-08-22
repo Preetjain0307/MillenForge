@@ -106,6 +106,22 @@ const generate = async (req, res) => {
       });
     }
 
+    // Model no longer available / wrong model name
+    if (err.message.includes('404') || err.message.includes('no longer available') || err.message.includes('not found')) {
+      return res.status(502).json({
+        success: false,
+        message: 'AI model is unavailable. Check AI_MODEL in backend/.env and ensure it is a valid Gemini model name.',
+      });
+    }
+
+    // API key invalid / unauthenticated
+    if (err.message.includes('401') || err.message.includes('403') || err.message.includes('API_KEY_INVALID') || err.message.includes('UNAUTHENTICATED')) {
+      return res.status(503).json({
+        success: false,
+        message: 'AI service authentication failed. Verify that AI_API_KEY in backend/.env is a valid Google Gemini API key.',
+      });
+    }
+
     // Generic
     res.status(500).json({
       success: false,
