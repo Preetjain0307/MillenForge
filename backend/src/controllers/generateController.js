@@ -1,17 +1,56 @@
 /**
- * Generate controller (Task 3)
+ * Generate controller
  *
  * POST /api/generate
  * Accepts: { prompt, pageName, wireframe?, existingCode?, architectureFlow? }
- * Returns: { success, page (UIPage JSON) }
+ * Returns: { success, page (UIPage JSON), qualityScore, qualityGrade, matchScore, repairsApplied, warnings }
  *
- * All AI-provider logic is isolated in aiService.
- * This controller only handles HTTP, validation, and error mapping.
+ * Pipeline:
+ *   1. Input validation
+ *   2. Gemini AI generation (with model-level fallback)
+ *   3. Image enrichment (contextual Unsplash images)
+ *   4. Generation Quality Gate:
+ *        a. UIPage schema validation
+ *        b. Safe self-healing (missing IDs, fallbacks, invalid types)
+ *        c. Domain intent verification (food → must have menu cards + CTA)
+ *        d. Image relevance guard (SaaS/docs → no food/fashion photos)
+ *        e. Quality score (0–100, threshold 55)
+ *        f. Design-to-prompt match score (threshold 60)
+ *   5. Quality-aware retry (max 2 retries, no infinite loops, preserve best result)
+ *   6. Safe error mapping (no stack traces or API keys in responses)
  */
 
 const { generateUIFromPrompt, generateUIFromWireframe } = require('../services/aiService');
 const { enrichPageImages } = require('../services/imageService');
 const { validateUIPage } = require('../utils/validateUI');
+const { runGenerationQualityGate } = require('../services/generationQualityGate');
+
+/** Maximum quality-aware retry attempts */
+const MAX_RETRIES = 2;
+
+/**
+ * Run one generation + image-enrichment cycle and return the raw enriched page.
+ * Does NOT run the quality gate — caller does that.
+ */
+const runGenerationCycle = async ({ prompt, pageName, wireframe, existingCode, architectureFlow }) => {
+  let rawPage;
+  if (wireframe?.filename) {
+    rawPage = await generateUIFromWireframe({
+      imagePath: wireframe.filename,
+      prompt: prompt.trim(),
+      pageName,
+    });
+  } else {
+    rawPage = await generateUIFromPrompt({
+      prompt: prompt.trim(),
+      pageName,
+      existingCode,
+      architectureFlow,
+    });
+  }
+
+  return enrichPageImages(rawPage, prompt);
+};
 
 const generate = async (req, res) => {
   const t0 = Date.now();
@@ -30,125 +69,135 @@ const generate = async (req, res) => {
 
     const resolvedPageName = (pageName && pageName.trim()) || 'Home';
 
-    // ── Call AI service ───────────────────────────────────────────────────────
-    let rawPage;
+    // ── Generation + Quality Gate Loop (max 1 + 2 retries) ───────────────────
+    let bestResult = null;
+    let attempt = 0;
 
-    if (wireframe && wireframe.filename) {
-      console.log(`[GENERATION] wireframe ready (${Date.now() - t0}ms) — file: "${wireframe.filename}"`);
-      console.log(`[GENERATION] Gemini request started (${Date.now() - t0}ms)`);
-      rawPage = await generateUIFromWireframe({
-        imagePath: wireframe.filename,
-        prompt: prompt.trim(),
+    while (attempt <= MAX_RETRIES) {
+      attempt++;
+      console.log(`[GENERATION] attempt ${attempt}/${MAX_RETRIES + 1} started (${Date.now() - t0}ms)`);
+
+      // 1. Generate & enrich images
+      const enrichedPage = await runGenerationCycle({
+        prompt,
         pageName: resolvedPageName,
-      });
-      console.log(`[GENERATION] Gemini request completed (${Date.now() - t0}ms)`);
-    } else {
-      console.log(`[GENERATION] Gemini request started (${Date.now() - t0}ms) — prompt-only`);
-      rawPage = await generateUIFromPrompt({
-        prompt: prompt.trim(),
-        pageName: resolvedPageName,
+        wireframe,
         existingCode,
         architectureFlow,
       });
-      console.log(`[GENERATION] Gemini request completed (${Date.now() - t0}ms)`);
+      console.log(`[GENERATION] attempt ${attempt} — Gemini completed, images enriched (${Date.now() - t0}ms)`);
+
+      // 2. Run quality gate
+      const gateResult = runGenerationQualityGate(enrichedPage, prompt.trim());
+      console.log(`[GENERATION] attempt ${attempt} — quality gate: passed=${gateResult.passed}, score=${gateResult.qualityScore}, match=${gateResult.matchScore}`);
+
+      // 3. Track best result (highest quality score) across attempts
+      if (!bestResult || gateResult.qualityScore > bestResult.qualityScore) {
+        bestResult = gateResult;
+      }
+
+      // 4. Exit loop if passed, or on final attempt
+      if (gateResult.passed || attempt > MAX_RETRIES) {
+        break;
+      }
+
+      console.log(`[GENERATION] attempt ${attempt} did not pass gate (${gateResult.rejectionReason}) — retrying...`);
     }
 
-    console.log(`[GENERATION] response parsed (${Date.now() - t0}ms)`);
+    // ── Final gate result ─────────────────────────────────────────────────────
+    // Always use bestResult (don't use a worse retry result)
+    const finalGate = bestResult;
+    const finalPage = finalGate.page;
 
-    // ── Enrich with contextual images ─────────────────────────────────────────
-    console.log(`[GENERATION] image enrichment started (${Date.now() - t0}ms)`);
-    const enrichedPage = enrichPageImages(rawPage, prompt);
-    console.log(`[GENERATION] image enrichment completed (${Date.now() - t0}ms)`);
-
-    // ── Validate AI output ────────────────────────────────────────────────────
-    const validation = validateUIPage(enrichedPage);
-    console.log(`[GENERATION] validation completed (${Date.now() - t0}ms) — valid: ${validation.valid}`);
-
-    if (!validation.valid) {
-      console.error('[GENERATE] AI output failed validation:', validation.errors);
+    if (!finalPage) {
       return res.status(502).json({
         success: false,
-        message: 'AI returned an invalid UI structure. Please try again.',
-        errors: validation.errors,
+        message: 'AI returned an invalid UI structure after all attempts. Please try again.',
       });
     }
 
-    // Override page name to match user's requested name
-    validation.page.page = resolvedPageName;
-    validation.page.meta = {
-      ...(validation.page.meta || {}),
-      title: validation.page.meta?.title || resolvedPageName,
-      description: validation.page.meta?.description || `AI generated interface for ${resolvedPageName}`,
+    // ── Attach generation metadata ─────────────────────────────────────────────
+    finalPage.page = resolvedPageName;
+    finalPage.meta = {
+      ...(finalPage.meta || {}),
+      title: finalPage.meta?.title || resolvedPageName,
+      description: finalPage.meta?.description || `AI generated interface for ${resolvedPageName}`,
       domain: resolvedPageName,
       generatedAt: new Date().toISOString(),
-      generationSource: wireframe && wireframe.filename ? 'wireframe+prompt' : 'prompt-only',
-      wireframeUsed: wireframe && wireframe.filename ? wireframe.filename : null,
+      generationSource: wireframe?.filename ? 'wireframe+prompt' : 'prompt-only',
+      wireframeUsed: wireframe?.filename || null,
       promptUsed: prompt.trim().slice(0, 200),
+      qualityScore: finalGate.qualityScore,
+      qualityGrade: finalGate.qualityGrade,
+      matchScore: finalGate.matchScore,
+      repairsApplied: finalGate.repairsApplied?.length || 0,
     };
 
-    if (validation.warnings.length > 0) {
-      console.warn('[GENERATE] Validation warnings:', validation.warnings);
-    }
+    console.log(`[GENERATION] response sent (${Date.now() - t0}ms total, quality=${finalGate.qualityScore}/100, match=${finalGate.matchScore}/100)`);
 
-    // ── Return validated UIPage ───────────────────────────────────────────────
-    console.log(`[GENERATION] response sent (${Date.now() - t0}ms total)`);
     res.status(200).json({
       success: true,
-      message: 'UI generated successfully.',
-      page: validation.page,
-      warnings: validation.warnings.length > 0 ? validation.warnings : undefined,
+      message: finalGate.passed
+        ? 'UI generated successfully.'
+        : `UI generated with quality warnings (score ${finalGate.qualityScore}/100).`,
+      page: finalPage,
+      qualityScore: finalGate.qualityScore,
+      qualityGrade: finalGate.qualityGrade,
+      matchScore: finalGate.matchScore,
+      repairsApplied: finalGate.repairsApplied,
+      warnings: [
+        ...(finalGate.issues || []),
+        ...(finalGate.recommendations || []),
+      ].filter(Boolean).slice(0, 10), // cap at 10 to avoid noise
     });
 
   } catch (err) {
     console.error('[GENERATE] Error:', err.message);
 
-    // Map known errors to user-friendly messages
-    if (err.message.includes('AI_API_KEY')) {
+    // ── Safe error mapping — no stack traces or keys in responses ─────────────
+
+    if (err.message?.includes('AI_API_KEY') || err.message?.includes('GEMINI_API_KEY')) {
       return res.status(503).json({
         success: false,
         message: 'AI service is not configured. Ask your administrator to set AI_API_KEY.',
       });
     }
 
-    if (err.message.includes('not found')) {
-      return res.status(404).json({
-        success: false,
-        message: err.message,
-      });
-    }
-
-    if (err.message.includes('valid JSON') || err.message.includes('JSON')) {
-      return res.status(502).json({
-        success: false,
-        message: 'AI returned a malformed response. Please try again with a different prompt.',
-      });
-    }
-
-    // Rate limit / quota
-    if (err.message.includes('429') || err.message.includes('quota') || err.message.includes('RESOURCE_EXHAUSTED')) {
-      return res.status(429).json({
-        success: false,
-        message: 'AI service rate limit reached. Please wait a moment and try again.',
-      });
-    }
-
-    // Model no longer available / wrong model name
-    if (err.message.includes('404') || err.message.includes('no longer available') || err.message.includes('not found')) {
-      return res.status(502).json({
-        success: false,
-        message: 'AI model is unavailable. Check AI_MODEL in backend/.env and ensure it is a valid Gemini model name.',
-      });
-    }
-
-    // API key invalid / unauthenticated
-    if (err.message.includes('401') || err.message.includes('403') || err.message.includes('API_KEY_INVALID') || err.message.includes('UNAUTHENTICATED')) {
+    if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('API_KEY_INVALID') || err.message?.includes('UNAUTHENTICATED')) {
       return res.status(503).json({
         success: false,
         message: 'AI service authentication failed. Verify that AI_API_KEY in backend/.env is a valid Google Gemini API key.',
       });
     }
 
-    // Generic
+    if (err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED')) {
+      return res.status(429).json({
+        success: false,
+        message: 'AI service rate limit reached. Please wait a moment and try again.',
+      });
+    }
+
+    if (err.message?.includes('ETIMEDOUT') || err.message?.includes('timeout') || err.message?.includes('ECONNRESET')) {
+      return res.status(504).json({
+        success: false,
+        message: 'AI service request timed out. Please try again.',
+      });
+    }
+
+    if (err.message?.includes('valid JSON') || err.message?.includes('JSON') || err.message?.includes('empty response')) {
+      return res.status(502).json({
+        success: false,
+        message: 'AI returned a malformed response. Please try again with a different prompt.',
+      });
+    }
+
+    if (err.message?.includes('not found') || err.message?.includes('no longer available') || err.message?.includes('404')) {
+      return res.status(502).json({
+        success: false,
+        message: 'AI model is unavailable. Check AI_MODEL in backend/.env and ensure it is a valid Gemini model name.',
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'An unexpected error occurred during generation. Please try again.',

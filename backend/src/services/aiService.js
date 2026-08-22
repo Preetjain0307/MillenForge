@@ -117,6 +117,29 @@ DOMAIN & VISUAL GENERATION GUIDELINES:
    - Hero: creative workspace visual (imageQuery: "creative product designer workspace")
    - Project cards: project title, description, category badge ("UI/UX Design", "Branding"), imageQuery ("brand identity design presentation"), "View Project" CTA
 
+7. DOCUMENTATION & DEVELOPER GUIDES (e.g. API docs, SDK references, knowledge bases):
+   - Use a clean two-column layout: sidebar navigation + content area
+   - No hero photography — use code blocks, structured text, breadcrumbs
+   - Sections: Introduction, Quick Start, API Reference, Examples, FAQ
+   - Elements: structured text blocks, code snippets (type: "text", props.tag: "code"), links, search input
+   - Minimal decorative imagery — focus on clarity and developer experience
+
+8. AUTHENTICATION & ONBOARDING PAGES (e.g. login, signup, create account):
+   - Centered layout with a single focused form card
+   - Fields: Email input, Password input (required), optional name/company fields
+   - Social auth buttons (Google, GitHub) with icons
+   - Primary CTA: "Sign Up", "Create Account", "Continue with Email"
+   - Minimal imagery — one tasteful hero background image is acceptable
+   - Include trust signals: privacy note, terms of service link
+
+9. DASHBOARDS (e.g. admin, analytics, product, CRM):
+   - Top navbar with user avatar, notifications, workspace selector
+   - Sidebar navigation with grouped menu items and icons
+   - KPI metric cards with realistic numbers (e.g. "12,483 Active Users", "+8.4% vs last month")
+   - Data visualization placeholders (charts, tables, graphs) using icon + metric card pattern
+   - DO NOT use food, travel, or fashion photography
+   - Action buttons: "Export Report", "Add Record", "View All"
+
 ELEMENT TYPE RULES:
 
 1. TEXT elements
