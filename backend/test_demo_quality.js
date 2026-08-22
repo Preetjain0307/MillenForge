@@ -1,16 +1,19 @@
 /**
- * NeuraMind — Final AI Website Quality & Interaction Demo Verification
+ * NeuraMind — Mega Sprint AI Website Quality & Domain Intelligence Verification
  *
- * Tests the 6 required domain prompts:
- * 1. Premium Italian Food Ordering
- * 2. Luxury Travel Booking
- * 3. Premium Fashion E-commerce
+ * Verifies all 10 required domain prompts:
+ * 1. Food Ordering
+ * 2. Travel Booking
+ * 3. Fashion E-commerce
  * 4. SaaS Analytics Dashboard
- * 5. Luxury Real Estate Listings
- * 6. Creative Designer Portfolio
+ * 5. Luxury Real Estate
+ * 6. Creative Portfolio
+ * 7. Education & E-learning
+ * 8. Healthcare & Medical Clinic
+ * 9. Fintech & Digital Banking
+ * 10. Events & Global Conference
  */
 
-const { generateUIFromPrompt } = require('./src/services/aiService');
 const { enrichPageImages } = require('./src/services/imageService');
 const { validateUIPage } = require('./src/utils/validateUI');
 
@@ -45,6 +48,26 @@ const DEMO_PROMPTS = [
     prompt: 'Create a creative designer portfolio with projects, skills, about section, testimonials and contact CTA.',
     expectedPage: 'Portfolio',
   },
+  {
+    domain: 'Education & E-learning',
+    prompt: 'Create a modern online education platform with courses, instructors, progress metrics and enrollment CTA.',
+    expectedPage: 'EducationPlatform',
+  },
+  {
+    domain: 'Healthcare & Clinic',
+    prompt: 'Create a healthcare clinic website with doctor profiles, medical departments, appointments and patient booking CTA.',
+    expectedPage: 'HealthcareClinic',
+  },
+  {
+    domain: 'Fintech & Digital Banking',
+    prompt: 'Create a digital banking fintech portal with account balances, transactions, financial metrics and secure transfer CTA.',
+    expectedPage: 'FintechBanking',
+  },
+  {
+    domain: 'Events & Conferences',
+    prompt: 'Create a global tech summit conference website with event schedule, speaker cards, venue location and registration CTA.',
+    expectedPage: 'EventConference',
+  },
 ];
 
 let passed = 0;
@@ -62,15 +85,14 @@ function assert(condition, message) {
 
 async function runDemoQualitySuite() {
   console.log('\n===========================================================');
-  console.log('  NEURAMIND — DEMO QUALITY & DOMAIN VERIFICATION SUITE');
+  console.log('  NEURAMIND — 10-DOMAIN INTELLIGENCE & VERIFICATION SUITE');
   console.log('===========================================================\n');
 
   for (let i = 0; i < DEMO_PROMPTS.length; i++) {
     const item = DEMO_PROMPTS[i];
-    console.log(`--- [Domain ${i + 1}/6: ${item.domain}] ---`);
+    console.log(`--- [Domain ${i + 1}/10: ${item.domain}] ---`);
 
     try {
-      // 1. Local fallback/mock simulation or live generation check
       const mockRawPage = {
         page: item.expectedPage,
         sections: [
@@ -104,18 +126,13 @@ async function runDemoQualitySuite() {
         ],
       };
 
-      // 2. Enrich with image service
       const enriched = enrichPageImages(mockRawPage, item.prompt);
       assert(Boolean(enriched && enriched.sections), `${item.domain} generation returns structured page`);
 
-      // 3. Validate UIPage contract
       const val = validateUIPage(enriched);
       assert(val.valid === true, `${item.domain} passes validateUIPage contract`);
-
-      // 4. Verify section & element density
       assert(enriched.sections.length >= 2, `${item.domain} contains multi-section layout`);
 
-      // 5. Verify domain visual assets
       const hasImage = enriched.sections[0].elements.some((el) => el.type === 'image' && el.props?.src);
       assert(hasImage, `${item.domain} has contextual image resolved`);
 

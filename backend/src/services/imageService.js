@@ -154,9 +154,43 @@ const CURATED_IMAGE_CATALOG = {
     src: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
     alt: 'Clean and modern medical clinic reception area',
   },
+  doctor_consultation: {
+    src: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=800&q=80',
+    alt: 'Professional doctor providing consultation to patient',
+  },
   fitness: {
     src: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
     alt: 'Modern boutique fitness and wellness gym studio',
+  },
+
+  // Education & Learning
+  classroom: {
+    src: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Modern university lecture hall and interactive classroom',
+  },
+  online_course: {
+    src: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=800&q=80',
+    alt: 'Student studying online learning course on laptop',
+  },
+
+  // Fintech & Banking
+  financial_analytics: {
+    src: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80',
+    alt: 'Digital banking mobile dashboard and financial analytics',
+  },
+  crypto_wallet: {
+    src: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&w=800&q=80',
+    alt: 'Secure cryptocurrency digital asset management interface',
+  },
+
+  // Events & Conferences
+  conference_stage: {
+    src: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Global tech keynote conference stage and audience',
+  },
+  concert_festival: {
+    src: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80',
+    alt: 'Live music festival concert light show and crowd',
   },
 };
 
@@ -200,14 +234,23 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
   if (q.includes('home') || q.includes('house') || q.includes('property') || q.includes('estate') || q.includes('apartment') || q.includes('villa')) {
     return CURATED_IMAGE_CATALOG.villa;
   }
+  if (q.includes('learn') || q.includes('course') || q.includes('education') || q.includes('class') || q.includes('school') || q.includes('university')) {
+    return CURATED_IMAGE_CATALOG.classroom;
+  }
+  if (q.includes('health') || q.includes('med') || q.includes('doctor') || q.includes('clinic') || q.includes('patient') || q.includes('care')) {
+    return CURATED_IMAGE_CATALOG.doctor_consultation;
+  }
+  if (q.includes('fintech') || q.includes('bank') || q.includes('finance') || q.includes('money') || q.includes('crypto') || q.includes('wallet')) {
+    return CURATED_IMAGE_CATALOG.financial_analytics;
+  }
+  if (q.includes('event') || q.includes('conference') || q.includes('concert') || q.includes('ticket') || q.includes('summit') || q.includes('festival')) {
+    return CURATED_IMAGE_CATALOG.conference_stage;
+  }
   if (q.includes('tech') || q.includes('saas') || q.includes('app') || q.includes('software') || q.includes('platform')) {
     return CURATED_IMAGE_CATALOG.workspace;
   }
   if (q.includes('code') || q.includes('develop') || q.includes('api') || q.includes('program')) {
     return CURATED_IMAGE_CATALOG.developer_code;
-  }
-  if (q.includes('health') || q.includes('med') || q.includes('doctor') || q.includes('care')) {
-    return CURATED_IMAGE_CATALOG.clinic;
   }
 
   // 3. Fallback placeholder with high aesthetic contrast
@@ -239,6 +282,9 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
   const isFashionSite = promptLower.includes('fashion') || promptLower.includes('ecommerce') || promptLower.includes('store') || promptLower.includes('shop') || promptLower.includes('clothing');
   const isRealEstate = promptLower.includes('estate') || promptLower.includes('property') || promptLower.includes('house') || promptLower.includes('villa');
   const isPortfolio = promptLower.includes('portfolio') || promptLower.includes('creative') || promptLower.includes('designer') || promptLower.includes('artist') || promptLower.includes('photographer');
+  const isEducation = promptLower.includes('education') || promptLower.includes('course') || promptLower.includes('learn') || promptLower.includes('school') || promptLower.includes('university');
+  const isHealthcare = promptLower.includes('health') || promptLower.includes('doctor') || promptLower.includes('clinic') || promptLower.includes('medical') || promptLower.includes('care');
+  const isEvents = promptLower.includes('event') || promptLower.includes('conference') || promptLower.includes('concert') || promptLower.includes('ticket') || promptLower.includes('festival');
 
   const enrichedSections = uiPage.sections.map((section) => {
     if (!section || !Array.isArray(section.elements)) return section;
@@ -281,8 +327,8 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
             const existingItemSrc = item.src || item.image || '';
             const itemQuery = item.imageQuery || item.title || `${userPrompt} item ${idx + 1}`;
 
-            // If it's a food, travel, fashion, real estate, or portfolio site, ensure card has appropriate photo
-            if (isFoodSite || isTravelSite || isFashionSite || isRealEstate || isPortfolio || existingItemSrc.includes('placehold.co')) {
+            // If it's a food, travel, fashion, real estate, portfolio, education, healthcare, or event site, ensure card has appropriate photo
+            if (isFoodSite || isTravelSite || isFashionSite || isRealEstate || isPortfolio || isEducation || isHealthcare || isEvents || existingItemSrc.includes('placehold.co')) {
               const resolved = resolveContextualImage(itemQuery, item.title || 'Card image');
               return {
                 ...item,

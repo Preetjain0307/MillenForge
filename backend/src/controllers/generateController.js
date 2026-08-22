@@ -75,6 +75,16 @@ const generate = async (req, res) => {
 
     // Override page name to match user's requested name
     validation.page.page = resolvedPageName;
+    validation.page.meta = {
+      ...(validation.page.meta || {}),
+      title: validation.page.meta?.title || resolvedPageName,
+      description: validation.page.meta?.description || `AI generated interface for ${resolvedPageName}`,
+      domain: resolvedPageName,
+      generatedAt: new Date().toISOString(),
+      generationSource: wireframe && wireframe.filename ? 'wireframe+prompt' : 'prompt-only',
+      wireframeUsed: wireframe && wireframe.filename ? wireframe.filename : null,
+      promptUsed: prompt.trim().slice(0, 200),
+    };
 
     if (validation.warnings.length > 0) {
       console.warn('[GENERATE] Validation warnings:', validation.warnings);
