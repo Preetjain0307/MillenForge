@@ -101,32 +101,33 @@ export const resolveCmsContent = (content, fallback = '', preferredKey = 'text')
  * @returns {import('./ui.js').UIElement & { items?: CmsRepeatingItem[] }}
  */
 export const normalizeToUiElement = (raw = {}) => {
-  const elementId = typeof raw.id === 'string' && raw.id.trim() !== '' ? raw.id.trim() : `el-${Date.now()}`;
-  const type = typeof raw.type === 'string' ? raw.type.toLowerCase().trim() : ELEMENT_TYPES.TEXT;
-  const fallback = typeof raw.fallback === 'string' ? raw.fallback : '';
+  const safeRaw = (raw && typeof raw === 'object') ? raw : {};
+  const elementId = typeof safeRaw.id === 'string' && safeRaw.id.trim() !== '' ? safeRaw.id.trim() : `el-${Date.now()}`;
+  const type = typeof safeRaw.type === 'string' ? safeRaw.type.toLowerCase().trim() : ELEMENT_TYPES.TEXT;
+  const fallback = typeof safeRaw.fallback === 'string' ? safeRaw.fallback : '';
 
   // Extract string content suitable for canonical UIElement
-  const stringContent = resolveCmsContent(raw.content, fallback);
+  const stringContent = resolveCmsContent(safeRaw.content, fallback);
 
   // Extract repeating items if provided
-  const items = Array.isArray(raw.items)
-    ? raw.items
-    : (Array.isArray(raw.props?.items) ? raw.props.items : undefined);
+  const items = Array.isArray(safeRaw.items)
+    ? safeRaw.items
+    : (Array.isArray(safeRaw.props?.items) ? safeRaw.props.items : undefined);
 
   // Merge presentation props
-  const baseProps = (raw.props && typeof raw.props === 'object') ? { ...raw.props } : {};
+  const baseProps = (safeRaw.props && typeof safeRaw.props === 'object') ? { ...safeRaw.props } : {};
   if (items) {
     baseProps.items = items;
   }
 
   // Preserve structured content in props for CMS-aware consumers
-  if (raw.content && typeof raw.content === 'object') {
-    baseProps.cmsContent = raw.content;
-    if (raw.content.src && !baseProps.src) baseProps.src = raw.content.src;
-    if (raw.content.alt && !baseProps.alt) baseProps.alt = raw.content.alt;
-    if (raw.content.label && !baseProps.label) baseProps.label = raw.content.label;
-    if (raw.content.title && !baseProps.title) baseProps.title = raw.content.title;
-    if (raw.content.placeholder && !baseProps.placeholder) baseProps.placeholder = raw.content.placeholder;
+  if (safeRaw.content && typeof safeRaw.content === 'object') {
+    baseProps.cmsContent = safeRaw.content;
+    if (safeRaw.content.src && !baseProps.src) baseProps.src = safeRaw.content.src;
+    if (safeRaw.content.alt && !baseProps.alt) baseProps.alt = safeRaw.content.alt;
+    if (safeRaw.content.label && !baseProps.label) baseProps.label = safeRaw.content.label;
+    if (safeRaw.content.title && !baseProps.title) baseProps.title = safeRaw.content.title;
+    if (safeRaw.content.placeholder && !baseProps.placeholder) baseProps.placeholder = safeRaw.content.placeholder;
   }
 
   const result = createElement({

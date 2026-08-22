@@ -143,6 +143,13 @@ runTest('6. Fallback Behavior: Gracefully uses fallback when content is empty or
   assert.equal(normalizedFallback.content, 'Flexible Pricing for Every Team');
   assert.equal(normalizedFallback.fallback, 'Flexible Pricing for Every Team');
 
+  // Direct null element normalization test (null safety regression)
+  const normalizedNull = normalizeToUiElement(null);
+  assert.ok(normalizedNull.id);
+  assert.equal(normalizedNull.type, ELEMENT_TYPES.TEXT);
+  assert.equal(normalizedNull.content, '');
+  assert.equal(normalizedNull.fallback, '');
+
   const defaults = getDefaultCmsContent(ELEMENT_TYPES.TEXT);
   assert.ok(defaults.content);
   assert.ok(defaults.fallback);
