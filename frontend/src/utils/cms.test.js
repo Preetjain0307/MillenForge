@@ -21,6 +21,7 @@ import {
   normalizeToUiElement,
   extractCmsData,
   bindCmsData,
+  updateElementContent,
 } from '../types/cms.js';
 import {
   generateStableId,
@@ -193,6 +194,43 @@ runTest('7. Stable IDs & CMS Data Binding: Deterministic key generation & live r
   const cardsEl = featureSection.elements.find((el) => el.id === 'feature-cards');
   assert.equal(cardsEl.items.length, 2);
   assert.equal(cardsEl.items[0].title, 'Ultra High Performance');
+});
+
+// ─── TEST 8: updateElementContent Helper ────────────────────────────────────
+runTest('8. updateElementContent: Pure helper updates single element by ID', () => {
+  const originalPage = EXAMPLE_CMS_BOUND_PAGE;
+  const updatedPage = updateElementContent(originalPage, 'hero-title', 'Brand New Hero Title');
+
+  const updatedHeroTitle = updatedPage.sections[0].elements.find((el) => el.id === 'hero-title');
+  assert.equal(updatedHeroTitle.content, 'Brand New Hero Title');
+
+  // Verify object content update
+  const updatedWithObj = updateElementContent(originalPage, 'hero-cta-button', { label: 'Click to Start' });
+  const updatedBtn = updatedWithObj.sections[0].elements.find((el) => el.id === 'hero-cta-button');
+  assert.equal(updatedBtn.content, 'Click to Start');
+});
+
+// ─── TEST 9: Immutability ───────────────────────────────────────────────────
+runTest('9. Immutability: Updating element creates a new structure without mutating original', () => {
+  const originalTitleBefore = EXAMPLE_CMS_BOUND_PAGE.sections[0].elements[0].content;
+  const updated = updateElementContent(EXAMPLE_CMS_BOUND_PAGE, 'hero-title', 'Mutated Title');
+
+  // Original page must NOT be mutated
+  assert.notEqual(updated, EXAMPLE_CMS_BOUND_PAGE);
+  assert.notEqual(updated.sections, EXAMPLE_CMS_BOUND_PAGE.sections);
+  assert.equal(
+    typeof originalTitleBefore === 'object' ? originalTitleBefore.text : originalTitleBefore,
+    typeof EXAMPLE_CMS_BOUND_PAGE.sections[0].elements[0].content === 'object'
+      ? EXAMPLE_CMS_BOUND_PAGE.sections[0].elements[0].content.text
+      : EXAMPLE_CMS_BOUND_PAGE.sections[0].elements[0].content
+  );
+  // Unrelated elements must remain intact
+  const originalSubtitle = EXAMPLE_CMS_BOUND_PAGE.sections[0].elements[1].content;
+  const updatedSubtitle = updated.sections[0].elements[1].content;
+  assert.equal(
+    typeof originalSubtitle === 'object' ? originalSubtitle.text : originalSubtitle,
+    typeof updatedSubtitle === 'object' ? updatedSubtitle.text : updatedSubtitle
+  );
 });
 
 console.log(`\n========================================`);

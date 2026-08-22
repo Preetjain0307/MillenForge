@@ -247,6 +247,21 @@ export const bindCmsData = (uiPage, cmsDataMap = {}) => {
 };
 
 /**
+ * Pure function: Updates a single element's content immutably by matching Element ID.
+ * Returns updated UI data without mutating the original state.
+ *
+ * @param {import('./ui.js').UIPage} page - The source UIPage
+ * @param {string} elementId               - Target element ID
+ * @param {CmsContent | CmsRepeatingItem[] | string} newContent - New content string, object, or items array
+ * @returns {import('./ui.js').UIPage}     - New UIPage with updated element content
+ */
+export const updateElementContent = (page, elementId, newContent) => {
+  if (!page || typeof page !== 'object') return page;
+  if (!elementId) return page;
+  return bindCmsData(page, { [elementId]: newContent });
+};
+
+/**
  * Creates a CMS Element with guaranteed stable structure and defaults.
  *
  * @param {Partial<CmsElement>} overrides
