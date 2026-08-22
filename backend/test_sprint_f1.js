@@ -12,9 +12,9 @@
  * 8. Task 8: Validation contract via validateUIPage & validateUiPage
  */
 
-require('dotenv').config();
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const http = require('http');
 
 const { validateUIPage } = require('./src/utils/validateUI.js');

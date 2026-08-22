@@ -259,30 +259,68 @@ const buildGenerationConfig = (model) => {
  * @param {string} [params.architectureFlow]
  * @returns {Promise<object>} parsed UIPage JSON
  */
+const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn) => {
+  const fallbackModels = [primaryModel, 'gemini-1.5-flash', 'gemini-2.5-flash'].filter(
+    (m, i, arr) => arr.indexOf(m) === i
+  );
+
+  let lastError;
+  for (const modelName of fallbackModels) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction: SYSTEM_PROMPT,
+      });
+
+      const { contents, config } = buildRequestFn(modelName);
+      const result = await model.generateContent({
+        contents,
+        generationConfig: config,
+      });
+
+      const text = result.response.text();
+      console.log(`[AI] Response generated using model "${modelName}" (${text.length} chars)`);
+      return extractJSON(text);
+    } catch (err) {
+      lastError = err;
+      const isQuotaError =
+        err.message.includes('429') ||
+        err.message.includes('quota') ||
+        err.message.includes('RESOURCE_EXHAUSTED');
+
+      if (isQuotaError && modelName !== fallbackModels[fallbackModels.length - 1]) {
+        console.warn(`[AI] Quota/Rate limit hit on "${modelName}" — attempting fallback model...`);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+};
+
+/**
+ * Generate a UIPage from a text prompt (no wireframe).
+ *
+ * @param {object} params
+ * @param {string} params.prompt
+ * @param {string} [params.pageName]
+ * @param {string} [params.existingCode]
+ * @param {string} [params.architectureFlow]
+ * @returns {Promise<object>} parsed UIPage JSON
+ */
 const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
   const config = getConfig();
   console.log(`[AI] generateUIFromPrompt — model: ${config.model}, page: "${pageName || 'Home'}"`);
 
   const genAI = new GoogleGenerativeAI(config.apiKey);
-  const model = genAI.getGenerativeModel({
-    model: config.model,
-    systemInstruction: SYSTEM_PROMPT,
-  });
-
   let userMessage = `Generate a complete UI page named "${pageName || 'Home'}".\n\nUser prompt:\n${prompt}`;
   if (existingCode) userMessage += `\n\nExisting code context (use as reference for styling/structure):\n${existingCode}`;
   if (architectureFlow) userMessage += `\n\nArchitecture / user flow:\n${architectureFlow}`;
 
-  const result = await model.generateContent({
-    contents: [
-      { role: 'user', parts: [{ text: userMessage }] },
-    ],
-    generationConfig: buildGenerationConfig(config.model),
-  });
-
-  const text = result.response.text();
-  console.log(`[AI] Raw response length: ${text.length} chars`);
-  return extractJSON(text);
+  return executeWithModelFallback(genAI, config.model, (modelName) => ({
+    contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+    config: buildGenerationConfig(modelName),
+  }));
 };
 
 /**
@@ -299,32 +337,20 @@ const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
   console.log(`[AI] generateUIFromWireframe — model: ${config.model}, image: "${imagePath}", page: "${pageName || 'Home'}"`);
 
   const genAI = new GoogleGenerativeAI(config.apiKey);
-  const model = genAI.getGenerativeModel({
-    model: config.model,
-    systemInstruction: SYSTEM_PROMPT,
-  });
-
   const imagePart = imageFileToPart(imagePath);
 
   let userMessage = `Analyse this wireframe image carefully and generate a structured UI page named "${pageName || 'Home'}" that faithfully reproduces its layout, sections, and component hierarchy.`;
   if (prompt) userMessage += `\n\nAdditional instructions from the user:\n${prompt}`;
 
-  const result = await model.generateContent({
+  return executeWithModelFallback(genAI, config.model, (modelName) => ({
     contents: [
       {
         role: 'user',
-        parts: [
-          { text: userMessage },
-          imagePart,
-        ],
+        parts: [{ text: userMessage }, imagePart],
       },
     ],
-    generationConfig: buildGenerationConfig(config.model),
-  });
-
-  const text = result.response.text();
-  console.log(`[AI] Raw response length: ${text.length} chars`);
-  return extractJSON(text);
+    config: buildGenerationConfig(modelName),
+  }));
 };
 
 module.exports = { generateUIFromPrompt, generateUIFromWireframe };

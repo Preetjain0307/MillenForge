@@ -3,7 +3,8 @@
  * Run: node test_pipeline.js
  */
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const { validateUIPage } = require('./src/utils/validateUI');
 
