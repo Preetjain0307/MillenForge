@@ -7,6 +7,7 @@ import GeneratePage from './pages/GeneratePage';
 import PreviewPage from './pages/PreviewPage';
 import NotFoundPage from './pages/NotFoundPage';
 import UIRendererTestPage from './pages/UIRendererTestPage';
+import CmsEditorTestPage from './pages/CmsEditorTestPage';
 
 function App() {
   return (
@@ -20,6 +21,8 @@ function App() {
           <Route path="/preview/:pageName" element={<PreviewPage />} />
           {/* Dev-only renderer test page */}
           <Route path="/renderer-test" element={<UIRendererTestPage />} />
+          {/* Dev-only CMS editor test page */}
+          <Route path="/cms-editor-test" element={<CmsEditorTestPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
