@@ -105,10 +105,20 @@ const ELEMENT_REGISTRY = {
     const ALLOWED_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'label', 'strong', 'em'];
     const Tag = ALLOWED_TAGS.includes(props.tag) ? props.tag : 'p';
 
+    const tagClasses = {
+      h1: 'text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight nm-gradient-text leading-tight mb-3',
+      h2: 'text-2xl sm:text-3xl font-bold tracking-tight text-[var(--nm-text-primary)] mb-2.5',
+      h3: 'text-xl sm:text-2xl font-bold text-[var(--nm-text-primary)] mb-2',
+      h4: 'text-lg font-semibold text-[var(--nm-text-primary)]',
+      p: 'text-sm sm:text-base text-[var(--nm-text-secondary)] leading-relaxed',
+      span: 'text-sm text-[var(--nm-text-secondary)]',
+      label: 'text-xs font-semibold text-[var(--nm-text-muted)] uppercase tracking-wider',
+    }[Tag] || 'text-[var(--nm-text-primary)] leading-relaxed';
+
     return (
       <Tag
         id={element.id}
-        className={`text-[var(--nm-text-primary)] leading-relaxed ${props.className || ''}`}
+        className={`${tagClasses} ${props.className || ''}`}
       >
         {display || <span className="text-[var(--nm-text-muted)] italic">(empty text)</span>}
       </Tag>
@@ -237,42 +247,51 @@ const ELEMENT_REGISTRY = {
     return (
       <article
         id={element.id}
-        className={`nm-card p-5 flex flex-col gap-3 h-full transition-all duration-200 hover:border-[var(--nm-accent)] ${props.className || ''}`}
+        className={`group relative overflow-hidden rounded-2xl border border-[var(--nm-border-subtle)] bg-gradient-to-b from-[var(--nm-bg-card)] to-[var(--nm-bg-surface)] p-6 flex flex-col gap-4 h-full transition-all duration-300 hover:-translate-y-1.5 hover:border-[var(--nm-accent)] hover:shadow-[0_12px_36px_var(--nm-accent-glow)] ${props.className || ''}`}
         aria-label={title || description || 'Card'}
       >
         {/* Card Top Image if present (for food/travel/product cards) */}
         {imgSrc && (
-          <div className="w-full h-44 rounded-t-[var(--nm-radius-sm)] -mt-5 -mx-5 mb-2 overflow-hidden bg-[var(--nm-bg-surface)] self-center">
+          <div className="w-full h-48 sm:h-52 rounded-xl -mt-6 -mx-6 mb-1 overflow-hidden bg-[var(--nm-bg-surface)] self-center relative">
             <img
               src={imgSrc}
               alt={imgAlt}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
             />
+            {badge && (
+              <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold font-mono bg-black/70 backdrop-blur-md text-[var(--nm-accent-light)] border border-[var(--nm-border)] shadow-md">
+                {badge}
+              </span>
+            )}
           </div>
         )}
 
-        {/* Badge & Icon Header */}
-        <div className="flex items-center justify-between gap-2">
-          {icon && (
-            <div
-              className="w-10 h-10 rounded-lg bg-[var(--nm-accent-glow)] flex items-center justify-center text-[var(--nm-accent-light)]"
-              aria-hidden="true"
-            >
-              <i className={`${icon} text-lg`} />
-            </div>
-          )}
-          {badge && (
-            <span className="nm-badge ml-auto">{badge}</span>
-          )}
-        </div>
+        {/* Badge & Icon Header (if no top image) */}
+        {!imgSrc && (badge || icon) && (
+          <div className="flex items-center justify-between gap-2">
+            {icon && (
+              <div
+                className="w-11 h-11 rounded-xl bg-[rgba(108,99,255,0.15)] border border-[rgba(108,99,255,0.3)] flex items-center justify-center text-[var(--nm-accent-light)] shadow-sm"
+                aria-hidden="true"
+              >
+                <i className={`${icon} text-xl`} />
+              </div>
+            )}
+            {badge && (
+              <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] border border-[var(--nm-border)] ml-auto">
+                {badge}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Card Title */}
         {title && (
-          <h4 className="font-semibold text-[var(--nm-text-primary)] text-base leading-snug">
+          <h4 className="font-bold text-[var(--nm-text-primary)] text-lg leading-snug tracking-tight">
             {title}
           </h4>
         )}
@@ -286,11 +305,14 @@ const ELEMENT_REGISTRY = {
 
         {/* Price & Action Footer (for food menu / products / bookings) */}
         {price && (
-          <div className="flex items-center justify-between mt-auto pt-3 border-t border-[var(--nm-border-subtle)]">
-            <span className="font-bold text-base text-[var(--nm-accent-light)] font-mono">
-              {price}
-            </span>
-            <span className="text-xs px-2.5 py-1 rounded bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] font-medium">
+          <div className="flex items-center justify-between mt-auto pt-4 border-t border-[var(--nm-border-subtle)]">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-[var(--nm-text-muted)] font-semibold uppercase tracking-wider">Price</span>
+              <span className="font-extrabold text-lg text-[var(--nm-accent-light)] font-mono">
+                {price}
+              </span>
+            </div>
+            <span className="px-3.5 py-1.5 rounded-lg bg-[var(--nm-accent)] text-white font-semibold text-xs transition-all group-hover:shadow-[0_0_16px_var(--nm-accent-glow)]">
               Select
             </span>
           </div>
