@@ -46,6 +46,12 @@ export const ELEMENT_TYPES = /** @type {const} */ ({
   IMAGE: 'image',
   BUTTON: 'button',
   INPUT: 'input',
+  TEXTFIELD: 'textfield',
+  CARD: 'card',
+  CARDS: 'cards',
+  CAROUSEL: 'carousel',
+  LIST: 'list',
+  BADGE: 'badge',
   ICON: 'icon',
   DIVIDER: 'divider',
   CUSTOM: 'custom',
@@ -81,6 +87,29 @@ export const createElement = (overrides = {}) => ({
   props: {},
   ...overrides,
 });
+
+/**
+ * Create a repeating UIElement (e.g. cards, carousel, list) with data items array.
+ * Ensures items are accessible both directly on element and inside props for maximum renderer compatibility.
+ * @param {Partial<UIElement> & { items?: any[] }} overrides
+ * @returns {UIElement}
+ */
+export const createRepeatingElement = (overrides = {}) => {
+  const items = overrides.items || overrides.props?.items || [];
+  const { props = {}, ...restOverrides } = overrides;
+  return {
+    id: uid('repeat'),
+    type: ELEMENT_TYPES.CARDS,
+    content: '',
+    fallback: '',
+    items,
+    ...restOverrides,
+    props: {
+      items,
+      ...props,
+    },
+  };
+};
 
 /**
  * Create a UISection with required defaults.
