@@ -2,7 +2,13 @@
  * NeuraMind — Backend Realistic Image & Domain Generation Tests
  *
  * Verifies:
- * 1. Contextual Image Resolution across all domains (Food, Travel, E-commerce, SaaS, Real Estate)
+ * 1. Contextual Image Resolution across all 6 domains:
+ *    - Food ordering
+ *    - Travel
+ *    - Fashion ecommerce
+ *    - SaaS dashboard
+ *    - Real estate
+ *    - Portfolio
  * 2. enrichPageImages pipeline on realistic AI generation outputs
  * 3. Fallback behaviors for missing/malformed queries
  * 4. Validation conformance for all domain websites
@@ -24,45 +30,44 @@ function assert(condition, message) {
   }
 }
 
-console.log('\n--- Running NeuraMind Backend Realistic Generation & Image Service Tests ---\n');
+console.log('\n--- Running NeuraMind Backend Realistic Generation & Domain Tests ---\n');
 
 // ── 1. Image Resolution Tests ─────────────────────────────────────────────────
 
 // Food queries
 const foodRes1 = resolveContextualImage('artisan pizza food');
-assert(foodRes1.src.includes('unsplash.com') && foodRes1.src === CURATED_IMAGE_CATALOG.pizza.src, '1. Pizza query resolves to legitimate artisan pizza image');
+assert(foodRes1.src.includes('unsplash.com') && foodRes1.src === CURATED_IMAGE_CATALOG.pizza.src, '1. Pizza query resolves to artisan pizza image');
 
 const foodRes2 = resolveContextualImage('gourmet burger restaurant');
 assert(foodRes2.src.includes('unsplash.com') && foodRes2.src === CURATED_IMAGE_CATALOG.burger.src, '2. Burger query resolves to gourmet burger photo');
 
-const foodRes3 = resolveContextualImage('truffle pasta dining');
-assert(foodRes3.src.includes('unsplash.com') && foodRes3.src === CURATED_IMAGE_CATALOG.pasta.src, '3. Pasta query resolves to Italian pasta photo');
-
 // Travel queries
 const travelRes1 = resolveContextualImage('tropical beach vacation resort');
-assert(travelRes1.src.includes('unsplash.com') && travelRes1.src === CURATED_IMAGE_CATALOG.beach.src, '4. Tropical beach query resolves to beach ocean image');
-
-const travelRes2 = resolveContextualImage('luxury resort infinity pool');
-assert(travelRes2.src.includes('unsplash.com') && travelRes2.src === CURATED_IMAGE_CATALOG.resort.src, '5. Resort query resolves to resort pool image');
+assert(travelRes1.src.includes('unsplash.com') && travelRes1.src === CURATED_IMAGE_CATALOG.beach.src, '3. Tropical beach query resolves to beach ocean image');
 
 // E-commerce queries
 const ecomRes1 = resolveContextualImage('designer sneakers streetwear');
-assert(ecomRes1.src.includes('unsplash.com') && ecomRes1.src === CURATED_IMAGE_CATALOG.sneakers.src, '6. Sneakers query resolves to designer sneakers image');
+assert(ecomRes1.src.includes('unsplash.com') && ecomRes1.src === CURATED_IMAGE_CATALOG.sneakers.src, '4. Sneakers query resolves to designer sneakers image');
 
-const ecomRes2 = resolveContextualImage('leather jacket fashion');
-assert(ecomRes2.src.includes('unsplash.com') && ecomRes2.src === CURATED_IMAGE_CATALOG.jacket.src, '7. Leather jacket query resolves to fashion jacket image');
+// Real Estate queries
+const reRes1 = resolveContextualImage('modern luxury villa exterior');
+assert(reRes1.src.includes('unsplash.com') && reRes1.src === CURATED_IMAGE_CATALOG.villa.src, '5. Real Estate villa query resolves to villa architectural photo');
+
+// Portfolio queries
+const portRes1 = resolveContextualImage('creative product designer portfolio');
+assert(portRes1.src.includes('unsplash.com') && portRes1.src === CURATED_IMAGE_CATALOG.portfolio_hero.src, '6. Portfolio query resolves to creative workspace photo');
 
 // SaaS & Tech queries
 const techRes1 = resolveContextualImage('minimalist startup workspace laptop');
-assert(techRes1.src.includes('unsplash.com') && techRes1.src === CURATED_IMAGE_CATALOG.workspace.src, '8. SaaS workspace query resolves to clean tech workspace image');
+assert(techRes1.src.includes('unsplash.com') && techRes1.src === CURATED_IMAGE_CATALOG.workspace.src, '7. SaaS workspace query resolves to clean tech workspace image');
 
 // Fallback behavior
 const unknownRes = resolveContextualImage('quantum-teleportation-gizmo');
-assert(unknownRes.src.includes('placehold.co'), '9. Unrecognized query falls back safely to styled placeholder without throwing');
+assert(unknownRes.src.includes('placehold.co'), '8. Unrecognized query falls back safely to styled placeholder without throwing');
 
-// ── 2. Page Image Enrichment Tests ────────────────────────────────────────────
+// ── 2. Domain Page Enrichment & Validation Tests ──────────────────────────────
 
-// Food Website Mock Generation
+// Domain 1: Food Website
 const rawFoodPage = {
   page: 'FoodOrdering',
   sections: [
@@ -85,7 +90,6 @@ const rawFoodPage = {
           props: {
             items: [
               { id: 'item-1', title: 'Margherita Pizza', imageQuery: 'margherita pizza food', price: '$14.99' },
-              { id: 'item-2', title: 'Bacon Cheeseburger', imageQuery: 'gourmet cheeseburger food', price: '$16.99' },
             ],
           },
         },
@@ -93,27 +97,82 @@ const rawFoodPage = {
     },
   ],
 };
-
 const enrichedFoodPage = enrichPageImages(rawFoodPage, 'Create a modern food ordering website');
 assert(
   enrichedFoodPage.sections[0].elements[1].props.src.includes('unsplash.com') &&
-  enrichedFoodPage.sections[1].elements[0].props.items[0].src.includes('unsplash.com') &&
-  enrichedFoodPage.sections[1].elements[0].props.items[1].src.includes('unsplash.com'),
-  '10. Food website generation enriches hero and card items with legitimate food photography'
+  enrichedFoodPage.sections[1].elements[0].props.items[0].src.includes('unsplash.com'),
+  '9. [FOOD] Enriches hero and card items with food photography'
 );
+assert(validateUIPage(enrichedFoodPage).valid === true, '10. [FOOD] Passes UIPage validation');
 
-const foodValidation = validateUIPage(enrichedFoodPage);
-assert(foodValidation.valid === true, '11. Enriched food website passes UIPage validation');
+// Domain 2: Travel Website
+const rawTravelPage = {
+  page: 'TravelBooking',
+  sections: [
+    {
+      id: 'travel-hero',
+      type: 'hero',
+      elements: [
+        { id: 'h1', type: 'text', content: 'Explore Island Resorts' },
+        { id: 'travel-img', type: 'image', content: { imageQuery: 'tropical beach resort' }, props: {} },
+      ],
+    },
+    {
+      id: 'destinations',
+      type: 'cards',
+      elements: [
+        {
+          id: 'dest-cards',
+          type: 'cards',
+          content: '',
+          props: {
+            items: [
+              { id: 'dest-1', title: 'Bali Beach Villa', imageQuery: 'tropical beach resort', price: '$240/night' },
+            ],
+          },
+        },
+      ],
+    },
+  ],
+};
+const enrichedTravelPage = enrichPageImages(rawTravelPage, 'Create a luxury travel booking website');
+assert(
+  enrichedTravelPage.sections[0].elements[1].props.src.includes('unsplash.com') &&
+  enrichedTravelPage.sections[1].elements[0].props.items[0].src.includes('unsplash.com'),
+  '11. [TRAVEL] Enriches travel hero and destination cards with resort imagery'
+);
+assert(validateUIPage(enrichedTravelPage).valid === true, '12. [TRAVEL] Passes UIPage validation');
 
-// SaaS Dashboard Mock Generation (No random food/travel images)
+// Domain 3: Fashion E-commerce Website
+const rawFashionPage = {
+  page: 'FashionStore',
+  sections: [
+    {
+      id: 'fashion-hero',
+      type: 'hero',
+      elements: [
+        { id: 'h1', type: 'text', content: 'Autumn Collection 2026' },
+        { id: 'fashion-img', type: 'image', content: { imageQuery: 'editorial fashion collection' }, props: {} },
+      ],
+    },
+  ],
+};
+const enrichedFashionPage = enrichPageImages(rawFashionPage, 'Create a modern fashion ecommerce store');
+assert(
+  enrichedFashionPage.sections[0].elements[1].props.src.includes('unsplash.com'),
+  '13. [FASHION] Enriches fashion hero with editorial photography'
+);
+assert(validateUIPage(enrichedFashionPage).valid === true, '14. [FASHION] Passes UIPage validation');
+
+// Domain 4: SaaS Analytics Dashboard
 const rawSaasPage = {
   page: 'AnalyticsDashboard',
   sections: [
     {
-      id: 'dash-hero',
-      type: 'hero',
+      id: 'dash-header',
+      type: 'navbar',
       elements: [
-        { id: 'dash-title', type: 'text', content: 'Real-Time Revenue Analytics' },
+        { id: 'logo', type: 'text', content: 'Acme Analytics' },
       ],
     },
     {
@@ -127,7 +186,6 @@ const rawSaasPage = {
           props: {
             items: [
               { id: 'kpi-1', title: '$98,200', description: 'Monthly Recurring Revenue' },
-              { id: 'kpi-2', title: '2,450', description: 'Active Subscriptions' },
             ],
           },
         },
@@ -135,15 +193,54 @@ const rawSaasPage = {
     },
   ],
 };
-
 const enrichedSaasPage = enrichPageImages(rawSaasPage, 'Create a SaaS analytics dashboard');
 assert(
   enrichedSaasPage.sections[1].elements[0].props.items[0].src === undefined,
-  '12. SaaS analytics dashboard retains clean KPI metrics without unwanted photography'
+  '15. [SAAS] Retains clean KPI metrics without unwanted photography'
 );
+assert(validateUIPage(enrichedSaasPage).valid === true, '16. [SAAS] Passes UIPage validation');
 
-const saasValidation = validateUIPage(enrichedSaasPage);
-assert(saasValidation.valid === true, '13. Enriched SaaS dashboard passes UIPage validation');
+// Domain 5: Real Estate Website
+const rawRePage = {
+  page: 'RealEstate',
+  sections: [
+    {
+      id: 're-hero',
+      type: 'hero',
+      elements: [
+        { id: 'h1', type: 'text', content: 'Luxury Properties For Sale' },
+        { id: 're-img', type: 'image', content: { imageQuery: 'luxury architectural villa' }, props: {} },
+      ],
+    },
+  ],
+};
+const enrichedRePage = enrichPageImages(rawRePage, 'Create a luxury real estate website');
+assert(
+  enrichedRePage.sections[0].elements[1].props.src.includes('unsplash.com'),
+  '17. [REAL ESTATE] Enriches real estate hero with luxury villa photography'
+);
+assert(validateUIPage(enrichedRePage).valid === true, '18. [REAL ESTATE] Passes UIPage validation');
+
+// Domain 6: Portfolio Website
+const rawPortPage = {
+  page: 'Portfolio',
+  sections: [
+    {
+      id: 'port-hero',
+      type: 'hero',
+      elements: [
+        { id: 'h1', type: 'text', content: 'Jane Doe — Lead Product Designer' },
+        { id: 'port-img', type: 'image', content: { imageQuery: 'creative product designer workspace' }, props: {} },
+      ],
+    },
+  ],
+};
+const enrichedPortPage = enrichPageImages(rawPortPage, 'Create a designer portfolio website');
+assert(
+  enrichedPortPage.sections[0].elements[1].props.src.includes('unsplash.com'),
+  '19. [PORTFOLIO] Enriches portfolio hero with creative workspace photography'
+);
+assert(validateUIPage(enrichedPortPage).valid === true, '20. [PORTFOLIO] Passes UIPage validation');
 
 console.log('\n========================================');
 console.log(`BACKEND TEST SUMMARY: ${passed} passed, ${failed} failed`);

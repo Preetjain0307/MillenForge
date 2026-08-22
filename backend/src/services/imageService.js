@@ -121,6 +121,20 @@ const CURATED_IMAGE_CATALOG = {
     alt: 'Modern marble chef kitchen with island seating',
   },
 
+  // Creative & Portfolio
+  portfolio_hero: {
+    src: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Creative digital product designer portfolio workspace',
+  },
+  project_design: {
+    src: 'https://images.unsplash.com/photo-1542744094-3a31b272c390?auto=format&fit=crop&w=800&q=80',
+    alt: 'Brand identity and UI design showcase project',
+  },
+  project_app: {
+    src: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=800&q=80',
+    alt: 'Mobile app UI/UX design presentation',
+  },
+
   // Technology, SaaS & Creative
   workspace: {
     src: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80',
@@ -168,6 +182,9 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
   }
 
   // 2. Keyword association mapping
+  if (q.includes('portfolio') || q.includes('creative') || q.includes('designer') || q.includes('project') || q.includes('artwork')) {
+    return CURATED_IMAGE_CATALOG.portfolio_hero;
+  }
   if (q.includes('food') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal')) {
     return CURATED_IMAGE_CATALOG.restaurant_hero;
   }
@@ -177,10 +194,10 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
   if (q.includes('hotel') || q.includes('stay') || q.includes('suite') || q.includes('room')) {
     return CURATED_IMAGE_CATALOG.hotel_room;
   }
-  if (q.includes('shop') || q.includes('store') || q.includes('cloth') || q.includes('wear') || q.includes('apparel')) {
+  if (q.includes('shop') || q.includes('store') || q.includes('cloth') || q.includes('wear') || q.includes('apparel') || q.includes('fashion')) {
     return CURATED_IMAGE_CATALOG.fashion_hero;
   }
-  if (q.includes('home') || q.includes('house') || q.includes('property') || q.includes('estate') || q.includes('apartment')) {
+  if (q.includes('home') || q.includes('house') || q.includes('property') || q.includes('estate') || q.includes('apartment') || q.includes('villa')) {
     return CURATED_IMAGE_CATALOG.villa;
   }
   if (q.includes('tech') || q.includes('saas') || q.includes('app') || q.includes('software') || q.includes('platform')) {
@@ -221,6 +238,7 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
   const isTravelSite = promptLower.includes('travel') || promptLower.includes('hotel') || promptLower.includes('booking') || promptLower.includes('resort') || promptLower.includes('tour');
   const isFashionSite = promptLower.includes('fashion') || promptLower.includes('ecommerce') || promptLower.includes('store') || promptLower.includes('shop') || promptLower.includes('clothing');
   const isRealEstate = promptLower.includes('estate') || promptLower.includes('property') || promptLower.includes('house') || promptLower.includes('villa');
+  const isPortfolio = promptLower.includes('portfolio') || promptLower.includes('creative') || promptLower.includes('designer') || promptLower.includes('artist') || promptLower.includes('photographer');
 
   const enrichedSections = uiPage.sections.map((section) => {
     if (!section || !Array.isArray(section.elements)) return section;
@@ -263,8 +281,8 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
             const existingItemSrc = item.src || item.image || '';
             const itemQuery = item.imageQuery || item.title || `${userPrompt} item ${idx + 1}`;
 
-            // If it's a food, travel, fashion, or real estate site, ensure card has appropriate photo
-            if (isFoodSite || isTravelSite || isFashionSite || isRealEstate || existingItemSrc.includes('placehold.co')) {
+            // If it's a food, travel, fashion, real estate, or portfolio site, ensure card has appropriate photo
+            if (isFoodSite || isTravelSite || isFashionSite || isRealEstate || isPortfolio || existingItemSrc.includes('placehold.co')) {
               const resolved = resolveContextualImage(itemQuery, item.title || 'Card image');
               return {
                 ...item,
