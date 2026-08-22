@@ -120,7 +120,6 @@ const ELEMENT_REGISTRY = {
         id={element.id}
         className={`${tagClasses} ${props.className || ''}`}
       >
-      >
         {display || <span className="text-[var(--nm-text-muted)] italic">(empty text)</span>}
       </Tag>
     );
