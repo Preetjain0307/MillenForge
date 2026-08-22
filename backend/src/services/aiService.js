@@ -389,9 +389,14 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
 };
 
 const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, prompt = '', pageName = 'Home') => {
-  const fallbackModels = [primaryModel, 'gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-2.5-flash'].filter(
-    (m, i, arr) => arr.indexOf(m) === i
-  );
+  const fallbackModels = [
+    primaryModel,
+    'gemini-3.6-flash',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash',
+    'gemini-2.5-flash',
+  ].filter((m, i, arr) => arr.indexOf(m) === i);
 
   let lastError;
   for (const modelName of fallbackModels) {
@@ -418,8 +423,9 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
         err.message?.includes('RESOURCE_EXHAUSTED') ||
         err.message?.includes('404');
 
-      if (isQuotaError && modelName !== fallbackModels[fallbackModels.length - 1]) {
-        console.warn(`[AI] Quota/Rate limit hit on "${modelName}" — attempting next fallback model...`);
+      if (isQuotaError) {
+        console.warn(`[AI] Quota/Rate limit hit on "${modelName}" — waiting 1s before trying next model...`);
+        await new Promise((res) => setTimeout(res, 1000));
         continue;
       }
     }
@@ -532,4 +538,4 @@ Output ONLY valid JSON. Return hex codes for colors.`;
   }));
 };
 
-module.exports = { generateUIFromPrompt, generateUIFromWireframe, generateTheme };
+module.exports = { generateUIFromPrompt, generateUIFromWireframe, generateTheme, buildSmartFallbackPage };
