@@ -14,6 +14,8 @@ import NmButton from '../components/NmButton';
 import { CmsEditorPanel } from '../components/cms/index.js';
 import { EXAMPLE_CMS_BOUND_PAGE } from '../types/cmsExamples.js';
 
+import ProductIntelligenceDrawer from '../components/intelligence/ProductIntelligenceDrawer';
+
 const PreviewPage = () => {
   const { pageName } = useParams();
   const decodedName = decodeURIComponent(pageName || 'Home');
@@ -23,6 +25,7 @@ const PreviewPage = () => {
   const selectedElementId = useSelector(selectSelectedElementId);
 
   const [isCmsOpen, setIsCmsOpen] = useState(true);
+  const [isIntelligenceOpen, setIsIntelligenceOpen] = useState(false);
 
   // Auto-initialize sample page data if page is missing from Redux (e.g. cold load of /preview/Home)
   useEffect(() => {
@@ -72,6 +75,14 @@ const PreviewPage = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={() => setIsIntelligenceOpen(true)}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 bg-[rgba(108,99,255,0.2)] text-[var(--nm-accent-light)] border border-[rgba(108,99,255,0.4)] hover:bg-[var(--nm-accent)] hover:text-white transition-all shadow-sm"
+          >
+            <i className="pi pi-brain text-xs" />
+            <span>AI Product Intelligence</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setIsCmsOpen(!isCmsOpen)}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition-all ${
               isCmsOpen
@@ -119,13 +130,20 @@ const PreviewPage = () => {
           )}
           <NmButton
             variant="secondary"
-            label="Export Code"
-            icon="pi pi-download"
-            disabled
-            title="Export available in production bundle"
+            label="AI Intelligence"
+            icon="pi pi-brain"
+            onClick={() => setIsIntelligenceOpen(true)}
           />
         </div>
       </div>
+
+      {/* Product Intelligence Drawer */}
+      <ProductIntelligenceDrawer
+        isOpen={isIntelligenceOpen}
+        onClose={() => setIsIntelligenceOpen(false)}
+        pageData={pageData}
+        prompt={pageData?.meta?.prompt || decodedName}
+      />
 
       {/* Page metadata badge & status */}
       <div className="flex items-center justify-between flex-wrap gap-3">
