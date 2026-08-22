@@ -6,6 +6,7 @@ import AppShell from './components/AppShell';
 import GeneratePage from './pages/GeneratePage';
 import PreviewPage from './pages/PreviewPage';
 import NotFoundPage from './pages/NotFoundPage';
+import UIRendererTestPage from './pages/UIRendererTestPage';
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
           <Route path="/" element={<Navigate to="/generate" replace />} />
           <Route path="/generate" element={<GeneratePage />} />
           <Route path="/preview/:pageName" element={<PreviewPage />} />
+          {/* Dev-only renderer test page */}
+          <Route path="/renderer-test" element={<UIRendererTestPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
