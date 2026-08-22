@@ -102,11 +102,11 @@ npm run dev:backend
 
 | Method | Path | Status | Description |
 |---|---|---|---|
-| GET | `/api/health` | ✅ Implemented | Health check + DB status |
+| GET | `/api/health` | ✅ Implemented | Health check + DB + AI status |
 | POST | `/api/upload` | ✅ Implemented | Wireframe image upload (Multer) |
-| POST | `/api/generate` | 🚧 Placeholder | AI UI generation (future) |
-| GET | `/api/pages` | 🚧 Placeholder | List all pages (future) |
-| GET | `/api/pages/:pageName` | 🚧 Placeholder | Get page by name (future) |
+| POST | `/api/generate` | ✅ Implemented | Gemini Vision UI generation |
+| GET | `/api/pages` | ✅ Implemented | List all generated pages |
+| GET | `/api/pages/:pageName` | ✅ Implemented | Get page schema by pageName |
 
 ---
 

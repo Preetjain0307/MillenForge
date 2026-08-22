@@ -223,44 +223,102 @@ const GeneratePage = () => {
   return (
     <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 nm-animate-in">
 
-      {/* ── Page Header ──────────────────────────────────────────────────────── */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--nm-accent-glow)] border border-[var(--nm-border)] text-[var(--nm-accent-light)] text-xs font-semibold uppercase tracking-widest mb-4">
-          <i className="pi pi-sparkles text-[10px]" />
-          AI-Powered Generation
+      {/* ── Visual Hero Header ────────────────────────────────────────────────── */}
+      <div className="mb-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center nm-card p-6 sm:p-8 overflow-hidden relative border border-[var(--nm-border-subtle)] bg-gradient-to-br from-[var(--nm-bg-card)] via-[var(--nm-bg-surface)] to-[var(--nm-bg-primary)]">
+        {/* Ambient background glow */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[var(--nm-accent-glow)] rounded-full blur-3xl opacity-30 pointer-events-none" />
+
+        {/* Left Column: Hero Copy & CTA Highlights */}
+        <div className="lg:col-span-7 flex flex-col gap-4 text-left z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--nm-accent-glow)] border border-[var(--nm-border)] text-[var(--nm-accent-light)] text-xs font-semibold uppercase tracking-widest self-start">
+            <i className="pi pi-sparkles text-[10px]" />
+            AI-Powered UI Generator Platform
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight nm-gradient-text leading-tight">
+            Turn Wireframes into Production-Ready UIs with AI
+          </h1>
+          <p className="text-[var(--nm-text-secondary)] text-sm sm:text-base leading-relaxed max-w-xl">
+            Upload a wireframe sketch, describe your vision, and let NeuraMind build
+            a structured, production-ready React UI in seconds — complete with live preview and CMS editing.
+          </p>
+
+          {/* Key Capabilities Badges */}
+          <div className="flex items-center gap-2 flex-wrap pt-1 text-xs">
+            <span className="px-2.5 py-1 rounded-md bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-secondary)] flex items-center gap-1.5">
+              <i className="pi pi-eye text-[var(--nm-accent)] text-xs" /> Multimodal Vision
+            </span>
+            <span className="px-2.5 py-1 rounded-md bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-secondary)] flex items-center gap-1.5">
+              <i className="pi pi-database text-[var(--nm-accent)] text-xs" /> Decoupled CMS
+            </span>
+            <span className="px-2.5 py-1 rounded-md bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-secondary)] flex items-center gap-1.5">
+              <i className="pi pi-code text-[var(--nm-accent)] text-xs" /> React &amp; Redux Output
+            </span>
+          </div>
         </div>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight nm-gradient-text mb-3">
-          Generate UI with AI
-        </h1>
-        <p className="text-[var(--nm-text-secondary)] text-base sm:text-lg max-w-xl mx-auto">
-          Upload a wireframe sketch, describe your vision, and let NeuraMind build
-          a structured, production-ready UI in seconds.
-        </p>
+
+        {/* Right Column: Hero Visual Composition Card */}
+        <div className="lg:col-span-5 relative z-10">
+          <div className="relative rounded-xl overflow-hidden border border-[var(--nm-border)] shadow-2xl bg-[var(--nm-bg-surface)] group">
+            <img
+              src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80"
+              alt="NeuraMind AI UI Generator Studio Visual Workspace"
+              className="w-full h-56 sm:h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = 'https://placehold.co/800x400/1a1a2e/6c63ff?text=NeuraMind+AI+Workspace';
+              }}
+            />
+            {/* Visual Overlays: AI Vision Bounding Box & Status Badge */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[var(--nm-bg-primary)] via-transparent to-transparent opacity-80" />
+            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-[rgba(15,23,42,0.85)] border border-[var(--nm-accent)] text-[var(--nm-accent-light)] text-[11px] font-medium flex items-center gap-1.5 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-[var(--nm-success)] animate-ping" />
+              Gemini Vision Active
+            </div>
+            <div className="absolute bottom-3 left-3 right-3 p-3 rounded-lg bg-[rgba(15,23,42,0.9)] border border-[var(--nm-border-subtle)] backdrop-blur-md">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[var(--nm-text-primary)] font-semibold flex items-center gap-1.5">
+                  <i className="pi pi-check-circle text-[var(--nm-success)]" /> Wireframe → UIPage
+                </span>
+                <span className="text-[var(--nm-text-muted)] font-mono text-[10px]">JSON Schema Valid</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ── Workflow Steps ───────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-center gap-1 sm:gap-3 mb-8 flex-wrap">
-        {[
-          { num: 1, label: 'Upload Wireframe', icon: 'pi pi-upload',    done: uploadStatus === 'success' },
-          { num: 2, label: 'Describe UI',      icon: 'pi pi-comment',   done: hasPrompt },
-          { num: 3, label: 'Generate',         icon: 'pi pi-sparkles',  done: generationStatus === 'succeeded' },
-          { num: 4, label: 'Preview',          icon: 'pi pi-desktop',   done: false },
-        ].map((step, idx, arr) => (
-          <div key={step.num} className="flex items-center gap-1 sm:gap-2">
-            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all ${
-              step.done
-                ? 'bg-[rgba(34,197,94,0.15)] text-[var(--nm-success)] border border-[rgba(34,197,94,0.3)]'
-                : 'bg-[var(--nm-bg-surface)] text-[var(--nm-text-muted)] border border-[var(--nm-border-subtle)]'
-            }`}>
-              <i className={`${step.done ? 'pi pi-check' : step.icon} text-[10px]`} />
-              <span className="hidden sm:inline">{step.label}</span>
-              <span className="sm:hidden">{step.num}</span>
+      {/* ── Workflow Steps Indicator ────────────────────────────────────────── */}
+      <div className="mb-10">
+        <h2 className="text-xs uppercase tracking-widest font-semibold text-[var(--nm-text-muted)] text-center mb-4">
+          End-to-End Product Workflow
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { num: 1, label: 'Upload Wireframe', desc: 'PNG, JPG or WEBP sketch', icon: 'pi pi-upload', done: uploadStatus === 'success' },
+            { num: 2, label: 'Describe Prompt',   desc: 'Tailwind & UI instructions', icon: 'pi pi-comment', done: hasPrompt },
+            { num: 3, label: 'AI Generation',    desc: 'Gemini Vision parsing', icon: 'pi pi-sparkles', done: generationStatus === 'succeeded' },
+            { num: 4, label: 'Preview & Edit',   desc: 'Live CMS content updates', icon: 'pi pi-desktop', done: false },
+          ].map((step) => (
+            <div
+              key={step.num}
+              className={`p-3.5 rounded-xl border text-left transition-all ${
+                step.done
+                  ? 'bg-[rgba(34,197,94,0.08)] border-[rgba(34,197,94,0.3)] text-[var(--nm-text-primary)]'
+                  : 'bg-[var(--nm-bg-surface)] border-[var(--nm-border-subtle)] text-[var(--nm-text-secondary)]'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs ${
+                  step.done ? 'bg-[var(--nm-success)] text-white' : 'bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)]'
+                }`}>
+                  <i className={step.done ? 'pi pi-check' : step.icon} />
+                </div>
+                <span className="text-[10px] font-mono font-bold opacity-60">0{step.num}</span>
+              </div>
+              <p className="text-xs font-bold text-[var(--nm-text-primary)] leading-tight mb-0.5">{step.label}</p>
+              <p className="text-[11px] text-[var(--nm-text-muted)] leading-tight">{step.desc}</p>
             </div>
-            {idx < arr.length - 1 && (
-              <i className="pi pi-chevron-right text-[var(--nm-text-muted)] text-[10px]" />
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* ── Success State ────────────────────────────────────────────────────── */}
@@ -659,6 +717,95 @@ const GeneratePage = () => {
           </div>
         </div>
       </form>
+
+      {/* ── Product Feature Showcase Cards ───────────────────────────────────── */}
+      <div className="mt-14 pt-8 border-t border-[var(--nm-border-subtle)]">
+        <div className="text-center mb-8">
+          <h2 className="text-xs uppercase tracking-widest font-semibold text-[var(--nm-text-muted)] mb-1">
+            Engineered for Modern Teams
+          </h2>
+          <h3 className="text-2xl font-bold text-[var(--nm-text-primary)]">
+            Architected for Speed, Quality &amp; Content Independence
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1: Vision */}
+          <div className="nm-card overflow-hidden flex flex-col group border border-[var(--nm-border-subtle)] hover:border-[var(--nm-accent)] transition-all">
+            <div className="h-44 overflow-hidden relative bg-[var(--nm-bg-surface)]">
+              <img
+                src="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600&q=80"
+                alt="Multimodal AI Vision & Layout Extraction"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://placehold.co/600x400/1a1a2e/6c63ff?text=AI+Vision+Parsing';
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--nm-bg-card)] via-transparent to-transparent" />
+              <span className="absolute bottom-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-md bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] border border-[var(--nm-border)] backdrop-blur-md flex items-center gap-1.5">
+                <i className="pi pi-eye text-xs" /> Multimodal Vision
+              </span>
+            </div>
+            <div className="p-5 flex flex-col gap-2 flex-1">
+              <h4 className="font-bold text-[var(--nm-text-primary)] text-base">Multimodal Layout Parsing</h4>
+              <p className="text-xs text-[var(--nm-text-secondary)] leading-relaxed">
+                Gemini Vision analyzes wireframe geometry, text hierarchy, and element intent to produce structured UIPage schemas.
+              </p>
+            </div>
+          </div>
+
+          {/* Card 2: React & Redux Architecture */}
+          <div className="nm-card overflow-hidden flex flex-col group border border-[var(--nm-border-subtle)] hover:border-[var(--nm-accent)] transition-all">
+            <div className="h-44 overflow-hidden relative bg-[var(--nm-bg-surface)]">
+              <img
+                src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=80"
+                alt="Production Ready Component & Redux Architecture"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://placehold.co/600x400/1a1a2e/6c63ff?text=React+Architecture';
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--nm-bg-card)] via-transparent to-transparent" />
+              <span className="absolute bottom-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-md bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] border border-[var(--nm-border)] backdrop-blur-md flex items-center gap-1.5">
+                <i className="pi pi-code text-xs" /> Clean Contract
+              </span>
+            </div>
+            <div className="p-5 flex flex-col gap-2 flex-1">
+              <h4 className="font-bold text-[var(--nm-text-primary)] text-base">UIPage Schema Contract</h4>
+              <p className="text-xs text-[var(--nm-text-secondary)] leading-relaxed">
+                Structured element trees with deterministic IDs feed directly into Redux Toolkit and the atomic UIRenderer.
+              </p>
+            </div>
+          </div>
+
+          {/* Card 3: Decoupled CMS */}
+          <div className="nm-card overflow-hidden flex flex-col group border border-[var(--nm-border-subtle)] hover:border-[var(--nm-accent)] transition-all">
+            <div className="h-44 overflow-hidden relative bg-[var(--nm-bg-surface)]">
+              <img
+                src="https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=600&q=80"
+                alt="Decoupled Live CMS Content Editing Interface"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://placehold.co/600x400/1a1a2e/6c63ff?text=CMS+Live+Binding';
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--nm-bg-card)] via-transparent to-transparent" />
+              <span className="absolute bottom-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-md bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] border border-[var(--nm-border)] backdrop-blur-md flex items-center gap-1.5">
+                <i className="pi pi-database text-xs" /> Live CMS
+              </span>
+            </div>
+            <div className="p-5 flex flex-col gap-2 flex-1">
+              <h4 className="font-bold text-[var(--nm-text-primary)] text-base">Decoupled Content Binding</h4>
+              <p className="text-xs text-[var(--nm-text-secondary)] leading-relaxed">
+                Edit text, buttons, images, inputs, and card collections in real time without breaking layout integrity.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
   );
 };
