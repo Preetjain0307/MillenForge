@@ -357,4 +357,40 @@ const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
   }));
 };
 
-module.exports = { generateUIFromPrompt, generateUIFromWireframe };
+/**
+ * Generate a design theme from a text prompt.
+ *
+ * @param {string} prompt
+ * @returns {Promise<object>} parsed theme JSON
+ */
+const generateTheme = async (prompt) => {
+  const config = getConfig();
+  console.log(`[AI] generateTheme — model: ${config.model}, prompt: "${prompt}"`);
+
+  const genAI = new GoogleGenerativeAI(config.apiKey);
+  const userMessage = `Generate a structured design theme based on this prompt: "${prompt}".
+Output a single JSON object matching this schema:
+{
+  "name": "Theme Name",
+  "colors": {
+    "background": "#...",
+    "surface": "#...",
+    "primary": "#...",
+    "secondary": "#...",
+    "text": "#...",
+    "muted": "#...",
+    "border": "#..."
+  },
+  "typography": { "fontFamily": "..." },
+  "radius": { "value": "..." },
+  "spacing": { "base": "..." }
+}
+Output ONLY valid JSON. Return hex codes for colors.`;
+
+  return executeWithModelFallback(genAI, config.model, (modelName) => ({
+    contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+    config: buildGenerationConfig(modelName),
+  }));
+};
+
+module.exports = { generateUIFromPrompt, generateUIFromWireframe, generateTheme };
