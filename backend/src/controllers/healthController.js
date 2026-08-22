@@ -7,11 +7,13 @@ const { getConnectionStatus } = require('../services/db');
  */
 const health = (_req, res) => {
   const db = getConnectionStatus();
-  res.json({
+  res.status(200).json({
     success: true,
     status: 'ok',
     message: 'NeuraMind API is running',
     timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
     database: {
       connected: db.connected,
       state: db.state,

@@ -15,13 +15,25 @@ const pagesRoutes = require('./routes/pages');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const CLIENT_URL = process.env.CLIENT_URL || process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = CLIENT_URL.split(',').map(url => url.trim());
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like curl, Postman, or health checks)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    if (process.env.NODE_ENV !== 'production' && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS error: origin ${origin} is not allowed.`));
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -51,7 +63,7 @@ const start = async () => {
 
   app.listen(PORT, () => {
     console.log(`[SERVER] NeuraMind API running on http://localhost:${PORT}`);
-    console.log(`[SERVER] CORS allowed origin: ${FRONTEND_URL}`);
+    console.log(`[SERVER] CORS allowed origin: ${CLIENT_URL}`);
     console.log(`[SERVER] Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 };

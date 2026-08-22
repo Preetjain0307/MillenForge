@@ -13,9 +13,16 @@ const errorHandler = (err, req, res, next) => {
   }
 
   const statusCode = err.status || err.statusCode || 500;
+
+  // Sanitize message: never expose API keys, credentials, or internal server paths
+  let safeMessage = err.message || 'Internal Server Error';
+  if (safeMessage.includes('AI_API_KEY') || safeMessage.includes('key=')) {
+    safeMessage = 'AI service authentication or configuration issue.';
+  }
+
   res.status(statusCode).json({
     success: false,
-    error: err.message || 'Internal Server Error',
+    error: safeMessage,
   });
 };
 

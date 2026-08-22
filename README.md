@@ -181,4 +181,28 @@ This repository is worked on by multiple developers. Please follow these rules:
 
 ---
 
+## Deployment & Production Readiness
+
+### Local Development
+- **Frontend**: Vite dev server (`http://localhost:5173`)
+- **Backend**: Express REST API (`http://localhost:5000`)
+- **MongoDB**: Optional — system runs with graceful fallback if database is offline or unconfigured.
+- **Uploads**: Saved locally to `backend/uploads` and served statically.
+
+### Production Readiness
+- **Frontend Target**: Vercel / Netlify / static web host
+- **Backend Target**: Node.js hosting platform (e.g., Render, Railway, Vercel Serverless)
+- **Required Environment Variables**:
+  - `AI_API_KEY`: Google Gemini API key
+  - `MONGODB_URI`: Hosted MongoDB connection string (e.g., MongoDB Atlas)
+  - `PORT`: Server port
+  - `CLIENT_URL`: Production frontend URL for CORS configuration
+- **Filesystem Warning**: Vercel and serverless platforms have ephemeral filesystems. Local `/uploads` storage is supported for event-day local execution; persistent production storage will require object storage when migrating off local servers.
+
+> [!NOTE]
+> Production deployment configuration has been hardened and validated locally. Remote production deployment is pending host provisioning.
+
+---
+
 *NeuraMind — Foundation v1.0 | SIH Hackathon*
+
