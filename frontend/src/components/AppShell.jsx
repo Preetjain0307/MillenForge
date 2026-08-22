@@ -4,10 +4,12 @@
 import { Link, useLocation } from 'react-router-dom';
 
 const NAV_LINKS = [
-  { label: 'Home', path: '/home', icon: 'pi pi-home' },
+  { label: 'Workspace', path: '/home', icon: 'pi pi-th-large' },
   { label: 'Generate', path: '/generate', icon: 'pi pi-sparkles' },
   { label: 'Diagrams', path: '/diagrams', icon: 'pi pi-sitemap' },
   { label: 'Preview & CMS', path: '/preview/Home', icon: 'pi pi-desktop' },
+  { label: 'Intelligence', path: '/intelligence', icon: 'pi pi-brain' },
+  { label: 'Review & Healing', path: '/review', icon: 'pi pi-shield' },
   { label: 'History', path: '/history', icon: 'pi pi-history' },
 ];
 

@@ -8,12 +8,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import generationReducer from '../features/generation/generationSlice';
 import uiReducer from '../features/ui/uiSlice';
 import pagesReducer from '../features/pages/pagesSlice';
+import themeReducer from '../features/themeSlice';
 
 export const store = configureStore({
   reducer: {
     generation: generationReducer,
     ui: uiReducer,
     pages: pagesReducer,
+    theme: themeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

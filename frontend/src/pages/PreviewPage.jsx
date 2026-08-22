@@ -72,7 +72,7 @@ const PreviewPage = () => {
             <strong>AI Generated UI & CMS Live Editor</strong> — Click any element in the preview or select from the CMS panel to edit content live without touching JSX.
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={() => setIsIntelligenceOpen(true)}
@@ -81,6 +81,13 @@ const PreviewPage = () => {
             <i className="pi pi-brain text-xs" />
             <span>AI Product Intelligence</span>
           </button>
+          <Link
+            to="/review"
+            className="px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 bg-[rgba(34,197,94,0.15)] text-[var(--nm-success)] border border-[rgba(34,197,94,0.3)] hover:bg-[var(--nm-success)] hover:text-white transition-all shadow-sm no-underline"
+          >
+            <i className="pi pi-shield text-xs" />
+            <span>AI Review & Healing</span>
+          </Link>
           <button
             type="button"
             onClick={() => setIsCmsOpen(!isCmsOpen)}
