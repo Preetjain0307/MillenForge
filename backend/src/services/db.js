@@ -23,7 +23,8 @@ const connectDB = async () => {
     isConnected = true;
     console.log(`[DB] MongoDB connected: ${conn.connection.host}`);
   } catch (err) {
-    console.warn(`[DB] MongoDB connection failed: ${err.message}`);
+    const sanitizedMsg = (err.message || '').replace(/\/\/[^:]+:[^@]+@/, '//***:***@');
+    console.warn(`[DB] MongoDB connection failed: ${sanitizedMsg}`);
     console.warn('[DB] Application will run without database. Some features may be unavailable.');
     // Do NOT throw — allow the server to start without DB
   }

@@ -14,10 +14,12 @@ const errorHandler = (err, req, res, next) => {
 
   const statusCode = err.status || err.statusCode || 500;
 
-  // Sanitize message: never expose API keys, credentials, or internal server paths
+  // Sanitize message: never expose API keys, credentials, MongoDB URIs, or internal server paths
   let safeMessage = err.message || 'Internal Server Error';
   if (safeMessage.includes('AI_API_KEY') || safeMessage.includes('key=')) {
     safeMessage = 'AI service authentication or configuration issue.';
+  } else if (safeMessage.includes('mongodb://') || safeMessage.includes('mongodb+srv://') || safeMessage.includes('ECONNREFUSED')) {
+    safeMessage = 'Database service unavailable or connection failed.';
   }
 
   res.status(statusCode).json({
