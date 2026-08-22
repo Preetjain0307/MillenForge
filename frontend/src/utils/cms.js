@@ -186,6 +186,9 @@ export const getDefaultCmsContent = (type) => {
 
 export {
   updateElementContent,
+  updateRepeatingItem,
+  findElementById,
+  getElementContent,
   bindCmsData,
   extractCmsData,
   resolveCmsContent,

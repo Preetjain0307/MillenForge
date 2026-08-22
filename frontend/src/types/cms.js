@@ -227,6 +227,15 @@ export const bindCmsData = (uiPage, cmsDataMap = {}) => {
             if (update.items && Array.isArray(update.items)) {
               newProps.items = update.items;
             }
+            if (update.src !== undefined) newProps.src = update.src;
+            if (update.alt !== undefined) newProps.alt = update.alt;
+            if (update.label !== undefined) newProps.label = update.label;
+            if (update.title !== undefined) newProps.title = update.title;
+            if (update.placeholder !== undefined) newProps.placeholder = update.placeholder;
+            if (update.variant !== undefined) newProps.variant = update.variant;
+            if (update.props && typeof update.props === 'object') {
+              Object.assign(newProps, update.props);
+            }
             return {
               ...el,
               content: newContent,
@@ -259,6 +268,72 @@ export const updateElementContent = (page, elementId, newContent) => {
   if (!page || typeof page !== 'object') return page;
   if (!elementId) return page;
   return bindCmsData(page, { [elementId]: newContent });
+};
+
+/**
+ * Pure function: Finds an element in a UIPage by its stable ID.
+ *
+ * @param {import('./ui.js').UIPage} page - The source UIPage
+ * @param {string} elementId               - Target element ID
+ * @returns {import('./ui.js').UIElement | null}
+ */
+export const findElementById = (page, elementId) => {
+  if (!page || !Array.isArray(page.sections) || !elementId) return null;
+  for (const section of page.sections) {
+    if (!section || !Array.isArray(section.elements)) continue;
+    for (const el of section.elements) {
+      if (el && el.id === elementId) return el;
+    }
+  }
+  return null;
+};
+
+/**
+ * Pure function: Reads element content and metadata by stable ID.
+ *
+ * @param {import('./ui.js').UIPage} page - The source UIPage
+ * @param {string} elementId               - Target element ID
+ * @returns {{ id: string, type: string, content: any, fallback: string, items?: any[], props?: object } | null}
+ */
+export const getElementContent = (page, elementId) => {
+  const el = findElementById(page, elementId);
+  if (!el) return null;
+  return {
+    id: el.id,
+    type: el.type,
+    content: el.content,
+    fallback: el.fallback,
+    items: el.items || el.props?.items,
+    props: el.props,
+  };
+};
+
+/**
+ * Pure function: Updates a single item within a repeating element's items array immutably.
+ *
+ * @param {import('./ui.js').UIPage} page     - The source UIPage
+ * @param {string} elementId                   - Target repeating element ID (e.g. "feature-cards")
+ * @param {string} itemId                      - Target item ID (e.g. "card-1")
+ * @param {object | string} updatedItemData   - Updated item properties or content string
+ * @returns {import('./ui.js').UIPage}         - New UIPage with updated repeating item
+ */
+export const updateRepeatingItem = (page, elementId, itemId, updatedItemData) => {
+  if (!page || typeof page !== 'object' || !elementId || !itemId) return page;
+
+  const el = findElementById(page, elementId);
+  if (!el) return page;
+
+  const currentItems = Array.isArray(el.items) ? el.items : (Array.isArray(el.props?.items) ? el.props.items : []);
+  const nextItems = currentItems.map((item) => {
+    if (item && item.id === itemId) {
+      return typeof updatedItemData === 'object' && updatedItemData !== null
+        ? { ...item, ...updatedItemData }
+        : { ...item, content: updatedItemData };
+    }
+    return item;
+  });
+
+  return updateElementContent(page, elementId, nextItems);
 };
 
 /**
