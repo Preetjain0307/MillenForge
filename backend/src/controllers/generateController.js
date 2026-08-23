@@ -7,7 +7,7 @@
  *
  * Pipeline:
  *   1. Input validation
- *   2. Gemini AI generation (with model-level fallback)
+ *   2. Gemini AI generation (with model-level & provider failover)
  *   3. Image enrichment (contextual Unsplash images)
  *   4. Generation Quality Gate:
  *        a. UIPage schema validation
@@ -156,21 +156,21 @@ const generate = async (req, res) => {
 
     // ── Safe error mapping — no stack traces or keys in responses ─────────────
 
-    if (err.message?.includes('AI_API_KEY') || err.message?.includes('GEMINI_API_KEY')) {
+    if (err.message?.includes('AI_API_KEY') || err.message?.includes('GEMINI_API_KEY') || err.message?.includes('No active providers')) {
       return res.status(503).json({
         success: false,
-        message: 'AI service is not configured. Ask your administrator to set AI_API_KEY.',
+        message: 'AI service is not configured. Ask your administrator to set AI_API_KEY or AI_PROVIDER_1_API_KEY.',
       });
     }
 
-    if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('API_KEY_INVALID') || err.message?.includes('UNAUTHENTICATED')) {
+    if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('API_KEY_INVALID') || err.message?.includes('UNAUTHENTICATED') || err.message?.includes('authentication failed')) {
       return res.status(503).json({
         success: false,
-        message: 'AI service authentication failed. Verify that AI_API_KEY in backend/.env is a valid Google Gemini API key.',
+        message: 'AI service authentication failed across configured providers. Please check your Gemini API keys in backend/.env.',
       });
     }
 
-    if (err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED')) {
+    if (err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED') || err.message?.includes('rate limit')) {
       console.warn('[GENERATE] Rate limit caught in controller — generating smart fallback layout with contextual images.');
       const fallbackPage = enrichPageImages(
         buildSmartFallbackPage(req.body?.pageName || 'Home', req.body?.prompt || ''),

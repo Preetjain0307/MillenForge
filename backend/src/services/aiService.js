@@ -11,6 +11,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
+const { geminiProviderManager } = require('./geminiProviderManager');
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -31,24 +32,6 @@ const VALID_MODELS = new Set([
 ]);
 
 const DEFAULT_MODEL = 'gemini-3.6-flash';
-
-const getConfig = () => {
-  const apiKey = process.env.AI_API_KEY;
-  if (!apiKey) {
-    throw new Error('AI_API_KEY is not set. Add it to backend/.env');
-  }
-
-  const rawModel = (process.env.AI_MODEL || DEFAULT_MODEL).trim();
-  const model = VALID_MODELS.has(rawModel) ? rawModel : DEFAULT_MODEL;
-
-  if (!VALID_MODELS.has(rawModel)) {
-    console.warn(
-      `[AI] AI_MODEL="${rawModel}" is not a recognised Gemini model — falling back to "${DEFAULT_MODEL}"`
-    );
-  }
-
-  return { apiKey, model };
-};
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
@@ -274,18 +257,6 @@ const buildGenerationConfig = (model) => {
   return config;
 };
 
-// ── Public API ────────────────────────────────────────────────────────────────
-
-/**
- * Generate a UIPage from a text prompt (no wireframe).
- *
- * @param {object} params
- * @param {string} params.prompt
- * @param {string} [params.pageName]
- * @param {string} [params.existingCode]
- * @param {string} [params.architectureFlow]
- * @returns {Promise<object>} parsed UIPage JSON
- */
 const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
   const promptLower = String(prompt).toLowerCase();
   const name = pageName || 'Home';
@@ -398,6 +369,7 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
     'gemini-2.5-flash',
   ].filter((m, i, arr) => arr.indexOf(m) === i);
 
+  let primaryError;
   let lastError;
   for (const modelName of fallbackModels) {
     try {
@@ -416,6 +388,7 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
       console.log(`[AI] Response generated using model "${modelName}" (${text.length} chars)`);
       return extractJSON(text);
     } catch (err) {
+      if (!primaryError) primaryError = err;
       lastError = err;
       const isQuotaError =
         err.message?.includes('429') ||
@@ -428,12 +401,14 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
         await new Promise((res) => setTimeout(res, 1000));
         continue;
       }
+      throw err;
     }
   }
 
-  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMind Intelligent Generation Fallback engine.');
-  return buildSmartFallbackPage(pageName, prompt);
+  throw primaryError || lastError;
 };
+
+// ── Public API ────────────────────────────────────────────────────────────────
 
 /**
  * Generate a UIPage from a text prompt (no wireframe).
@@ -446,24 +421,25 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
  * @returns {Promise<object>} parsed UIPage JSON
  */
 const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
-  const config = getConfig();
-  console.log(`[AI] generateUIFromPrompt — model: ${config.model}, page: "${pageName || 'Home'}"`);
+  console.log(`[AI] generateUIFromPrompt — page: "${pageName || 'Home'}"`);
 
-  const genAI = new GoogleGenerativeAI(config.apiKey);
   let userMessage = `Generate a complete UI page named "${pageName || 'Home'}".\n\nUser prompt:\n${prompt}`;
   if (existingCode) userMessage += `\n\nExisting code context (use as reference for styling/structure):\n${existingCode}`;
   if (architectureFlow) userMessage += `\n\nArchitecture / user flow:\n${architectureFlow}`;
 
-  return executeWithModelFallback(
-    genAI,
-    config.model,
-    (modelName) => ({
-      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-      config: buildGenerationConfig(modelName),
-    }),
-    prompt,
-    pageName
-  );
+  return geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return executeWithModelFallback(
+      genAI,
+      providerModel,
+      (modelName) => ({
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        config: buildGenerationConfig(modelName),
+      }),
+      prompt,
+      pageName
+    );
+  });
 };
 
 /**
@@ -476,30 +452,31 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
  * @returns {Promise<object>} parsed UIPage JSON
  */
 const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
-  const config = getConfig();
-  console.log(`[AI] generateUIFromWireframe — model: ${config.model}, image: "${imagePath}", page: "${pageName || 'Home'}"`);
+  console.log(`[AI] generateUIFromWireframe — image: "${imagePath}", page: "${pageName || 'Home'}"`);
 
-  const genAI = new GoogleGenerativeAI(config.apiKey);
   const imagePart = imageFileToPart(imagePath);
 
   let userMessage = `Analyse this wireframe image carefully and generate a structured UI page named "${pageName || 'Home'}" that faithfully reproduces its layout, sections, and component hierarchy.`;
   if (prompt) userMessage += `\n\nAdditional instructions from the user:\n${prompt}`;
 
-  return executeWithModelFallback(
-    genAI,
-    config.model,
-    (modelName) => ({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: userMessage }, imagePart],
-        },
-      ],
-      config: buildGenerationConfig(modelName),
-    }),
-    prompt,
-    pageName
-  );
+  return geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return executeWithModelFallback(
+      genAI,
+      providerModel,
+      (modelName) => ({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: userMessage }, imagePart],
+          },
+        ],
+        config: buildGenerationConfig(modelName),
+      }),
+      prompt,
+      pageName
+    );
+  });
 };
 
 /**
@@ -509,10 +486,8 @@ const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
  * @returns {Promise<object>} parsed theme JSON
  */
 const generateTheme = async (prompt) => {
-  const config = getConfig();
-  console.log(`[AI] generateTheme — model: ${config.model}, prompt: "${prompt}"`);
+  console.log(`[AI] generateTheme — prompt: "${prompt}"`);
 
-  const genAI = new GoogleGenerativeAI(config.apiKey);
   const userMessage = `Generate a structured design theme based on this prompt: "${prompt}".
 Output a single JSON object matching this schema:
 {
@@ -532,10 +507,13 @@ Output a single JSON object matching this schema:
 }
 Output ONLY valid JSON. Return hex codes for colors.`;
 
-  return executeWithModelFallback(genAI, config.model, (modelName) => ({
-    contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-    config: buildGenerationConfig(modelName),
-  }));
+  return geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return executeWithModelFallback(genAI, providerModel, (modelName) => ({
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      config: buildGenerationConfig(modelName),
+    }));
+  });
 };
 
 module.exports = { generateUIFromPrompt, generateUIFromWireframe, generateTheme, buildSmartFallbackPage };

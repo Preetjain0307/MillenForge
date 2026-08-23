@@ -17,12 +17,12 @@ const PreviewContainer = ({ pageName, children, isEmpty = true }) => {
   const getViewportWidthClass = () => {
     switch (viewportMode) {
       case 'mobile':
-        return 'max-w-[375px] mx-auto border-x border-[var(--nm-border)] shadow-xl';
+        return 'max-w-[375px] mx-auto border-x border-[var(--nm-border)] shadow-xl nm-viewport-mobile';
       case 'tablet':
-        return 'max-w-[768px] mx-auto border-x border-[var(--nm-border)] shadow-xl';
+        return 'max-w-[768px] mx-auto border-x border-[var(--nm-border)] shadow-xl nm-viewport-tablet';
       case 'desktop':
       default:
-        return 'w-full';
+        return 'w-full nm-viewport-desktop';
     }
   };
 

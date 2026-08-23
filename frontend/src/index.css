@@ -280,3 +280,20 @@ html, body {
   outline-offset: 2px !important;
 }
 
+/* ── Viewport Mode Responsive Overrides ────────────────────────────────────── */
+.nm-viewport-mobile .grid {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.nm-viewport-mobile section {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.nm-viewport-tablet .grid-cols-3,
+.nm-viewport-tablet .grid-cols-4,
+.nm-viewport-tablet .lg\:grid-cols-3,
+.nm-viewport-tablet .lg\:grid-cols-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+

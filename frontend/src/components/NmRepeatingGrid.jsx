@@ -116,19 +116,23 @@ const NmRepeatingGrid = ({
                 </div>
               )}
 
-              {iconClass && (
-                <div
-                  className="w-10 h-10 rounded-lg bg-[var(--nm-accent-glow)] flex items-center justify-center mb-3 text-[var(--nm-accent-light)]"
-                  aria-hidden="true"
-                >
-                  <i className={`${iconClass} text-lg`} />
+              {/* Badge & Icon Header */}
+              {(iconClass || badgeText) && (
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  {iconClass ? (
+                    <div
+                      className="w-10 h-10 rounded-lg bg-[var(--nm-accent-glow)] flex items-center justify-center text-[var(--nm-accent-light)] shrink-0"
+                      aria-hidden="true"
+                    >
+                      <i className={`${iconClass} text-lg`} />
+                    </div>
+                  ) : <div />}
+                  {badgeText && (
+                    <span className="nm-badge shrink-0 whitespace-nowrap ml-auto">
+                      {badgeText}
+                    </span>
+                  )}
                 </div>
-              )}
-
-              {badgeText && (
-                <span className="nm-badge self-start mb-2 text-xs font-semibold px-2 py-0.5 rounded bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)]">
-                  {badgeText}
-                </span>
               )}
 
               {displayText && (

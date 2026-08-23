@@ -8,6 +8,7 @@
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { calculateQualityScore, validateDesignToCode } = require('../utils/qualityScorer');
+const { geminiProviderManager } = require('./geminiProviderManager');
 
 // ── Gemini configuration fallback ─────────────────────────────────────────────
 const getConfig = () => {
@@ -37,14 +38,14 @@ const extractJSON = (text) => {
 const analyzeRequirements = async ({ prompt = '', uiPage = null, wireframeMeta = null }) => {
   const promptLower = String(prompt).toLowerCase();
 
-  // Try Gemini AI structured analysis if API key is configured
-  const config = getConfig();
-  if (config.apiKey) {
+  // Try Gemini AI structured analysis if AI providers are configured
+  if (geminiProviderManager.hasProviders()) {
     try {
-      const genAI = new GoogleGenerativeAI(config.apiKey);
-      const model = genAI.getGenerativeModel({ model: config.model });
+      const parsed = await geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: providerModel });
 
-      const aiPrompt = `You are a Senior Product Manager and System Architect analyzing a software product requirement.
+        const aiPrompt = `You are a Senior Product Manager and System Architect analyzing a software product requirement.
 
 User Prompt: "${prompt}"
 
@@ -77,13 +78,15 @@ Analyze this requirement and output ONLY a valid JSON object matching this exact
 
 Identify missing requirements such as: authentication, user roles, mobile responsiveness, empty/error/loading states, accessibility, CTAs, data persistence, search/filter controls. Output ONLY the JSON.`;
 
-      const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: aiPrompt }] }],
-        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: aiPrompt }] }],
+          generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
+        });
+
+        const text = result.response.text();
+        return extractJSON(text);
       });
 
-      const text = result.response.text();
-      const parsed = extractJSON(text);
       if (parsed && Array.isArray(parsed.missingRequirements)) {
         return parsed;
       }

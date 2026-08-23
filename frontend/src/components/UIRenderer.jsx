@@ -682,25 +682,29 @@ const getLayoutClasses = (section) => {
 
   if (type === 'hero') {
     if (layout === 'split' || layout === 'split-left') {
-      return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center';
+      return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full';
     }
     if (layout === 'split-right') {
-      return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center [direction:rtl] [&>*]:[direction:ltr]';
+      return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center [direction:rtl] [&>*]:[direction:ltr] w-full';
     }
-    return 'flex flex-col items-center text-center gap-6';
+    return 'flex flex-col items-center text-center gap-6 max-w-4xl mx-auto w-full';
   }
 
-  if (type === 'features' || type === 'cards' || type === 'pricing' || type === 'testimonials' || type === 'gallery') {
-    const cols = section.props?.columns || 3;
-    const colMap = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4' };
-    return `grid grid-cols-1 md:grid-cols-2 ${colMap[cols] || 'lg:grid-cols-3'} gap-6`;
+  if (layout === 'split' || layout === 'split-left') {
+    return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full';
+  }
+  if (layout === 'split-right') {
+    return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-start [direction:rtl] [&>*]:[direction:ltr] w-full';
   }
 
-  if (type === 'navbar') return 'flex items-center justify-between gap-4 flex-wrap';
-  if (type === 'footer') return 'flex flex-wrap items-center justify-between gap-4';
-  if (type === 'cta') return 'flex flex-col items-center text-center gap-4';
+  if (layout === 'center' || type === 'cta') {
+    return 'flex flex-col items-center text-center gap-6 w-full';
+  }
 
-  return 'flex flex-col gap-4';
+  if (type === 'navbar') return 'flex items-center justify-between gap-4 flex-wrap w-full';
+  if (type === 'footer') return 'flex flex-wrap items-center justify-between gap-4 w-full';
+
+  return 'flex flex-col gap-6 w-full';
 };
 
 // ─── Section Renderer ─────────────────────────────────────────────────────────
