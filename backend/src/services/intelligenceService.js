@@ -12,7 +12,7 @@ const { calculateQualityScore, validateDesignToCode } = require('../utils/qualit
 // ── Gemini configuration fallback ─────────────────────────────────────────────
 const getConfig = () => {
   const apiKey = process.env.AI_API_KEY;
-  const rawModel = (process.env.AI_MODEL || 'gemini-3.6-flash').trim();
+  const rawModel = (process.env.AI_MODEL || 'gemini-2.0-flash').trim();
   return { apiKey, model: rawModel };
 };
 

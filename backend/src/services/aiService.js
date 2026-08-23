@@ -30,7 +30,7 @@ const VALID_MODELS = new Set([
   'gemini-2.5-pro',
 ]);
 
-const DEFAULT_MODEL = 'gemini-3.6-flash';
+const DEFAULT_MODEL = 'gemini-2.0-flash';
 
 const getConfig = () => {
   const apiKey = process.env.AI_API_KEY;

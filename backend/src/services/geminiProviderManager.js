@@ -13,7 +13,7 @@
  * distinct, authorized configurations to ensure business continuity.
  */
 
-const DEFAULT_MODEL = 'gemini-3.6-flash';
+const DEFAULT_MODEL = 'gemini-2.0-flash';
 
 class GeminiProviderManager {
   constructor() {
