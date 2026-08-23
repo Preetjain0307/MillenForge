@@ -11,9 +11,13 @@ router.post('/docs', platformController.generateDocs);
 // Code impact analysis
 router.post('/impact', platformController.analyzeImpact);
 
+// UI to Flowchart Extraction
+router.post('/ui-to-flow', platformController.generateUiToFlow);
+
 // UI Version History
 router.post('/pages/:pageId/versions', platformController.createVersion);
 router.get('/pages/:pageId/versions', platformController.listVersions);
 router.post('/pages/:pageId/versions/:version/restore', platformController.restoreVersion);
 
 module.exports = router;
+

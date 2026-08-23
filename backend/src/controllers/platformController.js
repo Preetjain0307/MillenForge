@@ -177,4 +177,30 @@ const restoreVersion = async (req, res, next) => {
   }
 };
 
-module.exports = { generateTheme, generateDocs, analyzeImpact, createVersion, listVersions, restoreVersion };
+const generateUiToFlow = async (req, res, next) => {
+  try {
+    const { imagePath, uiPage, prompt } = req.body;
+    const flowchartData = await aiService.generateUiToFlow({
+      imagePath,
+      uiPage,
+      prompt,
+    });
+
+    res.json({
+      success: true,
+      flowchart: flowchartData,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  generateTheme,
+  generateDocs,
+  analyzeImpact,
+  createVersion,
+  listVersions,
+  restoreVersion,
+  generateUiToFlow,
+};

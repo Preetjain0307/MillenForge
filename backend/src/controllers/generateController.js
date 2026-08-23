@@ -7,7 +7,7 @@
  *
  * Pipeline:
  *   1. Input validation
- *   2. Gemini AI generation (with model-level & provider failover)
+ *   2. Gemini AI generation (with model-level fallback)
  *   3. Image enrichment (contextual Unsplash images)
  *   4. Generation Quality Gate:
  *        a. UIPage schema validation
@@ -20,7 +20,12 @@
  *   6. Safe error mapping (no stack traces or API keys in responses)
  */
 
-const { generateUIFromPrompt, generateUIFromWireframe, buildSmartFallbackPage } = require('../services/aiService');
+const {
+  generateUIFromPrompt,
+  generateUIFromWireframe,
+  generateUIFromDiagram,
+  buildSmartFallbackPage,
+} = require('../services/aiService');
 const { enrichPageImages } = require('../services/imageService');
 const { validateUIPage } = require('../utils/validateUI');
 const { runGenerationQualityGate } = require('../services/generationQualityGate');
@@ -32,9 +37,25 @@ const MAX_RETRIES = 2;
  * Run one generation + image-enrichment cycle and return the raw enriched page.
  * Does NOT run the quality gate — caller does that.
  */
-const runGenerationCycle = async ({ prompt, pageName, wireframe, existingCode, architectureFlow }) => {
+const runGenerationCycle = async ({
+  prompt,
+  pageName,
+  wireframe,
+  existingCode,
+  architectureFlow,
+  diagramType,
+  diagramCode,
+}) => {
   let rawPage;
-  if (wireframe?.filename) {
+  if (diagramType || diagramCode) {
+    rawPage = await generateUIFromDiagram({
+      imagePath: wireframe?.filename,
+      diagramCode,
+      diagramType,
+      prompt: prompt.trim(),
+      pageName,
+    });
+  } else if (wireframe?.filename) {
     rawPage = await generateUIFromWireframe({
       imagePath: wireframe.filename,
       prompt: prompt.trim(),
@@ -57,17 +78,35 @@ const generate = async (req, res) => {
   console.log(`[GENERATION] request received (t=0ms)`);
 
   try {
-    const { prompt, pageName, wireframe, existingCode, architectureFlow } = req.body;
+    const {
+      prompt,
+      pageName,
+      wireframe,
+      existingCode,
+      architectureFlow,
+      diagramType,
+      diagramCode,
+    } = req.body;
 
     // ── Input validation ──────────────────────────────────────────────────────
-    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    const hasWireframe = Boolean(wireframe?.filename);
+    const hasPrompt = Boolean(prompt && typeof prompt === 'string' && prompt.trim().length > 0);
+    const hasDiagram = Boolean(diagramType || diagramCode);
+
+    if (!hasWireframe && !hasPrompt && !hasDiagram) {
       return res.status(400).json({
         success: false,
-        message: 'A prompt is required. Describe the UI you want to generate.',
+        message: 'Please upload a diagram/wireframe, paste diagram code, or describe the UI with a prompt.',
       });
     }
 
-    const resolvedPageName = (pageName && pageName.trim()) || 'Home';
+    const defaultPrompt = hasDiagram
+      ? `Generate a complete, modern software UI faithfully visualizing and implementing the ${diagramType || 'software'} diagram.`
+      : 'Generate a complete, modern, responsive UI reproducing this wireframe faithfully with clear sections and interactive components.';
+
+    const effectivePrompt = hasPrompt ? prompt.trim() : defaultPrompt;
+
+    const resolvedPageName = (pageName && pageName.trim()) || (hasDiagram ? 'System Console' : 'Home');
 
     // ── Generation + Quality Gate Loop (max 1 + 2 retries) ───────────────────
     let bestResult = null;
@@ -79,16 +118,18 @@ const generate = async (req, res) => {
 
       // 1. Generate & enrich images
       const enrichedPage = await runGenerationCycle({
-        prompt,
+        prompt: effectivePrompt,
         pageName: resolvedPageName,
         wireframe,
         existingCode,
         architectureFlow,
+        diagramType,
+        diagramCode,
       });
       console.log(`[GENERATION] attempt ${attempt} — Gemini completed, images enriched (${Date.now() - t0}ms)`);
 
       // 2. Run quality gate
-      const gateResult = runGenerationQualityGate(enrichedPage, prompt.trim());
+      const gateResult = runGenerationQualityGate(enrichedPage, effectivePrompt);
       console.log(`[GENERATION] attempt ${attempt} — quality gate: passed=${gateResult.passed}, score=${gateResult.qualityScore}, match=${gateResult.matchScore}`);
 
       // 3. Track best result (highest quality score) across attempts
@@ -124,9 +165,14 @@ const generate = async (req, res) => {
       description: finalPage.meta?.description || `AI generated interface for ${resolvedPageName}`,
       domain: resolvedPageName,
       generatedAt: new Date().toISOString(),
-      generationSource: wireframe?.filename ? 'wireframe+prompt' : 'prompt-only',
+      generationSource: hasDiagram
+        ? `diagram-${diagramType || 'software'}`
+        : hasWireframe
+          ? (hasPrompt ? 'wireframe+prompt' : 'wireframe-only')
+          : 'prompt-only',
+      diagramType: diagramType || null,
       wireframeUsed: wireframe?.filename || null,
-      promptUsed: prompt.trim().slice(0, 200),
+      promptUsed: hasPrompt ? prompt.trim().slice(0, 200) : `(Generated from ${diagramType || 'diagram'})`,
       qualityScore: finalGate.qualityScore,
       qualityGrade: finalGate.qualityGrade,
       matchScore: finalGate.matchScore,
@@ -156,21 +202,21 @@ const generate = async (req, res) => {
 
     // ── Safe error mapping — no stack traces or keys in responses ─────────────
 
-    if (err.message?.includes('AI_API_KEY') || err.message?.includes('GEMINI_API_KEY') || err.message?.includes('No active providers')) {
+    if (err.message?.includes('AI_API_KEY') || err.message?.includes('GEMINI_API_KEY')) {
       return res.status(503).json({
         success: false,
-        message: 'AI service is not configured. Ask your administrator to set AI_API_KEY or AI_PROVIDER_1_API_KEY.',
+        message: 'AI service is not configured. Ask your administrator to set AI_API_KEY.',
       });
     }
 
-    if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('API_KEY_INVALID') || err.message?.includes('UNAUTHENTICATED') || err.message?.includes('authentication failed')) {
+    if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('API_KEY_INVALID') || err.message?.includes('UNAUTHENTICATED')) {
       return res.status(503).json({
         success: false,
-        message: 'AI service authentication failed across configured providers. Please check your Gemini API keys in backend/.env.',
+        message: 'AI service authentication failed. Verify that AI_API_KEY in backend/.env is a valid Google Gemini API key.',
       });
     }
 
-    if (err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED') || err.message?.includes('rate limit')) {
+    if (err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('RESOURCE_EXHAUSTED')) {
       console.warn('[GENERATE] Rate limit caught in controller — generating smart fallback layout with contextual images.');
       const fallbackPage = enrichPageImages(
         buildSmartFallbackPage(req.body?.pageName || 'Home', req.body?.prompt || ''),
