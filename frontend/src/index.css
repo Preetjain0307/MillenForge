@@ -6,39 +6,39 @@
 @import "primereact/resources/primereact.min.css";
 @import "primeicons/primeicons.css";
 
-/* Design tokens — NeuraMind Deep Space Theme (Sneha) */
+/* Design tokens — Premium Graphite & Electric Violet Studio Theme (Sneha) */
 :root {
-  --nm-bg-primary: #0a0a0f;
-  --nm-bg-secondary: #111118;
-  --nm-bg-surface: #1a1a2e;
-  --nm-bg-card: #16213e;
-  --nm-accent: #6c63ff;
-  --nm-accent-light: #8b83ff;
-  --nm-accent-glow: rgba(108, 99, 255, 0.3);
-  --nm-text-primary: #e8e8f0;
-  --nm-text-secondary: #9898b0;
-  --nm-text-muted: #5a5a72;
-  --nm-border: rgba(108, 99, 255, 0.2);
-  --nm-border-subtle: rgba(255, 255, 255, 0.06);
-  --nm-success: #22c55e;
-  --nm-error: #ef4444;
-  --nm-warning: #f59e0b;
+  --nm-bg-primary: #09090b;
+  --nm-bg-secondary: #111113;
+  --nm-bg-surface: #18181b;
+  --nm-bg-card: #18181b;
+  --nm-accent: #8b5cf6;
+  --nm-accent-light: #a78bfa;
+  --nm-accent-glow: rgba(139, 92, 246, 0.25);
+  --nm-text-primary: #f8fafc;
+  --nm-text-secondary: #cbd5e1;
+  --nm-text-muted: #94a3b8;
+  --nm-border: rgba(139, 92, 246, 0.3);
+  --nm-border-subtle: #2a2a30;
+  --nm-success: #34d399;
+  --nm-error: #fb7185;
+  --nm-warning: #fbbf24;
   --nm-radius: 12px;
   --nm-radius-sm: 8px;
   --nm-radius-lg: 16px;
 
-  /* Dynamic Canvas Theme Tokens (Sanika's color engine defaults) */
-  --background: #0a0a0f;
-  --surface: #1a1a2e;
-  --primary: #6c63ff;
+  /* Dynamic Canvas Theme Tokens (Sanika's color accuracy engine) */
+  --background: #09090b;
+  --surface: #18181b;
+  --primary: #8b5cf6;
   --primary-text: #ffffff;
-  --text: #e8e8f0;
-  --muted-text: #5a5a72;
-  --border: rgba(255, 255, 255, 0.06);
-  --accent: #6c63ff;
-  --heading-color: #e8e8f0;
-  --header-bg: #16213e;
-  --header-text: #e8e8f0;
+  --text: #f8fafc;
+  --muted-text: #94a3b8;
+  --border: #2a2a30;
+  --accent: #8b5cf6;
+  --heading-color: #f8fafc;
+  --header-bg: #18181b;
+  --header-text: #f8fafc;
 }
 
 /* Base */
@@ -131,7 +131,6 @@ html, body {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 0.5rem;
-  /* hide scrollbar visually but keep scroll functionality */
   scrollbar-width: thin;
   scrollbar-color: var(--nm-border) transparent;
 }
@@ -186,7 +185,7 @@ html, body {
 }
 
 .nm-wizard__track {
-  display: none; /* connector lines handled via step borders */
+  display: none;
 }
 
 .nm-wizard__steps {
@@ -209,11 +208,10 @@ html, body {
 }
 
 .nm-wizard__step::before {
-  /* Vertical connector line between steps */
   content: '';
   position: absolute;
-  left: calc(1rem + 18px); /* center of the circle */
-  top: calc(0.875rem + 36px); /* below the circle */
+  left: calc(1rem + 18px);
+  top: calc(0.875rem + 36px);
   width: 2px;
   height: calc(100% - 36px);
   background: var(--nm-border-subtle);
@@ -224,7 +222,7 @@ html, body {
 }
 
 .nm-wizard__step--active {
-  background: rgba(108, 99, 255, 0.06);
+  background: rgba(139, 92, 246, 0.06);
 }
 
 .nm-wizard__step--done .nm-wizard__step::before,
@@ -276,7 +274,7 @@ html, body {
   text-transform: uppercase;
   background: var(--nm-accent-glow);
   color: var(--nm-accent-light);
-  border: 1px solid rgba(108, 99, 255, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.3);
   white-space: nowrap;
 }
 
