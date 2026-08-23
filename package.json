@@ -4,6 +4,7 @@
   "description": "NeuraMind – AI-Assisted UI Generation from Wireframe, Code & Prompt",
   "private": true,
   "scripts": {
+    "dev": "npm run dev:backend & npm run dev:frontend",
     "install:all": "npm install --prefix frontend && npm install --prefix backend",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:backend": "npm run dev --prefix backend",
