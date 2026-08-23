@@ -13,7 +13,7 @@
  * distinct, authorized configurations to ensure business continuity.
  */
 
-const DEFAULT_MODEL = 'gemini-2.0-flash';
+const DEFAULT_MODEL = 'gemini-3.6-flash';
 
 class GeminiProviderManager {
   constructor() {
@@ -310,7 +310,8 @@ class GeminiProviderManager {
       }
       attemptedProviders.add(provider.id);
 
-      console.log(`[AI] ${provider.id} selected for generation (model: ${provider.model})`);
+      const providerName = provider.id.replace('provider-', 'Provider ');
+      console.log(`[AI] ${providerName} selected`);
 
       let providerAttempt = 0;
       const maxRetriesOnProvider = this.maxRetries;
@@ -324,32 +325,32 @@ class GeminiProviderManager {
           );
 
           this.recordSuccess(provider);
-          console.log(`[AI] ${provider.id} generation successful`);
+          console.log(`[AI] ${providerName} succeeded`);
           return result;
         } catch (err) {
           lastError = err;
           const errorType = this.classifyError(err);
-          console.warn(`[AI] ${provider.id} attempt ${providerAttempt} failed (${errorType}): ${err.message || err}`);
 
           if (errorType === 'RATE_LIMITED') {
+            console.warn(`[AI] ${providerName} returned 429`);
             this.recordFailure(provider, 'RATE_LIMITED');
-            console.warn(`[AI] Failing over from ${provider.id} due to rate limit (429)...`);
+            console.warn(`[AI] ${providerName} cooldown`);
             break; // Fail over immediately to next provider
           }
 
           if (errorType === 'AUTH_ERROR') {
+            console.error(`[AI] ${providerName} authentication error (401/403)`);
             this.recordFailure(provider, 'AUTH_ERROR');
-            console.warn(`[AI] Failing over from ${provider.id} due to authentication error...`);
             break; // Fail over immediately to next provider
           }
 
           if (providerAttempt <= maxRetriesOnProvider) {
             const delayMs = Math.pow(2, providerAttempt - 1) * 1000;
-            console.log(`[AI] ${provider.id} retrying in ${delayMs}ms...`);
+            console.log(`[AI] ${providerName} retrying in ${delayMs}ms...`);
             await new Promise((resolve) => setTimeout(resolve, delayMs));
           } else {
             this.recordFailure(provider, errorType);
-            console.warn(`[AI] Exceeded retries on ${provider.id}. Failing over to next provider...`);
+            console.warn(`[AI] Exceeded retries on ${providerName}. Trying next provider...`);
           }
         }
       }

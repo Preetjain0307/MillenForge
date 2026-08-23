@@ -27,9 +27,9 @@ const PreviewPage = () => {
   const [isCmsOpen, setIsCmsOpen] = useState(true);
   const [isIntelligenceOpen, setIsIntelligenceOpen] = useState(false);
 
-  // Auto-initialize sample page data if page is missing from Redux (e.g. cold load of /preview/Home)
+  // Auto-initialize sample page data ONLY if pageName is 'demo', never overwrite generated pages
   useEffect(() => {
-    if (!pageData && (decodedName === 'Home' || decodedName === 'Landing Page' || decodedName === 'Untitled')) {
+    if (!pageData && decodedName === 'demo') {
       dispatch(setPage({ pageName: decodedName, data: { ...EXAMPLE_CMS_BOUND_PAGE, page: decodedName } }));
     }
   }, [pageData, decodedName, dispatch]);
@@ -60,7 +60,7 @@ const PreviewPage = () => {
   };
 
   return (
-    <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 gap-6 nm-animate-in">
+    <main className="flex-1 flex flex-col max-w-[1600px] mx-auto w-full px-4 sm:px-6 py-8 gap-6 nm-animate-in">
       {/* Judge Demo Banner */}
       <div
         role="note"
@@ -181,10 +181,10 @@ const PreviewPage = () => {
       {/* Main Content Area: Responsive Split View */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Interactive Page Preview */}
-        <div className={`${isCmsOpen ? 'lg:col-span-7' : 'lg:col-span-12'} flex flex-col gap-4 transition-all duration-300`}>
+        <div className={`${isCmsOpen ? 'lg:col-span-8' : 'lg:col-span-12'} flex flex-col gap-4 transition-all duration-300 w-full`}>
           <div
             onClick={handlePreviewClick}
-            className="flex-1 flex flex-col"
+            className="flex-1 flex flex-col w-full"
             style={{ minHeight: '520px' }}
           >
             <PreviewContainer pageName={decodedName} isEmpty={!pageData}>
@@ -195,7 +195,7 @@ const PreviewPage = () => {
 
         {/* Right Column: CMS Content Editor Panel */}
         {isCmsOpen && (
-          <div className="lg:col-span-5 sticky top-20">
+          <div className="lg:col-span-4 sticky top-20 w-full">
             <CmsEditorPanel
               selectedElementId={selectedElementId}
               pageData={pageData}

@@ -28,6 +28,7 @@
 const { validateUIPage } = require('../utils/validateUI');
 const { calculateQualityScore, validateDesignToCode } = require('../utils/qualityScorer');
 const { healUIPage } = require('./aiReviewService');
+const { extractPromptRequirements } = require('./promptRequirementExtractor');
 
 // ── Domain detection helpers ──────────────────────────────────────────────────
 
@@ -120,10 +121,19 @@ const DOC_IRRELEVANT_QUERIES  = ['pizza', 'burger', 'beach', 'resort', 'fashion'
 const rejectIrrelevantImages = (uiPage, domainRule) => {
   if (!domainRule || !uiPage || !Array.isArray(uiPage.sections)) return uiPage;
 
-  const blockList = domainRule.name === 'saas' ? SAAS_IRRELEVANT_QUERIES
-    : domainRule.name === 'documentation' ? DOC_IRRELEVANT_QUERIES
-    : [];
+  const domainName = (domainRule.name || '').toLowerCase();
+  const OFF_DOMAIN_MAP = {
+    college: ['pizza', 'burger', 'food', 'hotel', 'resort', 'villa', 'fashion', 'sneakers'],
+    hospital: ['pizza', 'burger', 'food', 'hotel', 'resort', 'villa', 'fashion', 'sneakers', 'concert'],
+    saas: SAAS_IRRELEVANT_QUERIES,
+    documentation: DOC_IRRELEVANT_QUERIES,
+    food: ['campus', 'university', 'college', 'hospital', 'clinic', 'villa', 'sneakers'],
+    travel: ['food', 'pizza', 'burger', 'hospital', 'clinic', 'campus', 'university'],
+    fashion: ['pizza', 'burger', 'hospital', 'clinic', 'campus', 'university', 'resort'],
+    banking: ['pizza', 'burger', 'food', 'resort', 'villa', 'fashion'],
+  };
 
+  const blockList = OFF_DOMAIN_MAP[domainName] || [];
   if (blockList.length === 0) return uiPage;
 
   const cleanedSections = uiPage.sections.map((section) => {
@@ -132,23 +142,24 @@ const rejectIrrelevantImages = (uiPage, domainRule) => {
     const cleanedElements = section.elements.map((el) => {
       if (el.type !== 'image') return el;
 
-      const query = (el.content?.imageQuery || el.props?.imageQuery || el.props?.alt || '').toLowerCase();
+      const query = (el.content?.imageQuery || el.props?.imageQuery || el.props?.alt || el.props?.src || '').toLowerCase();
       const isIrrelevant = blockList.some((blocked) => query.includes(blocked));
 
       if (isIrrelevant) {
-        // Replace with a neutral workspace/dashboard placeholder
-        const fallbackSrc = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80';
+        // Resolve a relevant domain-specific asset instead
+        const { resolveContextualImage } = require('./imageService');
+        const resolved = resolveContextualImage(domainName, `${domainName} visual asset`);
         return {
           ...el,
           content: {
-            src: fallbackSrc,
-            alt: 'Professional workspace',
-            imageQuery: 'professional workspace',
+            src: resolved.src,
+            alt: resolved.alt,
+            imageQuery: domainName,
           },
           props: {
             ...el.props,
-            src: fallbackSrc,
-            alt: 'Professional workspace',
+            src: resolved.src,
+            alt: resolved.alt,
           },
         };
       }
@@ -221,6 +232,230 @@ const QUALITY_THRESHOLD = 55;
 /** Minimum design-to-prompt match to pass */
 const MATCH_THRESHOLD = 60;
 
+// ── Prompt Requirement Healing Helper ─────────────────────────────────────────
+
+const healMissingPromptRequirements = (uiPage, userPrompt = '') => {
+  if (!uiPage || !Array.isArray(uiPage.sections)) return { page: uiPage, missingRequirements: [] };
+
+  const reqSpec = extractPromptRequirements(userPrompt);
+  const sections = [...uiPage.sections];
+  const allElements = sections.flatMap((s) => s.elements || []);
+  const missing = [];
+
+  // Check 1: GST Breakdown requirement
+  if (reqSpec.requiresGST && reqSpec.financials) {
+    const hasGstElement = allElements.some((el) => {
+      const txt = (el.content || el.fallback || el.props?.title || '').toString().toLowerCase();
+      return txt.includes('gst') || txt.includes('tax');
+    });
+
+    if (!hasGstElement) {
+      missing.push('GST tax breakdown calculation element');
+
+      // Inject GST Price Breakdown section
+      const gstSection = {
+        id: 'sec-gst-tax-breakdown',
+        type: 'checkout',
+        elements: [
+          {
+            id: 'gst-title',
+            type: 'text',
+            content: `Price Breakdown & GST Tax (${reqSpec.financials.gstPercentage}%)`,
+            props: { tag: 'h3' },
+            fallback: 'Price Breakdown & GST Tax',
+          },
+          {
+            id: 'gst-cards-grid',
+            type: 'cards',
+            props: {
+              columns: 3,
+              items: [
+                {
+                  id: 'item-base-price',
+                  title: 'Base Price',
+                  description: 'Original item price',
+                  price: reqSpec.financials.basePriceFormatted,
+                  badge: 'Subtotal',
+                  icon: 'pi pi-tag',
+                },
+                {
+                  id: 'item-gst-amount',
+                  title: `GST (${reqSpec.financials.gstPercentage}%)`,
+                  description: `Calculated GST Amount`,
+                  price: reqSpec.financials.gstAmountFormatted,
+                  badge: 'Tax',
+                  icon: 'pi pi-percentage',
+                },
+                {
+                  id: 'item-total-price',
+                  title: 'Final Total Amount',
+                  description: 'Price inclusive of all taxes',
+                  price: reqSpec.financials.totalPriceFormatted,
+                  badge: 'Total Payable',
+                  icon: 'pi pi-check-circle',
+                },
+              ],
+            },
+            fallback: 'GST Price Breakdown',
+          },
+        ],
+      };
+
+      // Insert before footer or at end
+      const footerIdx = sections.findIndex((s) => s.type === 'footer');
+      if (footerIdx !== -1) {
+        sections.splice(footerIdx, 0, gstSection);
+      } else {
+        sections.push(gstSection);
+      }
+    }
+  }
+
+  // Check 2: Mandatory Action Buttons
+  reqSpec.requiredActions.forEach((actionLabel) => {
+    const hasAction = allElements.some((el) => {
+      const btnTxt = (el.content || el.props?.label || el.fallback || '').toString().toLowerCase();
+      return btnTxt.includes(actionLabel.toLowerCase());
+    });
+
+    if (!hasAction) {
+      missing.push(`Required action button: "${actionLabel}"`);
+      // Add button to hero section or first non-navbar section
+      const heroSec = sections.find((s) => s.type === 'hero') || sections.find((s) => s.type !== 'navbar');
+      if (heroSec && Array.isArray(heroSec.elements)) {
+        heroSec.elements.push({
+          id: `btn-${actionLabel.toLowerCase().replace(/\s+/g, '-')}`,
+          type: 'button',
+          content: actionLabel,
+          props: { variant: 'primary', label: actionLabel, icon: 'pi pi-shopping-bag' },
+          fallback: actionLabel,
+        });
+      }
+    }
+  });
+
+  // Check 3: Theme Requirement (Light/White theme)
+  if (reqSpec.isLightThemeRequested) {
+    uiPage.props = uiPage.props || {};
+    uiPage.props.theme = 'light';
+    uiPage.meta = { ...(uiPage.meta || {}), theme: 'light' };
+  }
+
+  // Check 3b: Dynamic Theme & Explicit Color Requirements
+  uiPage.props = uiPage.props || {};
+  uiPage.meta = uiPage.meta || {};
+
+  if (reqSpec.themeTokens) {
+    uiPage.props.themeTokens = reqSpec.themeTokens;
+    uiPage.meta.themeTokens = reqSpec.themeTokens;
+    uiPage.themeTokens = reqSpec.themeTokens;
+  }
+
+  if (reqSpec.primaryButtonColor || reqSpec.customBgColor || reqSpec.colorSpec?.buttonBackground) {
+    if (reqSpec.primaryButtonColor || reqSpec.colorSpec?.buttonBackground) {
+      const btnCol = reqSpec.colorSpec?.buttonBackground || reqSpec.primaryButtonColor;
+      uiPage.props.buttonColor = btnCol;
+      uiPage.meta.primaryButtonColor = btnCol;
+      allElements.forEach((el) => {
+        if (el.type === 'button') {
+          el.props = el.props || {};
+          el.props.buttonColor = btnCol;
+          el.props.style = {
+            backgroundColor: 'var(--primary)',
+            color: 'var(--primary-text)',
+            ...(el.props.style || {}),
+          };
+          if (el.props.className) {
+            // Remove hardcoded static purple/indigo classes if user requested explicit color
+            el.props.className = el.props.className
+              .replace(/\bbg-(purple|indigo|violet)-\d+\b/g, '')
+              .replace(/\btext-(purple|indigo|violet)-\d+\b/g, '')
+              .trim();
+          }
+        }
+      });
+    }
+
+    if (reqSpec.customBgColor || reqSpec.colorSpec?.background) {
+      const bgCol = reqSpec.colorSpec?.background || reqSpec.customBgColor;
+      uiPage.props.bgColor = bgCol;
+      uiPage.meta.customBgColor = bgCol;
+      if (bgCol === 'white' || bgCol === 'grey' || bgCol === 'light grey') uiPage.props.theme = 'light';
+      else if (bgCol === 'black' || bgCol === 'dark' || bgCol === 'navy') uiPage.props.theme = 'dark';
+    }
+  }
+
+  // Check 4: Login & Role Authentication Portals Requirement (Student Login, Teacher Login)
+  if (reqSpec.loginTypes?.length > 0) {
+    const hasAuthSection = allElements.some((el) => {
+      const txt = (el.content || el.fallback || el.props?.label || '').toString().toLowerCase();
+      return txt.includes('student login') || txt.includes('teacher login') || txt.includes('faculty login') || txt.includes('user login');
+    });
+
+    if (!hasAuthSection) {
+      missing.push(`Role authentication portals (${reqSpec.loginTypes.join(', ')})`);
+
+      const authElements = [
+        {
+          id: 'auth-header',
+          type: 'text',
+          content: `${reqSpec.domain === 'college' ? 'College' : 'Portal'} Role Login & Access`,
+          props: { tag: 'h2' },
+          fallback: 'Role Login & Access',
+        },
+      ];
+
+      const loginCards = reqSpec.loginTypes.map((roleTitle, idx) => ({
+        id: `card-${roleTitle.toLowerCase().replace(/\s+/g, '-')}`,
+        title: roleTitle,
+        description: `Access your personal ${roleTitle.replace('Login', '')} dashboard, announcements, and resources.`,
+        price: 'Secure Auth',
+        badge: roleTitle.includes('Student') ? 'Student Portal' : 'Faculty Portal',
+        icon: roleTitle.includes('Student') ? 'pi pi-user' : 'pi pi-briefcase',
+      }));
+
+      authElements.push({
+        id: 'auth-cards-grid',
+        type: 'cards',
+        props: {
+          columns: loginCards.length,
+          items: loginCards,
+        },
+        fallback: 'Login Portals Grid',
+      });
+
+      reqSpec.loginTypes.forEach((roleTitle) => {
+        authElements.push({
+          id: `btn-action-${roleTitle.toLowerCase().replace(/\s+/g, '-')}`,
+          type: 'button',
+          content: roleTitle,
+          props: { variant: 'primary', label: roleTitle, icon: 'pi pi-sign-in' },
+          fallback: roleTitle,
+        });
+      });
+
+      const authSection = {
+        id: 'sec-auth-portal',
+        type: 'features',
+        elements: authElements,
+      };
+
+      const heroIdx = sections.findIndex((s) => s.type === 'hero');
+      if (heroIdx !== -1) {
+        sections.splice(heroIdx + 1, 0, authSection);
+      } else {
+        sections.unshift(authSection);
+      }
+    }
+  }
+
+  return {
+    page: { ...uiPage, sections },
+    reqSpec,
+    missingRequirements: missing,
+  };
+};
+
 // ── Main Gate Function ────────────────────────────────────────────────────────
 
 /**
@@ -236,9 +471,6 @@ const runGenerationQualityGate = (rawPage, userPrompt = '') => {
   let repairsApplied = [];
 
   // ── Early rejection: null / non-object / empty sections ───────────────────
-  // The self-healer can produce a valid default page from null — but that would
-  // be a fabricated page, not the AI output. Reject outright so the controller
-  // knows to retry or fail, rather than silently returning a stub page.
   if (
     rawPage === null ||
     rawPage === undefined ||
@@ -262,7 +494,6 @@ const runGenerationQualityGate = (rawPage, userPrompt = '') => {
   // ── Step 1: Schema validation ──────────────────────────────────────────────
   const validation = validateUIPage(rawPage);
   if (!validation.valid) {
-    // Don't reject here — attempt self-healing first
     issues.push(...(validation.errors || []).map((e) => `Schema: ${e}`));
   }
   if (validation.warnings?.length > 0) {
@@ -297,14 +528,20 @@ const runGenerationQualityGate = (rawPage, userPrompt = '') => {
   // ── Step 4: Image relevance gate ───────────────────────────────────────────
   const cleanedPage = rejectIrrelevantImages(page, domainRule);
 
-  // ── Step 5: Missing required sections check ────────────────────────────────
-  const missingSections = detectMissingRequiredSections(cleanedPage, domainRule);
+  // ── Step 5: Requirement Coverage & Financial Healing Pass ──────────────────
+  const { page: reqHealedPage, reqSpec, missingRequirements } = healMissingPromptRequirements(cleanedPage, userPrompt);
+  if (missingRequirements.length > 0) {
+    repairsApplied.push(...missingRequirements.map((m) => ({ type: 'requirement-heal', detail: m })));
+  }
+
+  // ── Step 6: Missing required sections check ────────────────────────────────
+  const missingSections = detectMissingRequiredSections(reqHealedPage, domainRule);
   if (missingSections.length > 0) {
     issues.push(...missingSections);
   }
 
-  // ── Step 6: Quality score ──────────────────────────────────────────────────
-  const qualityResult = calculateQualityScore(cleanedPage, userPrompt);
+  // ── Step 7: Quality score ──────────────────────────────────────────────────
+  const qualityResult = calculateQualityScore(reqHealedPage, userPrompt);
   const qualityScore = qualityResult.score;
   const qualityGrade = qualityResult.grade;
 
@@ -319,15 +556,15 @@ const runGenerationQualityGate = (rawPage, userPrompt = '') => {
     });
   }
 
-  // ── Step 7: Design-to-prompt match ────────────────────────────────────────
-  const matchResult = validateDesignToCode(userPrompt, cleanedPage);
+  // ── Step 8: Design-to-prompt match ────────────────────────────────────────
+  const matchResult = validateDesignToCode(userPrompt, reqHealedPage);
   const matchScore = matchResult.matchScore;
 
   matchResult.missingSections?.forEach((ms) => recommendations.push(`Add missing section: ${ms}`));
   matchResult.missingCTAs?.forEach((mc) => issues.push(`Missing CTA: ${mc}`));
   matchResult.missingImages?.forEach((mi) => issues.push(`Missing imagery: ${mi}`));
 
-  // ── Step 8: Gate decision ──────────────────────────────────────────────────
+  // ── Step 9: Gate decision ──────────────────────────────────────────────────
   const passed = qualityScore >= QUALITY_THRESHOLD && matchScore >= MATCH_THRESHOLD;
   const rejectionReason = !passed
     ? `Quality score ${qualityScore}/100 (min ${QUALITY_THRESHOLD}) and match score ${matchScore}/100 (min ${MATCH_THRESHOLD})`
@@ -335,10 +572,11 @@ const runGenerationQualityGate = (rawPage, userPrompt = '') => {
 
   return {
     passed,
-    page: cleanedPage,
+    page: reqHealedPage,
     qualityScore,
     qualityGrade,
     matchScore,
+    reqSpec,
     repairsApplied,
     issues,
     recommendations,
