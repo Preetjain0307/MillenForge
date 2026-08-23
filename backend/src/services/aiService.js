@@ -12,10 +12,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
 const { geminiProviderManager } = require('./geminiProviderManager');
-<<<<<<< HEAD
 const { resolveContextualImage } = require('./imageService');
-=======
->>>>>>> adb9933 (feat(ai): integrate Gemini multi-provider resilience and failover manager)
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -572,7 +569,6 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
  * @param {string} [params.architectureFlow]
  * @returns {Promise<object>} parsed UIPage JSON
  */
-const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
 const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
   const { extractPromptRequirements, formatRequirementSpecPrompt } = require('./promptRequirementExtractor');
   const reqSpec = extractPromptRequirements(prompt);
