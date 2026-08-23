@@ -1,4 +1,4 @@
-/* NeuroMinds — Frontend UI/UX Premium Design System */
+/* NeuraMind — Global Styles */
 @import "tailwindcss";
 
 /* PrimeReact theme */
@@ -6,42 +6,42 @@
 @import "primereact/resources/primereact.min.css";
 @import "primeicons/primeicons.css";
 
-/* Design Tokens: Graphite + Electric Violet + Ice */
+/* Design tokens */
 :root {
-  /* Graphite Palette */
-  --nm-bg-primary: #09090B;
-  --nm-bg-secondary: #111113;
-  --nm-bg-surface: #18181B;
-  --nm-bg-elevated: #202024;
-  --nm-bg-card: #18181B;
-  --nm-border: #2A2A30;
-  --nm-border-subtle: rgba(255, 255, 255, 0.07);
-
-  /* Electric Violet Palette */
-  --nm-accent: #8B5CF6;
-  --nm-accent-hover: #7C3AED;
-  --nm-accent-light: #A78BFA;
-  --nm-accent-soft: #C4B5FD;
-  --nm-accent-glow: rgba(139, 92, 246, 0.25);
-  --nm-accent-glow-subtle: rgba(139, 92, 246, 0.12);
-
-  /* Ice Palette (Typography) */
-  --nm-text-primary: #F8FAFC;
-  --nm-text-secondary: #CBD5E1;
-  --nm-text-muted: #94A3B8;
-
-  /* State Colors */
-  --nm-success: #34D399;
-  --nm-warning: #FBBF24;
-  --nm-error: #FB7185;
-
-  /* Radii */
+  --nm-bg-primary: #0a0a0f;
+  --nm-bg-secondary: #111118;
+  --nm-bg-surface: #1a1a2e;
+  --nm-bg-card: #16213e;
+  --nm-accent: #6c63ff;
+  --nm-accent-light: #8b83ff;
+  --nm-accent-glow: rgba(108, 99, 255, 0.3);
+  --nm-text-primary: #e8e8f0;
+  --nm-text-secondary: #9898b0;
+  --nm-text-muted: #5a5a72;
+  --nm-border: rgba(108, 99, 255, 0.2);
+  --nm-border-subtle: rgba(255, 255, 255, 0.06);
+  --nm-success: #22c55e;
+  --nm-error: #ef4444;
+  --nm-warning: #f59e0b;
   --nm-radius: 12px;
   --nm-radius-sm: 8px;
   --nm-radius-lg: 16px;
+
+  /* Dynamic Canvas Theme Tokens */
+  --background: #0a0a0f;
+  --surface: #16213e;
+  --primary: #6c63ff;
+  --primary-text: #ffffff;
+  --text: #e8e8f0;
+  --muted-text: #9898b0;
+  --border: rgba(108, 99, 255, 0.2);
+  --accent: #6c63ff;
+  --heading-color: #e8e8f0;
+  --header-bg: #16213e;
+  --header-text: #e8e8f0;
 }
 
-/* Base resets */
+/* Base */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -52,7 +52,7 @@ html, body {
   min-height: 100vh;
   background-color: var(--nm-bg-primary);
   color: var(--nm-text-primary);
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -61,57 +61,39 @@ html, body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--nm-bg-primary);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--nm-bg-secondary);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--nm-border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--nm-accent);
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--nm-bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--nm-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--nm-accent); }
 
-/* Typography & Utility classes */
+/* Utility classes */
 .nm-gradient-text {
-  background: linear-gradient(135deg, #F8FAFC 0%, var(--nm-accent-light) 50%, var(--nm-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.nm-gradient-violet {
-  background: linear-gradient(135deg, var(--nm-accent-light) 0%, var(--nm-accent) 100%);
+  background: linear-gradient(135deg, var(--nm-accent-light) 0%, #a78bfa 50%, #60a5fa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .nm-glass {
-  background: rgba(24, 24, 27, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--nm-border);
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--nm-border-subtle);
 }
 
 .nm-card {
-  background: var(--nm-bg-surface);
-  border: 1px solid var(--nm-border);
+  background: var(--nm-bg-card);
+  border: 1px solid var(--nm-border-subtle);
   border-radius: var(--nm-radius);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .nm-card:hover {
-  border-color: rgba(139, 92, 246, 0.4);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px var(--nm-accent-glow-subtle);
+  border-color: var(--nm-border);
+  box-shadow: 0 0 24px var(--nm-accent-glow);
 }
 
 /* Focus ring */
@@ -120,33 +102,22 @@ html, body {
   outline-offset: 2px;
 }
 
-/* Animations */
+/* Animation utilities */
 @keyframes nm-pulse-glow {
-  0%, 100% { box-shadow: 0 0 12px var(--nm-accent-glow); }
-  50% { box-shadow: 0 0 28px var(--nm-accent-glow), 0 0 44px var(--nm-accent-glow-subtle); }
+  0%, 100% { box-shadow: 0 0 8px var(--nm-accent-glow); }
+  50% { box-shadow: 0 0 24px var(--nm-accent-glow), 0 0 48px var(--nm-accent-glow); }
 }
 
 @keyframes nm-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .nm-animate-in {
-  animation: nm-fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: nm-fade-in 0.4s ease both;
 }
 
-/* Code block styles */
-.nm-code-block {
-  background: #0D0D11;
-  border: 1px solid var(--nm-border);
-  border-radius: var(--nm-radius-sm);
-  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  font-size: 0.8125rem;
-  line-height: 1.6;
-  color: #E2E8F0;
-}
-
-/* Carousel */
+/* ── Carousel ─────────────────────────────────────────────────────────────── */
 .nm-carousel-wrapper {
   width: 100%;
   overflow: hidden;
@@ -160,6 +131,7 @@ html, body {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 0.5rem;
+  /* hide scrollbar visually but keep scroll functionality */
   scrollbar-width: thin;
   scrollbar-color: var(--nm-border) transparent;
 }
@@ -177,8 +149,8 @@ html, body {
   flex-direction: column;
   border-radius: var(--nm-radius);
   overflow: hidden;
-  background: var(--nm-bg-surface);
-  border: 1px solid var(--nm-border);
+  background: var(--nm-bg-card);
+  border: 1px solid var(--nm-border-subtle);
 }
 
 .nm-carousel__img {
@@ -194,7 +166,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--nm-bg-elevated);
+  background: var(--nm-bg-surface);
 }
 
 .nm-carousel__caption {
@@ -204,13 +176,17 @@ html, body {
   gap: 0.25rem;
 }
 
-/* Wizard */
+/* ── Wizard ───────────────────────────────────────────────────────────────── */
 .nm-wizard {
   display: flex;
   flex-direction: column;
   gap: 0;
   width: 100%;
   position: relative;
+}
+
+.nm-wizard__track {
+  display: none; /* connector lines handled via step borders */
 }
 
 .nm-wizard__steps {
@@ -233,13 +209,14 @@ html, body {
 }
 
 .nm-wizard__step::before {
+  /* Vertical connector line between steps */
   content: '';
   position: absolute;
-  left: calc(1rem + 18px);
-  top: calc(0.875rem + 36px);
+  left: calc(1rem + 18px); /* center of the circle */
+  top: calc(0.875rem + 36px); /* below the circle */
   width: 2px;
   height: calc(100% - 36px);
-  background: var(--nm-border);
+  background: var(--nm-border-subtle);
 }
 
 .nm-wizard__step:last-child::before {
@@ -247,7 +224,12 @@ html, body {
 }
 
 .nm-wizard__step--active {
-  background: rgba(139, 92, 246, 0.08);
+  background: rgba(108, 99, 255, 0.06);
+}
+
+.nm-wizard__step--done .nm-wizard__step::before,
+.nm-wizard__step--done + .nm-wizard__step::before {
+  background: var(--nm-accent);
 }
 
 .nm-wizard__circle {
@@ -255,8 +237,8 @@ html, body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid var(--nm-border);
-  background: var(--nm-bg-elevated);
+  border: 2px solid var(--nm-border-subtle);
+  background: var(--nm-bg-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -273,7 +255,7 @@ html, body {
 
 .nm-wizard__circle--done {
   border-color: var(--nm-success);
-  background: rgba(52, 211, 153, 0.15);
+  background: rgba(34, 197, 94, 0.15);
   color: var(--nm-success);
 }
 
@@ -282,7 +264,7 @@ html, body {
   padding-top: 0.25rem;
 }
 
-/* Badge */
+/* ── Badge ────────────────────────────────────────────────────────────────── */
 .nm-badge {
   display: inline-flex;
   align-items: center;
@@ -292,28 +274,45 @@ html, body {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: rgba(139, 92, 246, 0.15);
+  background: var(--nm-accent-glow);
   color: var(--nm-accent-light);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(108, 99, 255, 0.3);
   white-space: nowrap;
 }
 
-/* NmButton */
+/* ── NmButton variants (supplement PrimeReact) ────────────────────────────── */
 .nm-btn {
   border-radius: var(--nm-radius-sm) !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
-  transition: all 0.15s ease !important;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease !important;
 }
 
-.nm-btn-primary {
-  background-color: var(--nm-accent) !important;
-  border-color: var(--nm-accent) !important;
-  color: #FFFFFF !important;
+.nm-btn:focus-visible {
+  outline: 2px solid var(--nm-accent) !important;
+  outline-offset: 2px !important;
 }
 
-.nm-btn-primary:hover {
-  background-color: var(--nm-accent-hover) !important;
-  border-color: var(--nm-accent-hover) !important;
-  box-shadow: 0 0 16px var(--nm-accent-glow) !important;
+/* ── Viewport Mode Grid & Responsive Overrides for Preview Container ───────── */
+.nm-viewport-mobile .grid {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.nm-viewport-mobile section {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.nm-viewport-tablet .grid,
+.nm-viewport-tablet .grid-cols-3,
+.nm-viewport-tablet .grid-cols-4,
+.nm-viewport-tablet .lg\:grid-cols-3,
+.nm-viewport-tablet .lg\:grid-cols-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* Natural Word Wrapping for Card Titles & Descriptions */
+.break-words {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
 }

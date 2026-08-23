@@ -172,15 +172,89 @@ const CURATED_IMAGE_CATALOG = {
     src: 'https://images.unsplash.com/photo-1501504905252-473c47e087f8?auto=format&fit=crop&w=800&q=80',
     alt: 'Student studying online learning course on laptop',
   },
+  college_campus: {
+    src: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80',
+    alt: 'University historic campus building, clock tower and green courtyard',
+  },
+  students_campus: {
+    src: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80',
+    alt: 'Diverse university college students studying and collaborating on campus',
+  },
+  college_library: {
+    src: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=800&q=80',
+    alt: 'Grand academic university library with study desks and books',
+  },
+  science_laboratory: {
+    src: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=80',
+    alt: 'Advanced engineering and science research laboratory',
+  },
+  faculty_lecture: {
+    src: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80',
+    alt: 'University professor giving lecture to college students in auditorium',
+  },
 
   // Fintech & Banking
   financial_analytics: {
-    src: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80',
+    src: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80',
     alt: 'Digital banking mobile dashboard and financial analytics',
   },
   crypto_wallet: {
     src: 'https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&w=800&q=80',
     alt: 'Secure cryptocurrency digital asset management interface',
+  },
+
+  // Grocery & Supermarket
+  grocery_produce: {
+    src: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80',
+    alt: 'Fresh organic vegetables and fruits grocery display',
+  },
+  grocery_dairy: {
+    src: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=800&q=80',
+    alt: 'Farm fresh milk and artisanal dairy produce',
+  },
+
+  // Entertainment & Movie Booking
+  cinema_hall: {
+    src: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Modern cinema theater auditorium with glowing screen',
+  },
+  popcorn_movie: {
+    src: 'https://images.unsplash.com/photo-1585647347483-22b66260dfff?auto=format&fit=crop&w=800&q=80',
+    alt: 'Fresh bucket of cinema popcorn and movie tickets',
+  },
+
+  // Transportation & Car Rental
+  rental_car: {
+    src: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Luxury rental sports sedan parked on scenic drive',
+  },
+  suv_rental: {
+    src: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80',
+    alt: 'Modern all-wheel drive SUV rental vehicle',
+  },
+
+  // Legal & Law Firm
+  law_library: {
+    src: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Law firm legal reference library with gavel and leather books',
+  },
+
+  // Photography & Creative Studio
+  camera_gear: {
+    src: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Professional DSLR camera lens and studio equipment',
+  },
+
+  // Gaming & Esports
+  gaming_setup: {
+    src: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80',
+    alt: 'RGB illuminated gaming PC setup and mechanical keyboard',
+  },
+
+  // Music & Audio Studio
+  music_studio: {
+    src: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200&q=80',
+    alt: 'Professional music production mixing console and monitors',
   },
 
   // Events & Conferences
@@ -204,53 +278,107 @@ const CURATED_IMAGE_CATALOG = {
 const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => {
   const q = String(query).toLowerCase().trim();
 
-  // 1. Exact or partial keyword match in catalog
+  // 1. Domain-Specific Intent Mapping (High Priority — prevents off-domain cross-matching)
+  if (q.includes('college') || q.includes('university') || q.includes('campus') || q.includes('student') || q.includes('teacher') || q.includes('faculty') || q.includes('academic') || q.includes('degree') || q.includes('education') || q.includes('school') || q.includes('library')) {
+    if (q.includes('student') || q.includes('group')) return CURATED_IMAGE_CATALOG.students_campus;
+    if (q.includes('library') || q.includes('book')) return CURATED_IMAGE_CATALOG.college_library;
+    if (q.includes('lab') || q.includes('research')) return CURATED_IMAGE_CATALOG.science_laboratory;
+    if (q.includes('class') || q.includes('lecture')) return CURATED_IMAGE_CATALOG.classroom;
+    return CURATED_IMAGE_CATALOG.college_campus;
+  }
+
+  if (q.includes('hospital') || q.includes('health') || q.includes('med') || q.includes('doctor') || q.includes('clinic') || q.includes('patient') || q.includes('surgery') || q.includes('emergency')) {
+    if (q.includes('clinic') || q.includes('reception')) return CURATED_IMAGE_CATALOG.clinic;
+    return CURATED_IMAGE_CATALOG.doctor_consultation;
+  }
+
+  if (q.includes('food') || q.includes('pizza') || q.includes('burger') || q.includes('restaurant') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal') || q.includes('sushi') || q.includes('pasta')) {
+    if (q.includes('pizza')) return CURATED_IMAGE_CATALOG.pizza;
+    if (q.includes('burger')) return CURATED_IMAGE_CATALOG.burger;
+    if (q.includes('sushi')) return CURATED_IMAGE_CATALOG.sushi;
+    if (q.includes('pasta')) return CURATED_IMAGE_CATALOG.pasta;
+    if (q.includes('salad')) return CURATED_IMAGE_CATALOG.salad;
+    if (q.includes('dessert')) return CURATED_IMAGE_CATALOG.dessert;
+    if (q.includes('coffee')) return CURATED_IMAGE_CATALOG.coffee;
+    return CURATED_IMAGE_CATALOG.restaurant_hero;
+  }
+
+  if (q.includes('travel') || q.includes('destination') || q.includes('vacation') || q.includes('trip') || q.includes('flight') || q.includes('tour') || q.includes('resort')) {
+    if (q.includes('paris')) return CURATED_IMAGE_CATALOG.paris;
+    if (q.includes('tokyo')) return CURATED_IMAGE_CATALOG.tokyo;
+    if (q.includes('mountain')) return CURATED_IMAGE_CATALOG.mountain;
+    if (q.includes('hotel') || q.includes('room')) return CURATED_IMAGE_CATALOG.hotel_room;
+    if (q.includes('resort')) return CURATED_IMAGE_CATALOG.resort;
+    return CURATED_IMAGE_CATALOG.beach;
+  }
+
+  if (q.includes('fashion') || q.includes('cloth') || q.includes('wear') || q.includes('apparel') || q.includes('store') || q.includes('shop') || q.includes('boutique')) {
+    if (q.includes('sneaker') || q.includes('shoe')) return CURATED_IMAGE_CATALOG.sneakers;
+    if (q.includes('watch')) return CURATED_IMAGE_CATALOG.watch;
+    if (q.includes('bag') || q.includes('handbag')) return CURATED_IMAGE_CATALOG.handbag;
+    if (q.includes('jacket')) return CURATED_IMAGE_CATALOG.jacket;
+    return CURATED_IMAGE_CATALOG.fashion_hero;
+  }
+
+  if (q.includes('estate') || q.includes('property') || q.includes('house') || q.includes('villa') || q.includes('apartment') || q.includes('realty')) {
+    if (q.includes('living')) return CURATED_IMAGE_CATALOG.living_room;
+    if (q.includes('kitchen')) return CURATED_IMAGE_CATALOG.kitchen;
+    return CURATED_IMAGE_CATALOG.villa;
+  }
+
+  if (q.includes('bank') || q.includes('banking') || q.includes('finance') || q.includes('fintech') || q.includes('money') || q.includes('wallet')) {
+    if (q.includes('crypto') || q.includes('wallet')) return CURATED_IMAGE_CATALOG.crypto_wallet;
+    return CURATED_IMAGE_CATALOG.financial_analytics;
+  }
+
+  if (q.includes('grocery') || q.includes('supermarket') || q.includes('produce') || q.includes('vegetable')) {
+    if (q.includes('dairy') || q.includes('milk')) return CURATED_IMAGE_CATALOG.grocery_dairy;
+    return CURATED_IMAGE_CATALOG.grocery_produce;
+  }
+
+  if (q.includes('movie') || q.includes('cinema') || q.includes('film') || q.includes('popcorn') || q.includes('theater')) {
+    if (q.includes('popcorn')) return CURATED_IMAGE_CATALOG.popcorn_movie;
+    return CURATED_IMAGE_CATALOG.cinema_hall;
+  }
+
+  if (q.includes('car') || q.includes('rental') || q.includes('drive') || q.includes('vehicle')) {
+    if (q.includes('suv')) return CURATED_IMAGE_CATALOG.suv_rental;
+    return CURATED_IMAGE_CATALOG.rental_car;
+  }
+
+  if (q.includes('law') || q.includes('legal') || q.includes('attorney') || q.includes('lawyer')) {
+    return CURATED_IMAGE_CATALOG.law_library;
+  }
+
+  if (q.includes('gaming') || q.includes('esport') || q.includes('gamer')) {
+    return CURATED_IMAGE_CATALOG.gaming_setup;
+  }
+
+  if (q.includes('music') || q.includes('song') || q.includes('audio') || q.includes('track')) {
+    return CURATED_IMAGE_CATALOG.music_studio;
+  }
+
+  if (q.includes('portfolio') || q.includes('creative') || q.includes('designer') || q.includes('project')) {
+    if (q.includes('app')) return CURATED_IMAGE_CATALOG.project_app;
+    if (q.includes('design')) return CURATED_IMAGE_CATALOG.project_design;
+    return CURATED_IMAGE_CATALOG.portfolio_hero;
+  }
+
+  if (q.includes('tech') || q.includes('saas') || q.includes('software') || q.includes('dashboard') || q.includes('analytics')) {
+    if (q.includes('code') || q.includes('developer')) return CURATED_IMAGE_CATALOG.developer_code;
+    if (q.includes('analytics') || q.includes('chart')) return CURATED_IMAGE_CATALOG.analytics;
+    return CURATED_IMAGE_CATALOG.workspace;
+  }
+
+  // 2. Exact or partial keyword match in catalog (strict q.includes(normKey))
   for (const [key, asset] of Object.entries(CURATED_IMAGE_CATALOG)) {
     const normKey = key.replace('_', ' ');
-    if (q.includes(normKey) || normKey.includes(q)) {
+    if (q === normKey || q.includes(normKey)) {
       return {
         src: asset.src,
         alt: asset.alt,
       };
     }
-  }
-
-  // 2. Keyword association mapping
-  if (q.includes('portfolio') || q.includes('creative') || q.includes('designer') || q.includes('project') || q.includes('artwork')) {
-    return CURATED_IMAGE_CATALOG.portfolio_hero;
-  }
-  if (q.includes('food') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal')) {
-    return CURATED_IMAGE_CATALOG.restaurant_hero;
-  }
-  if (q.includes('travel') || q.includes('flight') || q.includes('trip') || q.includes('holiday') || q.includes('tour') || q.includes('vacation')) {
-    return CURATED_IMAGE_CATALOG.beach;
-  }
-  if (q.includes('hotel') || q.includes('stay') || q.includes('suite') || q.includes('room')) {
-    return CURATED_IMAGE_CATALOG.hotel_room;
-  }
-  if (q.includes('shop') || q.includes('store') || q.includes('cloth') || q.includes('wear') || q.includes('apparel') || q.includes('fashion')) {
-    return CURATED_IMAGE_CATALOG.fashion_hero;
-  }
-  if (q.includes('home') || q.includes('house') || q.includes('property') || q.includes('estate') || q.includes('apartment') || q.includes('villa')) {
-    return CURATED_IMAGE_CATALOG.villa;
-  }
-  if (q.includes('learn') || q.includes('course') || q.includes('education') || q.includes('class') || q.includes('school') || q.includes('university')) {
-    return CURATED_IMAGE_CATALOG.classroom;
-  }
-  if (q.includes('health') || q.includes('med') || q.includes('doctor') || q.includes('clinic') || q.includes('patient') || q.includes('care')) {
-    return CURATED_IMAGE_CATALOG.doctor_consultation;
-  }
-  if (q.includes('fintech') || q.includes('bank') || q.includes('finance') || q.includes('money') || q.includes('crypto') || q.includes('wallet')) {
-    return CURATED_IMAGE_CATALOG.financial_analytics;
-  }
-  if (q.includes('event') || q.includes('conference') || q.includes('concert') || q.includes('ticket') || q.includes('summit') || q.includes('festival')) {
-    return CURATED_IMAGE_CATALOG.conference_stage;
-  }
-  if (q.includes('tech') || q.includes('saas') || q.includes('app') || q.includes('software') || q.includes('platform')) {
-    return CURATED_IMAGE_CATALOG.workspace;
-  }
-  if (q.includes('code') || q.includes('develop') || q.includes('api') || q.includes('program')) {
-    return CURATED_IMAGE_CATALOG.developer_code;
   }
 
   // 3. Fallback placeholder with high aesthetic contrast
@@ -275,16 +403,35 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
   }
 
   const promptLower = String(userPrompt).toLowerCase();
+  const usedImageUrls = new Set();
+
+  // Helper to deduplicate image URLs on a single page
+  const dedupeSrc = (src) => {
+    if (!src) return src;
+    if (!usedImageUrls.has(src)) {
+      usedImageUrls.add(src);
+      return src;
+    }
+    // Append unique query param variant so URL is guaranteed unique across page elements
+    const joiner = src.includes('?') ? '&' : '?';
+    const uniqueSrc = `${src}${joiner}sig=${usedImageUrls.size + 1}`;
+    usedImageUrls.add(uniqueSrc);
+    return uniqueSrc;
+  };
 
   // Determine if domain needs visual content
-  const isFoodSite = promptLower.includes('food') || promptLower.includes('pizza') || promptLower.includes('restaurant') || promptLower.includes('burger') || promptLower.includes('cafe');
-  const isTravelSite = promptLower.includes('travel') || promptLower.includes('hotel') || promptLower.includes('booking') || promptLower.includes('resort') || promptLower.includes('tour');
-  const isFashionSite = promptLower.includes('fashion') || promptLower.includes('ecommerce') || promptLower.includes('store') || promptLower.includes('shop') || promptLower.includes('clothing');
-  const isRealEstate = promptLower.includes('estate') || promptLower.includes('property') || promptLower.includes('house') || promptLower.includes('villa');
+  const isFoodSite = promptLower.includes('food') || promptLower.includes('pizza') || promptLower.includes('restaurant') || promptLower.includes('burger') || promptLower.includes('cafe') || promptLower.includes('bakery') || promptLower.includes('sushi') || promptLower.includes('meal');
+  const isTravelSite = promptLower.includes('travel') || promptLower.includes('hotel') || promptLower.includes('booking') || promptLower.includes('resort') || promptLower.includes('tour') || promptLower.includes('vacation');
+  const isFashionSite = promptLower.includes('fashion') || promptLower.includes('ecommerce') || promptLower.includes('store') || promptLower.includes('shop') || promptLower.includes('clothing') || promptLower.includes('wear');
+  const isRealEstate = promptLower.includes('estate') || promptLower.includes('property') || promptLower.includes('house') || promptLower.includes('villa') || promptLower.includes('apartment');
   const isPortfolio = promptLower.includes('portfolio') || promptLower.includes('creative') || promptLower.includes('designer') || promptLower.includes('artist') || promptLower.includes('photographer');
-  const isEducation = promptLower.includes('education') || promptLower.includes('course') || promptLower.includes('learn') || promptLower.includes('school') || promptLower.includes('university');
-  const isHealthcare = promptLower.includes('health') || promptLower.includes('doctor') || promptLower.includes('clinic') || promptLower.includes('medical') || promptLower.includes('care');
-  const isEvents = promptLower.includes('event') || promptLower.includes('conference') || promptLower.includes('concert') || promptLower.includes('ticket') || promptLower.includes('festival');
+  const isEducation = promptLower.includes('college') || promptLower.includes('university') || promptLower.includes('education') || promptLower.includes('course') || promptLower.includes('learn') || promptLower.includes('school');
+  const isHealthcare = promptLower.includes('health') || promptLower.includes('doctor') || promptLower.includes('clinic') || promptLower.includes('medical') || promptLower.includes('hospital') || promptLower.includes('care');
+  const isGrocery = promptLower.includes('grocery') || promptLower.includes('supermarket') || promptLower.includes('produce') || promptLower.includes('vegetables');
+  const isFitness = promptLower.includes('fitness') || promptLower.includes('gym') || promptLower.includes('workout') || promptLower.includes('trainer');
+  const isEntertainment = promptLower.includes('movie') || promptLower.includes('cinema') || promptLower.includes('ticket') || promptLower.includes('event') || promptLower.includes('concert');
+  const isCarRental = promptLower.includes('car') || promptLower.includes('rental') || promptLower.includes('drive');
+  const isLaw = promptLower.includes('law') || promptLower.includes('legal') || promptLower.includes('attorney');
 
   const enrichedSections = uiPage.sections.map((section) => {
     if (!section || !Array.isArray(section.elements)) return section;
@@ -300,21 +447,27 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
         const existingSrc = typeof el.content === 'string' ? el.content : el.content?.src || elProps.src || '';
         const imageQuery = el.content?.imageQuery || elProps.imageQuery || el.content?.alt || elProps.alt || el.id || userPrompt;
 
-        // If existingSrc is placeholder or empty, resolve a contextual image
         if (!existingSrc || existingSrc.includes('placehold.co') || existingSrc.includes('placeholder')) {
           const resolved = resolveContextualImage(imageQuery, elProps.alt || 'Contextual image');
-          elProps.src = resolved.src;
+          const finalSrc = dedupeSrc(resolved.src);
+          elProps.src = finalSrc;
           elProps.alt = elProps.alt || resolved.alt;
 
           return {
             ...el,
             content: {
-              src: resolved.src,
+              src: finalSrc,
               alt: elProps.alt,
               imageQuery,
             },
             props: elProps,
           };
+        } else {
+          const finalSrc = dedupeSrc(existingSrc);
+          elProps.src = finalSrc;
+          if (typeof el.content === 'object' && el.content !== null) {
+            el.content.src = finalSrc;
+          }
         }
       }
 
@@ -327,13 +480,13 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
             const existingItemSrc = item.src || item.image || '';
             const itemQuery = item.imageQuery || item.title || `${userPrompt} item ${idx + 1}`;
 
-            // If it's a food, travel, fashion, real estate, portfolio, education, healthcare, or event site, ensure card has appropriate photo
-            if (isFoodSite || isTravelSite || isFashionSite || isRealEstate || isPortfolio || isEducation || isHealthcare || isEvents || existingItemSrc.includes('placehold.co')) {
+            if (isFoodSite || isTravelSite || isFashionSite || isRealEstate || isPortfolio || isEducation || isHealthcare || isGrocery || isFitness || isEntertainment || isCarRental || isLaw || existingItemSrc.includes('placehold.co')) {
               const resolved = resolveContextualImage(itemQuery, item.title || 'Card image');
+              const finalSrc = dedupeSrc(existingItemSrc || resolved.src);
               return {
                 ...item,
-                src: item.src || resolved.src,
-                image: item.image || resolved.src,
+                src: finalSrc,
+                image: finalSrc,
                 alt: item.alt || resolved.alt,
               };
             }

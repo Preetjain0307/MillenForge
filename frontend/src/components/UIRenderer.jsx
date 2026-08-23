@@ -10,19 +10,34 @@
  *                              ↓
  *                       React component
  *
+ * Supported element types:
+ *   text | image | button | input | textfield | card | cards |
+ *   carousel | wizard | icon | divider | link | list | badge
+ *
  * Safety Guarantees:
  * - Never throws "Objects are not valid as a React child".
- * - Intelligently resolves display fields.
- * - Unknown types & Malformed elements caught safely.
- * - Interactive element inspection boundary overlays (Electric Violet highlights).
+ * - Intelligently resolves display fields: text, label, title, name, description, value, content, src, alt.
+ * - Handles string, number, boolean, null, undefined, object, and array values gracefully.
+ * - Unknown types: renders a safe placeholder — never crashes.
+ * - Malformed elements: caught by ElementErrorBoundary — never crashes.
  */
 
-import { Component } from 'react';
+import { Component, useState, createContext, useContext } from 'react';
 import NmButton from './NmButton';
 import { resolveDisplayString, normalizeElementData } from '../utils/valueNormalizer';
 
+// ─── Interactive UI Context ───────────────────────────────────────────────────
+const InteractiveUIContext = createContext(null);
+const useInteractiveUI = () => useContext(InteractiveUIContext) || {};
+
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
+/**
+ * Safely resolve display content from string, object, or fallback.
+ * @param {object} element
+ * @param {string} [preferredKey=null]
+ * @returns {string}
+ */
 const safeContent = (element, preferredKey = null) => {
   if (!element) return '';
   const c = resolveDisplayString(element.content, '', preferredKey);
@@ -32,15 +47,29 @@ const safeContent = (element, preferredKey = null) => {
   return '';
 };
 
+/**
+ * Safely read element.props with fallback to empty object.
+ * @param {object} element
+ * @returns {object}
+ */
 const safeProps = (element) =>
   element && typeof element.props === 'object' && element.props !== null && !Array.isArray(element.props)
     ? element.props
     : {};
 
+/**
+ * Normalize an element object using the central value normalizer.
+ * @param {*} raw
+ * @returns {object}
+ */
 const normalizeElement = (raw) => normalizeElementData(raw);
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
 
+/**
+ * Wraps each individual element render.
+ * If one element throws, the rest of the page still renders safely.
+ */
 class ElementErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -56,8 +85,8 @@ class ElementErrorBoundary extends Component {
       return (
         <div
           role="alert"
-          className="px-3 py-2 rounded-lg border border-dashed border-[#FB7185]
-                     text-xs text-[#FB7185] flex items-center gap-2"
+          className="px-3 py-2 rounded-[var(--nm-radius-sm)] border border-dashed border-[var(--nm-error)]
+                     text-xs text-[var(--nm-error)] flex items-center gap-2"
         >
           <i className="pi pi-exclamation-triangle" aria-hidden="true" />
           Element render error: {resolveDisplayString(this.state.message, 'Render error')}
@@ -69,6 +98,7 @@ class ElementErrorBoundary extends Component {
 }
 
 // ─── Element Registry ─────────────────────────────────────────────────────────
+// Each entry is a function: (element) => JSX
 
 const ELEMENT_REGISTRY = {
 
@@ -79,12 +109,22 @@ const ELEMENT_REGISTRY = {
     const ALLOWED_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'label', 'strong', 'em'];
     const Tag = ALLOWED_TAGS.includes(props.tag) ? props.tag : 'p';
 
+    const tagClasses = {
+      h1: 'text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-[var(--heading-color)] leading-tight mb-3',
+      h2: 'text-2xl sm:text-3xl font-bold tracking-tight text-[var(--heading-color)] mb-2.5',
+      h3: 'text-xl sm:text-2xl font-bold text-[var(--heading-color)] mb-2',
+      h4: 'text-lg font-semibold text-[var(--heading-color)] mb-1',
+      p: 'text-sm sm:text-base text-[var(--text)] leading-relaxed mb-1',
+      span: 'text-sm text-[var(--text)]',
+      label: 'text-xs font-semibold text-[var(--muted-text)] uppercase tracking-wider',
+    }[Tag] || 'text-sm text-[var(--text)] leading-relaxed';
+
     return (
       <Tag
         id={element.id}
-        className={`text-[#F8FAFC] leading-relaxed ${props.className || ''}`}
+        className={`${tagClasses} ${props.className || ''}`}
       >
-        {display || <span className="text-[#94A3B8] italic">(empty text)</span>}
+        {display || <span className="text-[var(--nm-text-muted)] italic">(empty text)</span>}
       </Tag>
     );
   },
@@ -98,35 +138,80 @@ const ELEMENT_REGISTRY = {
     } else if (element.content && typeof element.content === 'object') {
       src = element.content.src || element.content.url || '';
     }
-    if (!src) src = props.src || 'https://placehold.co/600x400/18181B/8B5CF6?text=Image';
+    if (!src) src = props.src || '';
 
     const alt = resolveDisplayString(
       props.alt || (typeof element.content === 'object' ? element.content.alt : '') || element.fallback,
-      'Generated image',
+      'Generated visual asset',
       'alt'
     );
 
+    // Resolve domain-contextual fallback if src is missing or broken (NO generic hotel image)
+    const contextQuery = (src + ' ' + alt + ' ' + (props.imageQuery || '') + ' ' + (props.imageDomain || '') + ' ' + (element.id || '')).toLowerCase();
+    let fallbackSrc = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80'; // workspace
+    if (contextQuery.includes('college') || contextQuery.includes('university') || contextQuery.includes('campus') || contextQuery.includes('education') || contextQuery.includes('student')) {
+      fallbackSrc = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80';
+    } else if (contextQuery.includes('hospital') || contextQuery.includes('medical') || contextQuery.includes('doctor') || contextQuery.includes('clinic') || contextQuery.includes('healthcare')) {
+      fallbackSrc = 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80';
+    } else if (contextQuery.includes('food') || contextQuery.includes('pizza') || contextQuery.includes('burger') || contextQuery.includes('restaurant') || contextQuery.includes('meal')) {
+      fallbackSrc = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80';
+    } else if (contextQuery.includes('travel') || contextQuery.includes('resort') || contextQuery.includes('vacation')) {
+      fallbackSrc = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80';
+    } else if (contextQuery.includes('fashion') || contextQuery.includes('clothing') || contextQuery.includes('wear') || contextQuery.includes('store')) {
+      fallbackSrc = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80';
+    } else if (contextQuery.includes('estate') || contextQuery.includes('property') || contextQuery.includes('villa') || contextQuery.includes('house')) {
+      fallbackSrc = 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80';
+    } else if (contextQuery.includes('bank') || contextQuery.includes('finance') || contextQuery.includes('fintech')) {
+      fallbackSrc = 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80';
+    } else if (contextQuery.includes('gaming') || contextQuery.includes('esports')) {
+      fallbackSrc = 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80';
+    }
+
+    const finalSrc = src || fallbackSrc;
+
     return (
-      <img
-        id={element.id}
-        src={src}
-        alt={alt}
-        className={`max-w-full rounded-lg object-cover ${props.className || ''}`}
-        loading="lazy"
-        onError={(e) => {
-          e.currentTarget.src = 'https://placehold.co/600x400/18181B/8B5CF6?text=Image+Error';
-          e.currentTarget.alt = 'Image failed to load';
-        }}
-      />
+      <div className="relative w-full overflow-hidden rounded-2xl shadow-xl border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-surface)] group">
+        <img
+          id={element.id}
+          src={finalSrc}
+          alt={alt}
+          className={`w-full h-auto max-h-[480px] object-cover transition-transform duration-500 group-hover:scale-102 ${props.className || ''}`}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.src = fallbackSrc;
+            e.currentTarget.alt = alt || 'Visual asset';
+          }}
+        />
+      </div>
     );
   },
 
   // ── Button ────────────────────────────────────────────────────────────────
   button: (element) => {
+    const { showToast, setActiveRoleTab, setIsCartOpen } = useInteractiveUI();
     const display = resolveDisplayString(element.content || element.fallback, 'Button', 'label');
     const props = safeProps(element);
     const label = resolveDisplayString(props.label || display, 'Button', 'label');
     const icon = typeof props.icon === 'string' ? props.icon : (props.icon?.name || props.icon?.icon || '');
+
+    const handleClick = () => {
+      const lower = label.toLowerCase();
+      if (lower.includes('student')) {
+        if (setActiveRoleTab) setActiveRoleTab('student');
+        if (showToast) showToast('Portal Initialized', 'Student authentication portal active.', 'info');
+      } else if (lower.includes('teacher') || lower.includes('faculty')) {
+        if (setActiveRoleTab) setActiveRoleTab('teacher');
+        if (showToast) showToast('Portal Initialized', 'Faculty portal active.', 'info');
+      } else if (lower.includes('cart') || lower.includes('checkout') || lower.includes('bag')) {
+        if (setIsCartOpen) setIsCartOpen(true);
+      } else if (lower.includes('book') || lower.includes('appointment')) {
+        if (showToast) showToast('Appointment Requested', 'Service request submitted successfully.', 'success');
+      } else if (lower.includes('apply')) {
+        if (showToast) showToast('Application Opened', 'Admissions application form loaded.', 'success');
+      } else {
+        if (showToast) showToast('Action Triggered', `Clicked "${label}"`, 'info');
+      }
+    };
 
     return (
       <NmButton
@@ -134,9 +219,10 @@ const ELEMENT_REGISTRY = {
         variant={props.variant || 'primary'}
         label={label}
         icon={icon || undefined}
-        className={props.className || ''}
+        buttonColor={props.buttonColor || element.buttonColor}
+        className={`font-semibold shadow-md transition-all hover:scale-102 ${props.className || ''}`}
         aria-label={resolveDisplayString(props['aria-label'] || label, 'Button')}
-        onClick={() => {}}
+        onClick={handleClick}
         type="button"
       />
     );
@@ -154,7 +240,7 @@ const ELEMENT_REGISTRY = {
       <div className={`flex flex-col gap-1.5 ${props.className || ''}`}>
         <label
           htmlFor={inputId}
-          className="text-sm font-medium text-[#CBD5E1]"
+          className="text-sm font-medium text-[var(--nm-text-secondary)]"
         >
           {labelText}
         </label>
@@ -164,21 +250,22 @@ const ELEMENT_REGISTRY = {
           placeholder={placeholderText}
           aria-label={labelText}
           className="
-            w-full px-4 py-2.5 rounded-lg
-            bg-[#18181B] border border-[#2A2A30]
-            text-[#F8FAFC] placeholder-[#94A3B8]
-            text-sm focus:outline-none focus:border-[#8B5CF6]
-            focus:ring-1 focus:ring-[#8B5CF6] transition-colors"
-          readOnly
+            w-full px-4 py-2.5 rounded-[var(--nm-radius-sm)]
+            bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]
+            text-[var(--nm-text-primary)] placeholder-[var(--nm-text-muted)]
+            text-sm focus:outline-none focus:border-[var(--nm-accent)]
+            focus:ring-1 focus:ring-[var(--nm-accent)] transition-colors"
         />
       </div>
     );
   },
 
+  // textfield is an alias for input
   textfield: null,
 
-  // ── Card ──────────────────────────────────────────────────────────────────
+  // ── Card (single) ─────────────────────────────────────────────────────────
   card: (element) => {
+    const { openModal, addToCart, cart, updateCartQty } = useInteractiveUI();
     const props = safeProps(element);
     const rawContent = element.content;
 
@@ -207,86 +294,180 @@ const ELEMENT_REGISTRY = {
     const imgSrc = props.src || props.image || (typeof rawContent === 'object' ? (rawContent.src || rawContent.image) : '') || '';
     const imgAlt = resolveDisplayString(props.alt || title || 'Card image', 'Card image');
 
+    const cardId = element.id || title;
+    const cartItem = (cart || []).find((c) => c.id === cardId || c.title === title);
+
+    const handleCardClick = () => {
+      if (openModal) {
+        openModal({ title, description, badge, price, icon, image: imgSrc, alt: imgAlt });
+      }
+    };
+
+    const handleActionClick = (e) => {
+      e.stopPropagation();
+      if (addToCart) {
+        addToCart({ id: cardId, title: title || 'Item', price: price || 'Free', image: imgSrc });
+      }
+    };
+
     return (
       <article
         id={element.id}
-        className={`nm-card p-5 flex flex-col gap-3 h-full transition-all duration-200 hover:border-[#8B5CF6] ${props.className || ''}`}
+        onClick={handleCardClick}
+        className={`group relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-6 flex flex-col justify-between h-full w-full cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:border-[var(--primary)] hover:shadow-xl ${props.className || ''}`}
         aria-label={title || description || 'Card'}
       >
-        {imgSrc && (
-          <div className="w-full h-44 rounded-t-lg -mt-5 -mx-5 mb-2 overflow-hidden bg-[#18181B] self-center">
-            <img
-              src={imgSrc}
-              alt={imgAlt}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              loading="lazy"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          </div>
-        )}
-
-        <div className="flex items-center justify-between gap-2">
-          {icon && (
-            <div
-              className="w-10 h-10 rounded-lg bg-[#8B5CF6]/15 flex items-center justify-center text-[#A78BFA]"
-              aria-hidden="true"
-            >
-              <i className={`${icon} text-lg`} />
+        <div className="flex flex-col gap-3 flex-1">
+          {/* Card Top Image if present */}
+          {imgSrc && (
+            <div className="w-full aspect-[16/9] rounded-xl overflow-hidden bg-[var(--surface)] relative shadow-sm">
+              <img
+                src={imgSrc}
+                alt={imgAlt}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              {badge && (
+                <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold font-mono bg-black/70 backdrop-blur-md text-white border border-white/20 shadow-md">
+                  {badge}
+                </span>
+              )}
             </div>
           )}
-          {badge && (
-            <span className="nm-badge ml-auto">{badge}</span>
+
+          {/* Badge & Icon Header */}
+          {!imgSrc && (badge || icon) && (
+            <div className="flex items-center justify-between gap-2">
+              {icon && (
+                <div
+                  className="w-11 h-11 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)] shadow-sm"
+                  aria-hidden="true"
+                >
+                  <i className={`${icon} text-xl`} />
+                </div>
+              )}
+              {badge && (
+                <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[var(--surface)] text-[var(--primary)] border border-[var(--border)] ml-auto">
+                  {badge}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Card Title & Rating */}
+          <div className="flex flex-col gap-1 pt-1">
+            {title && (
+              <h4 className="font-bold text-[var(--heading-color)] text-lg sm:text-xl leading-snug tracking-tight transition-colors break-words">
+                {title}
+              </h4>
+            )}
+            <div className="flex items-center gap-1 text-amber-400 text-xs font-semibold">
+              <i className="pi pi-star-fill text-[11px]" />
+              <span>4.9</span>
+              <span className="text-[var(--muted-text)] font-normal ml-1">(120+ reviews)</span>
+            </div>
+          </div>
+
+          {/* Card Description */}
+          {description && (
+            <p className="text-xs sm:text-sm text-[var(--text)] leading-relaxed flex-1 break-words">
+              {description}
+            </p>
           )}
         </div>
 
-        {title && (
-          <h4 className="font-semibold text-[#F8FAFC] text-base leading-snug">
-            {title}
-          </h4>
-        )}
-
-        {description && (
-          <p className="text-sm text-[#CBD5E1] leading-relaxed flex-1">
-            {description}
-          </p>
-        )}
-
-        {price && (
-          <div className="flex items-center justify-between mt-auto pt-3 border-t border-[#2A2A30]">
-            <span className="font-bold text-base text-[#A78BFA] font-mono">
-              {price}
-            </span>
-            <span className="text-xs px-2.5 py-1 rounded bg-[#8B5CF6]/20 text-[#A78BFA] font-medium">
-              Select
+        {/* Price & Action Footer */}
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-[var(--border)]">
+          <div className="flex flex-col">
+            <span className="text-[10px] text-[var(--muted-text)] font-semibold uppercase tracking-wider">Price / Status</span>
+            <span className="font-extrabold text-base sm:text-lg text-[var(--primary)] font-mono">
+              {price || 'Available'}
             </span>
           </div>
-        )}
+
+          {cartItem ? (
+            <div className="flex items-center gap-2 bg-[var(--surface)] border border-[var(--primary)] rounded-lg p-1" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => updateCartQty && updateCartQty(cartItem.id, -1)}
+                className="w-7 h-7 rounded-md bg-[var(--primary)] text-[var(--primary-text)] font-bold flex items-center justify-center transition-colors"
+              >
+                -
+              </button>
+              <span className="text-xs font-bold font-mono px-1">{cartItem.qty}</span>
+              <button
+                type="button"
+                onClick={() => updateCartQty && updateCartQty(cartItem.id, 1)}
+                className="w-7 h-7 rounded-md bg-[var(--primary)] text-[var(--primary-text)] font-bold flex items-center justify-center hover:brightness-110 transition-all"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleActionClick}
+              className="px-3.5 py-1.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-semibold text-xs transition-all hover:scale-105 flex items-center gap-1.5 shadow-sm"
+            >
+              <i className="pi pi-plus text-[10px]" />
+              <span>Select</span>
+            </button>
+          )}
+        </div>
       </article>
     );
   },
 
-  // ── Cards Grid ────────────────────────────────────────────────────────────
+  // ── Cards — repeating loop ────────────────────────────────────────────────
   cards: (element) => {
+    const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, viewMode, setViewMode } = useInteractiveUI();
     const props = safeProps(element);
-    const items = Array.isArray(props.items)
+    const rawItems = Array.isArray(props.items)
       ? props.items
       : (Array.isArray(element.items) ? element.items : []);
-    const cols = props.columns || 3;
-    const colClass = {
-      1: 'grid-cols-1',
-      2: 'grid-cols-1 md:grid-cols-2',
-      3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-      4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
-    }[cols] || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
 
-    if (items.length === 0) {
+    const cols = props.columns || 3;
+
+    // Derive categories from items
+    const categoriesSet = new Set(['All']);
+    rawItems.forEach((it) => {
+      const b = (it?.badge || it?.category || '').toString().trim();
+      if (b) categoriesSet.add(b);
+    });
+    const categories = Array.from(categoriesSet);
+
+    // Filter items
+    const filteredItems = rawItems.filter((it) => {
+      const titleStr = (it?.title || '').toString().toLowerCase();
+      const descStr = (it?.description || it?.content || '').toString().toLowerCase();
+      const badgeStr = (it?.badge || '').toString().toLowerCase();
+
+      const q = (searchQuery || '').toLowerCase();
+      const matchesSearch = !q || titleStr.includes(q) || descStr.includes(q) || badgeStr.includes(q);
+      const matchesCategory = !selectedCategory || selectedCategory === 'All' || (it?.badge || it?.category) === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+
+    const isListView = viewMode === 'list';
+    const colClass = isListView
+      ? 'grid-cols-1'
+      : {
+          1: 'grid-cols-1',
+          2: 'grid-cols-1 md:grid-cols-2',
+          3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+          4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+        }[cols] || 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+
+    if (rawItems.length === 0) {
       return (
         <div
           id={element.id}
-          className="px-4 py-6 rounded-lg border border-dashed
-                     border-[#2A2A30] text-sm text-[#94A3B8] text-center"
+          className="px-4 py-6 rounded-[var(--nm-radius-sm)] border border-dashed
+                     border-[var(--nm-border)] text-sm text-[var(--nm-text-muted)] text-center"
         >
           <i className="pi pi-th-large mr-2" aria-hidden="true" />
           No card items provided
@@ -295,30 +476,116 @@ const ELEMENT_REGISTRY = {
     }
 
     return (
-      <div id={element.id} className={`grid ${colClass} gap-5`}>
-        {items.map((item, idx) => {
-          const cardElement = normalizeElement({
-            id: item.id || `${element.id}-card-${idx}`,
-            type: 'card',
-            content: resolveDisplayString(item.description || item.content || item.title || '', ''),
-            fallback: '',
-            props: {
-              title: resolveDisplayString(item.title, `Item ${idx + 1}`, 'title'),
-              description: resolveDisplayString(item.description || item.content, '', 'description'),
-              icon: typeof item.icon === 'string' ? item.icon : (item.icon?.name || item.icon?.icon || ''),
-              badge: resolveDisplayString(item.badge, '', 'badge'),
-              price: resolveDisplayString(item.price, '', 'price'),
-              src: item.src || item.image || '',
-              alt: resolveDisplayString(item.alt || item.title, 'Card image', 'alt'),
-              className: item.className,
-            },
-          });
-          return (
-            <ElementErrorBoundary key={cardElement.id}>
-              {ELEMENT_REGISTRY.card(cardElement)}
-            </ElementErrorBoundary>
-          );
-        })}
+      <div id={element.id} className="flex flex-col gap-5 w-full">
+        {/* Interactive Controls Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 rounded-xl bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] shadow-sm">
+          {/* Category Filter Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            {categories.map((cat) => {
+              const active = (selectedCategory || 'All') === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory && setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap ${
+                    active
+                      ? 'bg-[var(--nm-accent)] text-white shadow-md'
+                      : 'bg-[var(--nm-bg-card)] text-[var(--nm-text-secondary)] hover:text-[var(--nm-text-primary)] hover:bg-[var(--nm-bg-surface)]'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search Input & View Toggle */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 sm:w-48">
+              <i className="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[var(--nm-text-muted)]" />
+              <input
+                type="text"
+                placeholder="Search items..."
+                value={searchQuery || ''}
+                onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg text-xs bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-primary)] placeholder-[var(--nm-text-muted)] focus:outline-none focus:border-[var(--nm-accent)]"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery && setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[var(--nm-text-muted)] hover:text-[var(--nm-text-primary)]"
+                >
+                  <i className="pi pi-times" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center rounded-lg border border-[var(--nm-border-subtle)] p-0.5 bg-[var(--nm-bg-card)]">
+              <button
+                type="button"
+                onClick={() => setViewMode && setViewMode('grid')}
+                className={`p-1.5 rounded text-xs transition-colors ${!isListView ? 'bg-[var(--nm-accent)] text-white' : 'text-[var(--nm-text-muted)] hover:text-[var(--nm-text-primary)]'}`}
+                title="Grid View"
+              >
+                <i className="pi pi-th-large" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode && setViewMode('list')}
+                className={`p-1.5 rounded text-xs transition-colors ${isListView ? 'bg-[var(--nm-accent)] text-white' : 'text-[var(--nm-text-muted)] hover:text-[var(--nm-text-primary)]'}`}
+                title="List View"
+              >
+                <i className="pi pi-list" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Card Items Grid/List */}
+        {filteredItems.length === 0 ? (
+          <div className="px-4 py-8 rounded-xl border border-dashed border-[var(--nm-border-subtle)] text-center text-xs text-[var(--nm-text-muted)] flex flex-col items-center gap-2">
+            <i className="pi pi-filter-slash text-xl opacity-60" />
+            <p>No matching items found for &ldquo;{searchQuery || selectedCategory}&rdquo;</p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery && setSearchQuery('');
+                setSelectedCategory && setSelectedCategory('All');
+              }}
+              className="text-xs text-[var(--nm-accent-light)] font-semibold underline mt-1"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          <div className={`grid ${colClass} gap-5`}>
+            {filteredItems.map((item, idx) => {
+              const cardElement = normalizeElement({
+                id: item.id || `${element.id}-card-${idx}`,
+                type: 'card',
+                content: resolveDisplayString(item.description || item.content || item.title || '', ''),
+                fallback: '',
+                props: {
+                  title: resolveDisplayString(item.title, `Item ${idx + 1}`, 'title'),
+                  description: resolveDisplayString(item.description || item.content, '', 'description'),
+                  icon: typeof item.icon === 'string' ? item.icon : (item.icon?.name || item.icon?.icon || ''),
+                  badge: resolveDisplayString(item.badge, '', 'badge'),
+                  price: resolveDisplayString(item.price, '', 'price'),
+                  src: item.src || item.image || '',
+                  alt: resolveDisplayString(item.alt || item.title, 'Card image', 'alt'),
+                  className: item.className,
+                },
+              });
+              return (
+                <ElementErrorBoundary key={cardElement.id}>
+                  {ELEMENT_REGISTRY.card(cardElement)}
+                </ElementErrorBoundary>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   },
@@ -332,8 +599,8 @@ const ELEMENT_REGISTRY = {
       return (
         <div
           id={element.id}
-          className="px-4 py-6 rounded-lg border border-dashed
-                     border-[#2A2A30] text-sm text-[#94A3B8] text-center"
+          className="px-4 py-6 rounded-[var(--nm-radius-sm)] border border-dashed
+                     border-[var(--nm-border)] text-sm text-[var(--nm-text-muted)] text-center"
         >
           <i className="pi pi-images mr-2" aria-hidden="true" />
           No carousel slides provided
@@ -369,23 +636,23 @@ const ELEMENT_REGISTRY = {
                     className="nm-carousel__img"
                     loading="lazy"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://placehold.co/800x400/18181B/8B5CF6?text=Slide';
+                      e.currentTarget.src = 'https://placehold.co/800x400/1a1a2e/6c63ff?text=Slide';
                     }}
                   />
                 ) : (
                   <div className="nm-carousel__placeholder" aria-hidden="true">
-                    <i className="pi pi-image text-[#8B5CF6] text-3xl" />
+                    <i className="pi pi-image text-[var(--nm-accent)] text-3xl" />
                   </div>
                 )}
                 {(slideTitle || slideDesc) && (
                   <div className="nm-carousel__caption">
                     {slideTitle && (
-                      <p className="text-sm font-semibold text-[#F8FAFC]">
+                      <p className="text-sm font-semibold text-[var(--nm-text-primary)]">
                         {slideTitle}
                       </p>
                     )}
                     {slideDesc && (
-                      <p className="text-xs text-[#CBD5E1]">
+                      <p className="text-xs text-[var(--nm-text-secondary)]">
                         {slideDesc}
                       </p>
                     )}
@@ -395,6 +662,9 @@ const ELEMENT_REGISTRY = {
             );
           })}
         </div>
+        <p className="text-xs text-[var(--nm-text-muted)] text-center mt-2">
+          ← scroll to see more →
+        </p>
       </div>
     );
   },
@@ -409,8 +679,8 @@ const ELEMENT_REGISTRY = {
       return (
         <div
           id={element.id}
-          className="px-4 py-6 rounded-lg border border-dashed
-                     border-[#2A2A30] text-sm text-[#94A3B8] text-center"
+          className="px-4 py-6 rounded-[var(--nm-radius-sm)] border border-dashed
+                     border-[var(--nm-border)] text-sm text-[var(--nm-text-muted)] text-center"
         >
           <i className="pi pi-list-check mr-2" aria-hidden="true" />
           No wizard steps provided
@@ -450,11 +720,11 @@ const ELEMENT_REGISTRY = {
                 </div>
 
                 <div className="nm-wizard__content">
-                  <p className={`text-sm font-semibold ${isActive ? 'text-[#A78BFA]' : isDone ? 'text-[#CBD5E1]' : 'text-[#94A3B8]'}`}>
+                  <p className={`text-sm font-semibold ${isActive ? 'text-[var(--nm-accent-light)]' : isDone ? 'text-[var(--nm-text-secondary)]' : 'text-[var(--nm-text-muted)]'}`}>
                     {stepLabel}
                   </p>
                   {stepDesc && (
-                    <p className="text-xs text-[#94A3B8] mt-0.5">
+                    <p className="text-xs text-[var(--nm-text-muted)] mt-0.5">
                       {stepDesc}
                     </p>
                   )}
@@ -478,7 +748,7 @@ const ELEMENT_REGISTRY = {
     return (
       <i
         id={element.id}
-        className={`${iconClass} text-[#8B5CF6] text-xl ${props.className || ''}`}
+        className={`${iconClass} text-[var(--nm-accent)] text-xl ${props.className || ''}`}
         aria-hidden={!label}
         aria-label={label || undefined}
         role={label ? 'img' : undefined}
@@ -492,7 +762,7 @@ const ELEMENT_REGISTRY = {
     return (
       <hr
         id={element.id}
-        className={`border-[#2A2A30] my-4 ${props.className || ''}`}
+        className={`border-[var(--nm-border-subtle)] my-4 ${props.className || ''}`}
         role="separator"
         aria-hidden="true"
       />
@@ -507,7 +777,7 @@ const ELEMENT_REGISTRY = {
       <a
         id={element.id}
         href={props.href || '#'}
-        className={`text-[#A78BFA] hover:underline text-sm font-medium ${props.className || ''}`}
+        className={`text-[var(--nm-accent-light)] hover:underline text-sm ${props.className || ''}`}
         onClick={(e) => e.preventDefault()}
         aria-label={resolveDisplayString(props['aria-label'] || display, 'Link')}
         rel="noopener noreferrer"
@@ -532,7 +802,7 @@ const ELEMENT_REGISTRY = {
     return (
       <Tag
         id={element.id}
-        className={`${isOrdered ? 'list-decimal' : 'list-disc'} list-inside text-sm text-[#CBD5E1] space-y-1 ${props.className || ''}`}
+        className={`${isOrdered ? 'list-decimal' : 'list-disc'} list-inside text-sm text-[var(--nm-text-secondary)] space-y-1 ${props.className || ''}`}
         aria-label={resolveDisplayString(props['aria-label'], undefined)}
       >
         {items.length > 0 ? (
@@ -542,7 +812,7 @@ const ELEMENT_REGISTRY = {
             </li>
           ))
         ) : (
-          <li className="text-[#94A3B8] italic">(no items)</li>
+          <li className="text-[var(--nm-text-muted)] italic">(no items)</li>
         )}
       </Tag>
     );
@@ -571,73 +841,51 @@ const propsLabel = (element) => {
   return props.label || element.content || element.fallback || 'Badge';
 };
 
+/**
+ * Resolve the renderer function for a given element type.
+ * @param {string} type
+ * @returns {function|null}
+ */
 const getRenderer = (type) => {
   if (type === 'textfield') return ELEMENT_REGISTRY.input;
   return ELEMENT_REGISTRY[type] ?? null;
 };
 
-// ─── ElementRenderer with Interactive Electric Violet Inspector Overlay ─────
+// ─── ElementRenderer ──────────────────────────────────────────────────────────
 
-const ElementRenderer = ({ element: rawElement, selectedElementId, onSelectElement }) => {
+const ElementRenderer = ({ element: rawElement }) => {
   const element = normalizeElement(rawElement);
   const renderer = getRenderer(element.type);
-  const isSelected = selectedElementId && selectedElementId === element.id;
 
-  const content = renderer ? (
-    <ElementErrorBoundary>
-      {renderer(element)}
-    </ElementErrorBoundary>
-  ) : (
+  if (renderer) {
+    return (
+      <ElementErrorBoundary>
+        {renderer(element)}
+      </ElementErrorBoundary>
+    );
+  }
+
+  // Unknown type — safe placeholder, never crashes
+  const display = safeContent(element);
+  return (
     <div
       id={element.id}
       role="note"
-      className="px-3 py-2 rounded-lg border border-dashed
-                 border-[#2A2A30] text-xs text-[#94A3B8]
+      className="px-3 py-2 rounded-[var(--nm-radius-sm)] border border-dashed
+                 border-[var(--nm-border)] text-xs text-[var(--nm-text-muted)]
                  flex items-center gap-2"
+      aria-label={`Unknown element type: ${element.type}`}
     >
       <i className="pi pi-box" aria-hidden="true" />
       <span>
-        <strong className="text-[#CBD5E1]">{element.type}</strong>
-        {safeContent(element) ? `: ${safeContent(element)}` : ' (unknown type)'}
+        <strong className="text-[var(--nm-text-secondary)]">{element.type}</strong>
+        {display ? `: ${display}` : ' (unknown type)'}
       </span>
-    </div>
-  );
-
-  return (
-    <div
-      onClick={(e) => {
-        if (onSelectElement) {
-          e.stopPropagation();
-          onSelectElement(element);
-        }
-      }}
-      className={`
-        relative group transition-all duration-150 rounded-lg p-1 cursor-pointer
-        ${isSelected 
-          ? 'ring-2 ring-[#8B5CF6] bg-[#8B5CF6]/10 shadow-[0_0_12px_rgba(139,92,246,0.3)]' 
-          : 'hover:ring-1 hover:ring-[#8B5CF6]/50 hover:bg-[#8B5CF6]/5'
-        }
-      `}
-    >
-      {/* Component ID Badge overlay on hover/selection */}
-      <div className={`
-        absolute -top-2.5 left-2 z-20 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider
-        transition-opacity duration-150 flex items-center gap-1 shadow-md pointer-events-none
-        ${isSelected
-          ? 'bg-[#8B5CF6] text-white opacity-100 font-bold'
-          : 'bg-[#18181B] text-[#A78BFA] border border-[#8B5CF6]/40 opacity-0 group-hover:opacity-100'
-        }
-      `}>
-        <span className="capitalize">{element.type}</span>
-        <span className="text-white/60">#{element.id}</span>
-      </div>
-
-      {content}
     </div>
   );
 };
 
-// ─── Section Layout & Renderer ────────────────────────────────────────────────
+// ─── Section Layout Helpers ───────────────────────────────────────────────────
 
 const getLayoutClasses = (section) => {
   const layout = section.props?.layout || '';
@@ -645,48 +893,124 @@ const getLayoutClasses = (section) => {
 
   if (type === 'hero') {
     if (layout === 'split' || layout === 'split-left') {
-      return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center w-full';
+      return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center';
     }
     if (layout === 'split-right') {
-      return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center [direction:rtl] [&>*]:[direction:ltr] w-full';
+      return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-center [direction:rtl] [&>*]:[direction:ltr]';
     }
-    return 'flex flex-col items-center text-center gap-6 max-w-4xl mx-auto w-full';
+    return 'flex flex-col items-center text-center gap-6';
   }
 
-  if (layout === 'split' || layout === 'split-left') {
-    return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-start w-full';
-  }
-  if (layout === 'split-right') {
-    return 'grid grid-cols-1 md:grid-cols-2 gap-8 items-start [direction:rtl] [&>*]:[direction:ltr] w-full';
-  }
-
-  if (layout === 'center' || type === 'cta') {
-    return 'flex flex-col items-center text-center gap-6 w-full';
+  if (type === 'features' || type === 'cards' || type === 'pricing' || type === 'testimonials' || type === 'gallery') {
+    const cols = section.props?.columns || 3;
+    const colMap = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4' };
+    return `grid grid-cols-1 md:grid-cols-2 ${colMap[cols] || 'lg:grid-cols-3'} gap-6`;
   }
 
-  if (type === 'navbar') return 'flex items-center justify-between gap-4 flex-wrap w-full';
-  if (type === 'footer') return 'flex flex-wrap items-center justify-between gap-4 w-full';
+  if (type === 'navbar') return 'flex items-center justify-between gap-4 flex-wrap';
+  if (type === 'footer') return 'flex flex-wrap items-center justify-between gap-4';
+  if (type === 'cta') return 'flex flex-col items-center text-center gap-4';
 
-  return 'flex flex-col gap-6 w-full';
+  return 'flex flex-col gap-4';
 };
 
-const SectionRenderer = ({ section, selectedElementId, onSelectElement }) => {
+// ─── Navbar Renderer with Mobile Hamburger Menu ────────────────────────────────
+const NavbarRenderer = ({ section, bgClass }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { cart, setIsCartOpen } = useInteractiveUI();
+  const totalCartQty = (cart || []).reduce((acc, i) => acc + (i.qty || 1), 0);
+
+  return (
+    <section
+      id={section.id}
+      aria-label="Navigation Header"
+      className={`py-3.5 px-4 sm:px-6 rounded-2xl border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-card)] shadow-md relative w-full max-w-full overflow-x-hidden ${bgClass}`}
+    >
+      <div className="flex items-center justify-between gap-4 w-full">
+        {/* Brand Logo / Header Elements */}
+        <div className="flex items-center gap-3 overflow-hidden">
+          {section.elements.slice(0, 2).map((el) => (
+            <ElementRenderer
+              key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+              element={el}
+            />
+          ))}
+        </div>
+
+        {/* Desktop Navbar Actions & Links */}
+        <div className="hidden md:flex items-center gap-4 flex-wrap">
+          {section.elements.slice(2).map((el) => (
+            <ElementRenderer
+              key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+              element={el}
+            />
+          ))}
+          {totalCartQty > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsCartOpen && setIsCartOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-[var(--nm-accent)] text-white text-xs font-semibold flex items-center gap-1.5 shadow-md"
+            >
+              <i className="pi pi-shopping-cart text-xs" />
+              <span>Cart ({totalCartQty})</span>
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Actions Controls (Cart + Hamburger Button) */}
+        <div className="flex md:hidden items-center gap-2">
+          {totalCartQty > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsCartOpen && setIsCartOpen(true)}
+              className="px-2.5 py-1.5 rounded-lg bg-[var(--nm-accent)] text-white text-xs font-semibold flex items-center gap-1 min-h-[44px]"
+            >
+              <i className="pi pi-shopping-cart text-xs" />
+              <span>({totalCartQty})</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2.5 rounded-lg bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-primary)] min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Toggle Navigation Menu"
+          >
+            <i className={`pi ${mobileMenuOpen ? 'pi-times' : 'pi-bars'} text-lg`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Slide-Down Navigation Panel */}
+      {mobileMenuOpen && (
+        <div className="md:hidden flex flex-col gap-3 pt-4 mt-3 border-t border-[var(--nm-border-subtle)] nm-animate-in">
+          {section.elements.slice(2).map((el) => (
+            <div key={(el && el.id) ? el.id : `mob-el-${Math.random().toString(36).slice(2, 8)}`} className="w-full">
+              <ElementRenderer element={el} />
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+};
+
+// ─── Section Renderer ─────────────────────────────────────────────────────────
+
+const SectionRenderer = ({ section }) => {
   if (!section || typeof section !== 'object') return null;
 
   const safeSection = {
     id: section.id || `sec-${Math.random().toString(36).slice(2, 8)}`,
-    type: typeof section.type === 'string' ? section.type : 'custom',
+    type: typeof section.type === 'string' ? section.type.toLowerCase() : 'custom',
     elements: Array.isArray(section.elements) ? section.elements : [],
     props: (section.props && typeof section.props === 'object' && !Array.isArray(section.props)) ? section.props : {},
   };
 
-  const layoutClasses = getLayoutClasses(safeSection);
   const bg = safeSection.props.background || '';
-
   const bgClass =
-    bg === 'gradient' ? 'bg-gradient-to-br from-[#18181B] to-[#111113]'
-    : bg === 'surface' ? 'bg-[#18181B]'
-    : bg === 'accent'  ? 'bg-[#8B5CF6]/10 border border-[#8B5CF6]/20'
+    bg === 'gradient' ? 'bg-gradient-to-br from-[var(--nm-bg-card)] to-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]'
+    : bg === 'surface' ? 'bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]'
+    : bg === 'accent'  ? 'bg-[var(--nm-accent-glow)] border border-[rgba(108,99,255,0.3)]'
     : '';
 
   if (safeSection.elements.length === 0) {
@@ -694,9 +1018,9 @@ const SectionRenderer = ({ section, selectedElementId, onSelectElement }) => {
       <section
         id={safeSection.id}
         aria-label={`${safeSection.type} section (empty)`}
-        className={`py-8 px-6 rounded-xl border border-dashed border-[#2A2A30] ${bgClass}`}
+        className={`py-8 px-6 rounded-[var(--nm-radius)] border border-dashed border-[var(--nm-border-subtle)] ${bgClass}`}
       >
-        <p className="text-sm text-[#94A3B8] text-center">
+        <p className="text-sm text-[var(--nm-text-muted)] text-center">
           <i className="pi pi-inbox mr-2" aria-hidden="true" />
           Section &ldquo;{safeSection.type}&rdquo; has no elements.
         </p>
@@ -704,19 +1028,153 @@ const SectionRenderer = ({ section, selectedElementId, onSelectElement }) => {
     );
   }
 
+  // 0. Special Layout: NAVBAR with Mobile Navigation
+  if (safeSection.type === 'navbar') {
+    return <NavbarRenderer section={safeSection} bgClass={bgClass} />;
+  }
+
+  // 1. Special Layout: HERO Section Intelligence
+  if (safeSection.type === 'hero') {
+    const mediaTypes = new Set(['image', 'carousel']);
+    const mediaElements = safeSection.elements.filter((el) => mediaTypes.has((el?.type || '').toLowerCase()));
+    const nonMediaElements = safeSection.elements.filter((el) => !mediaTypes.has((el?.type || '').toLowerCase()));
+
+    const textElements = nonMediaElements.filter((el) => (el?.type || '').toLowerCase() !== 'button');
+    const buttonElements = nonMediaElements.filter((el) => (el?.type || '').toLowerCase() === 'button');
+
+    const hasMedia = mediaElements.length > 0;
+
+    return (
+      <section
+        id={safeSection.id}
+        aria-label={resolveDisplayString(safeSection.props['aria-label'] || 'Hero Section')}
+        className={`py-12 px-6 sm:px-8 rounded-2xl bg-transparent ${bgClass}`}
+      >
+        {hasMedia ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full min-h-[380px]">
+            {/* Left Content Column */}
+            <div className="flex flex-col items-start text-left gap-3.5">
+              {textElements.map((el) => (
+                <ElementRenderer
+                  key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                  element={el}
+                />
+              ))}
+
+              {buttonElements.length > 0 && (
+                <div className="flex items-center gap-3.5 flex-wrap pt-3">
+                  {buttonElements.map((el) => (
+                    <ElementRenderer
+                      key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                      element={el}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Right Media Column */}
+            <div className="w-full flex items-center justify-center">
+              {mediaElements.map((el) => (
+                <ElementRenderer
+                  key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                  element={el}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center text-center max-w-3xl mx-auto gap-4 py-4">
+            {textElements.map((el) => (
+              <ElementRenderer
+                key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                element={el}
+              />
+            ))}
+
+            {buttonElements.length > 0 && (
+              <div className="flex items-center justify-center gap-4 flex-wrap pt-3">
+                {buttonElements.map((el) => (
+                  <ElementRenderer
+                    key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                    element={el}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  // 2. Special Layout: CARDS / FEATURES / PRICING / TESTIMONIALS / GALLERY Sections
+  if (['features', 'cards', 'pricing', 'testimonials', 'gallery'].includes(safeSection.type)) {
+    const gridTypes = new Set(['cards', 'card', 'carousel', 'list']);
+    const gridElements = safeSection.elements.filter((el) => gridTypes.has((el?.type || '').toLowerCase()));
+    const headerElements = safeSection.elements.filter((el) => !gridTypes.has((el?.type || '').toLowerCase()));
+
+    return (
+      <section
+        id={safeSection.id}
+        aria-label={resolveDisplayString(safeSection.props['aria-label'] || `${safeSection.type} section`)}
+        className={`py-12 px-6 sm:px-8 rounded-2xl bg-transparent ${bgClass}`}
+      >
+        {headerElements.length > 0 && (
+          <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-2.5 mb-8">
+            {headerElements.map((el) => (
+              <ElementRenderer
+                key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+                element={el}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="w-full">
+          {gridElements.map((el) => (
+            <ElementRenderer
+              key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+              element={el}
+            />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  // 3. Special Layout: CTA Section
+  if (safeSection.type === 'cta') {
+    return (
+      <section
+        id={safeSection.id}
+        aria-label={resolveDisplayString(safeSection.props['aria-label'] || 'CTA section')}
+        className={`py-12 px-8 rounded-2xl text-center flex flex-col items-center gap-4 max-w-4xl mx-auto my-4 w-full bg-[var(--surface)] border border-[var(--border)] shadow-xl ${bgClass}`}
+      >
+        {safeSection.elements.map((el) => (
+          <ElementRenderer
+            key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
+            element={el}
+          />
+        ))}
+      </section>
+    );
+  }
+
+  // Standard Section Fallback
+  const layoutClasses = getLayoutClasses(safeSection);
+
   return (
     <section
       id={safeSection.id}
       aria-label={resolveDisplayString(safeSection.props['aria-label'] || `${safeSection.type} section`)}
-      className={`py-8 px-6 rounded-xl ${bgClass}`}
+      className={`py-10 px-6 rounded-2xl bg-transparent ${bgClass}`}
     >
       <div className={layoutClasses}>
         {safeSection.elements.map((el) => (
           <ElementRenderer
             key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
             element={el}
-            selectedElementId={selectedElementId}
-            onSelectElement={onSelectElement}
           />
         ))}
       </div>
@@ -724,19 +1182,208 @@ const SectionRenderer = ({ section, selectedElementId, onSelectElement }) => {
   );
 };
 
+// ─── Interactive UI Overlay Components ───────────────────────────────────────
+
+const ToastOverlay = ({ toast }) => {
+  if (!toast) return null;
+  return (
+    <div className="fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-900/90 text-white border border-slate-700 shadow-2xl backdrop-blur-md nm-animate-in">
+      <i className={`pi ${toast.type === 'info' ? 'pi-info-circle text-blue-400' : 'pi-check-circle text-emerald-400'} text-lg`} />
+      <div className="flex flex-col">
+        <span className="text-xs font-bold">{toast.title}</span>
+        <span className="text-[11px] text-slate-300">{toast.message}</span>
+      </div>
+    </div>
+  );
+};
+
+const QuickViewModal = ({ activeModal, onClose, onAddToCart }) => {
+  if (!activeModal) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md nm-animate-in" onClick={onClose}>
+      <div className="relative w-full max-w-lg rounded-2xl bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)] p-6 shadow-2xl flex flex-col gap-4 text-[var(--nm-text-primary)]" onClick={(e) => e.stopPropagation()}>
+        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-[var(--nm-text-muted)] hover:text-[var(--nm-text-primary)] p-1">
+          <i className="pi pi-times text-lg" />
+        </button>
+
+        {activeModal.image && (
+          <div className="w-full h-56 rounded-xl overflow-hidden bg-[var(--nm-bg-surface)]">
+            <img src={activeModal.image} alt={activeModal.title || 'Modal item'} className="w-full h-full object-cover" />
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-xl font-bold">{activeModal.title}</h3>
+          {activeModal.badge && (
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] border border-[var(--nm-border)]">
+              {activeModal.badge}
+            </span>
+          )}
+        </div>
+
+        {activeModal.description && (
+          <p className="text-sm text-[var(--nm-text-secondary)] leading-relaxed">{activeModal.description}</p>
+        )}
+
+        <div className="flex items-center justify-between pt-3 border-t border-[var(--nm-border-subtle)]">
+          <span className="text-xl font-extrabold text-[var(--nm-accent-light)] font-mono">{activeModal.price || 'Available'}</span>
+          <button
+            type="button"
+            onClick={() => {
+              onAddToCart && onAddToCart(activeModal);
+              onClose();
+            }}
+            className="px-5 py-2.5 rounded-xl bg-[var(--nm-accent)] text-white font-semibold text-sm hover:scale-105 shadow-lg transition-all"
+          >
+            Confirm & Select
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SlideOutCartDrawer = ({ isOpen, onClose, cart, onUpdateQty }) => {
+  if (!isOpen) return null;
+  const subtotal = cart.reduce((acc, item) => {
+    const p = parseFloat((item.price || '').replace(/[^0-9.]/g, '')) || 0;
+    return acc + p * (item.qty || 1);
+  }, 0);
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm nm-animate-in" onClick={onClose}>
+      <div className="w-full max-w-md h-full bg-[var(--nm-bg-card)] border-l border-[var(--nm-border-subtle)] p-6 shadow-2xl flex flex-col gap-5 text-[var(--nm-text-primary)]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-4 border-b border-[var(--nm-border-subtle)]">
+          <div className="flex items-center gap-2">
+            <i className="pi pi-shopping-cart text-xl text-[var(--nm-accent-light)]" />
+            <h3 className="text-lg font-bold">Your Cart / Selection</h3>
+          </div>
+          <button type="button" onClick={onClose} className="p-1 text-[var(--nm-text-muted)] hover:text-[var(--nm-text-primary)]">
+            <i className="pi pi-times text-lg" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto flex flex-col gap-3">
+          {cart.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2 text-[var(--nm-text-muted)]">
+              <i className="pi pi-shopping-bag text-3xl opacity-40" />
+              <p className="text-sm">Your cart is currently empty.</p>
+            </div>
+          ) : (
+            cart.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] gap-3">
+                <div className="flex flex-col flex-1">
+                  <span className="text-sm font-bold">{item.title}</span>
+                  <span className="text-xs text-[var(--nm-accent-light)] font-mono">{item.price}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => onUpdateQty(item.id, -1)} className="w-6 h-6 rounded bg-[var(--nm-accent-glow)] text-xs font-bold">-</button>
+                  <span className="text-xs font-bold font-mono">{item.qty}</span>
+                  <button type="button" onClick={() => onUpdateQty(item.id, 1)} className="w-6 h-6 rounded bg-[var(--nm-accent)] text-white text-xs font-bold">+</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {cart.length > 0 && (
+          <div className="pt-4 border-t border-[var(--nm-border-subtle)] flex flex-col gap-3">
+            <div className="flex justify-between text-sm font-bold">
+              <span>Estimated Total:</span>
+              <span className="text-base text-[var(--nm-accent-light)] font-mono">₹{subtotal > 0 ? subtotal.toFixed(2) : '0.00'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => alert('Order / Application submitted successfully!')}
+              className="w-full py-3 rounded-xl bg-[var(--nm-accent)] text-white font-bold text-sm shadow-xl hover:brightness-110 transition-all"
+            >
+              Checkout / Submit
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ─── Page Renderer (exported) ─────────────────────────────────────────────────
+
 /**
- * UIRenderer — Renders a UIPage JSON object with component selection overlays.
+ * UIRenderer — Renders a UIPage JSON object.
  *
  * @param {object} props
  * @param {object} props.pageData - UIPage object conforming to frontend/src/types/ui.js
- * @param {string} [props.selectedElementId]
- * @param {function} [props.onSelectElement]
  */
-const UIRenderer = ({ pageData, selectedElementId, onSelectElement }) => {
+const UIRenderer = ({ pageData }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [viewMode, setViewMode] = useState('grid');
+  const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState(null);
+  const [activeRoleTab, setActiveRoleTab] = useState('student');
+  const [toast, setToast] = useState(null);
+
+  const showToast = (title, message, type = 'success') => {
+    setToast({ title, message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+
+  const addToCart = (item) => {
+    if (!item || !item.id) return;
+    setCart((prev) => {
+      const idx = prev.findIndex((i) => i.id === item.id || i.title === item.title);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], qty: updated[idx].qty + 1 };
+        return updated;
+      }
+      return [...prev, { ...item, qty: 1 }];
+    });
+    showToast('Selection Updated', `Added "${item.title || 'Item'}" to your active list.`, 'success');
+  };
+
+  const updateCartQty = (id, delta) => {
+    setCart((prev) => {
+      return prev
+        .map((i) => {
+          if (i.id === id || i.title === id) {
+            const newQty = i.qty + delta;
+            return newQty > 0 ? { ...i, qty: newQty } : null;
+          }
+          return i;
+        })
+        .filter(Boolean);
+    });
+  };
+
+  const interactiveContextValue = {
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    viewMode,
+    setViewMode,
+    cart,
+    addToCart,
+    updateCartQty,
+    isCartOpen,
+    setIsCartOpen,
+    activeModal,
+    openModal: setActiveModal,
+    closeModal: () => setActiveModal(null),
+    activeRoleTab,
+    setActiveRoleTab,
+    toast,
+    showToast,
+  };
+
   if (!pageData || typeof pageData !== 'object') {
     return (
       <div
-        className="flex flex-col items-center justify-center py-16 gap-3 text-[#94A3B8]"
+        className="flex flex-col items-center justify-center py-16 gap-3 text-[var(--nm-text-muted)]"
         role="status"
         aria-live="polite"
       >
@@ -748,30 +1395,130 @@ const UIRenderer = ({ pageData, selectedElementId, onSelectElement }) => {
 
   const sections = Array.isArray(pageData.sections) ? pageData.sections : [];
 
+  // Calculate dynamic Theme CSS Variables for the Generated Website Canvas
+  const themeMode = (pageData?.props?.bgColor || pageData?.meta?.customBgColor || '').toLowerCase();
+  const themeName = (pageData?.props?.theme || pageData?.meta?.theme || '').toLowerCase();
+  const btnColor = (pageData?.props?.buttonColor || pageData?.meta?.primaryButtonColor || '').toLowerCase();
+  const explicitTokens = pageData?.props?.themeTokens || pageData?.meta?.themeTokens || pageData?.themeTokens;
+
+  const isLight = themeMode === 'white' || themeMode === 'cream' || themeMode === 'grey' || themeName === 'light' || themeName === 'college' || themeName === 'healthcare' || (pageData?.domain === 'college' && !themeMode);
+  const isBlack = themeMode === 'black' || themeName === 'dark' || themeName === 'luxury';
+
+  // Base Colors calculation with dynamic tokens priority
+  let bgHex = explicitTokens?.background;
+  let bgSurfaceHex = explicitTokens?.surface;
+  let bgCardHex = explicitTokens?.surface;
+  let borderHex = explicitTokens?.border;
+  let borderSubtleHex = explicitTokens?.border;
+  let textPrimaryHex = explicitTokens?.text;
+  let textSecondaryHex = explicitTokens?.text;
+  let textMutedHex = explicitTokens?.mutedText;
+  let primaryBtnHex = explicitTokens?.primary;
+  let primaryBtnTextHex = explicitTokens?.primaryText;
+  let headingHex = explicitTokens?.headings;
+
+  if (!bgHex) {
+    if (themeMode === 'yellow') bgHex = '#FEF08A';
+    else if (themeMode === 'grey' || themeMode === 'gray') bgHex = '#F3F4F6';
+    else if (themeMode === 'cream') bgHex = '#FDFBF7';
+    else if (isLight) bgHex = '#FFFFFF';
+    else if (isBlack) bgHex = '#020617';
+    else bgHex = '#0b0914';
+  }
+
+  if (!bgSurfaceHex) {
+    bgSurfaceHex = isLight || bgHex === '#FEF08A' || bgHex === '#F3F4F6' || bgHex === '#FFFFFF' ? '#FFFFFF' : '#141024';
+    bgCardHex = bgSurfaceHex;
+  }
+
+  if (!borderHex) borderHex = isLight || bgHex === '#FEF08A' || bgHex === '#F3F4F6' ? '#E2E8F0' : 'rgba(255, 255, 255, 0.12)';
+  if (!borderSubtleHex) borderSubtleHex = borderHex;
+  if (!textPrimaryHex) textPrimaryHex = isLight || bgHex === '#FEF08A' || bgHex === '#F3F4F6' || bgHex === '#FFFFFF' ? '#0F172A' : '#F8FAFC';
+  if (!textSecondaryHex) textSecondaryHex = isLight || bgHex === '#FEF08A' ? '#334155' : '#CBD5E1';
+  if (!textMutedHex) textMutedHex = isLight || bgHex === '#FEF08A' ? '#64748B' : '#94A3B8';
+  if (!headingHex) headingHex = textPrimaryHex;
+
+  if (!primaryBtnHex) {
+    if (btnColor === 'green') primaryBtnHex = '#059669';
+    else if (btnColor === 'yellow') { primaryBtnHex = '#FACC15'; primaryBtnTextHex = '#111827'; }
+    else if (btnColor === 'red') primaryBtnHex = '#DC2626';
+    else if (btnColor === 'gold') primaryBtnHex = '#F59E0B';
+    else if (btnColor === 'blue') primaryBtnHex = '#2563EB';
+    else if (btnColor === 'white') { primaryBtnHex = '#FFFFFF'; primaryBtnTextHex = '#111827'; }
+    else if (pageData?.domain === 'hospital' && !btnColor) primaryBtnHex = '#DC2626';
+    else primaryBtnHex = '#6C63FF';
+  }
+  if (!primaryBtnTextHex) primaryBtnTextHex = '#FFFFFF';
+
+  const generatedWebsiteStyle = {
+    '--background': bgHex,
+    '--surface': bgSurfaceHex,
+    '--primary': primaryBtnHex,
+    '--primary-text': primaryBtnTextHex,
+    '--text': textPrimaryHex,
+    '--muted-text': textMutedHex,
+    '--border': borderHex,
+    '--accent': primaryBtnHex,
+    '--heading-color': headingHex,
+    '--header-bg': bgSurfaceHex,
+    '--header-text': textPrimaryHex,
+
+    // Map to --nm-* backward compatibility
+    '--nm-bg-primary': bgHex,
+    '--nm-bg-secondary': bgSurfaceHex,
+    '--nm-bg-surface': bgSurfaceHex,
+    '--nm-bg-card': bgCardHex,
+    '--nm-border': borderHex,
+    '--nm-border-subtle': borderSubtleHex,
+    '--nm-text-primary': textPrimaryHex,
+    '--nm-text-secondary': textSecondaryHex,
+    '--nm-text-muted': textMutedHex,
+    '--nm-accent': primaryBtnHex,
+    '--nm-accent-hover': primaryBtnHex,
+    '--nm-accent-glow': 'rgba(99, 102, 241, 0.2)',
+    '--nm-accent-light': primaryBtnHex,
+    backgroundColor: bgHex,
+    color: textPrimaryHex,
+  };
+
   if (sections.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center py-16 gap-3 text-[#94A3B8]"
+        className="flex flex-col items-center justify-center py-16 gap-3 text-[var(--nm-text-muted)]"
         role="status"
         aria-live="polite"
       >
         <i className="pi pi-desktop text-3xl opacity-40" aria-hidden="true" />
         <p className="text-sm">No sections to render.</p>
+        <p className="text-xs opacity-70">
+          Generate a UI first, or check your UIPage data.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 nm-animate-in" aria-label={`Preview: ${pageData.page || 'Untitled'}`}>
-      {sections.map((section) => (
-        <SectionRenderer
-          key={(section && section.id) ? section.id : `sec-${Math.random().toString(36).slice(2, 8)}`}
-          section={section}
-          selectedElementId={selectedElementId}
-          onSelectElement={onSelectElement}
-        />
-      ))}
-    </div>
+    <InteractiveUIContext.Provider value={interactiveContextValue}>
+      <div
+        style={generatedWebsiteStyle}
+        className={`relative flex flex-col gap-4 nm-animate-in rounded-2xl p-4 sm:p-6 transition-colors duration-300 w-full max-w-full overflow-x-hidden border ${
+          isLight ? 'border-slate-200 shadow-2xl' : 'border-slate-800 shadow-2xl'
+        }`}
+        aria-label={`Preview: ${pageData.page || 'Untitled'}`}
+      >
+        <ToastOverlay toast={toast} />
+        <QuickViewModal activeModal={activeModal} onClose={() => setActiveModal(null)} onAddToCart={addToCart} />
+        <SlideOutCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} onUpdateQty={updateCartQty} />
+
+        {sections.map((section) => (
+          <SectionRenderer
+            key={(section && section.id) ? section.id : `sec-${Math.random().toString(36).slice(2, 8)}`}
+            section={section}
+            isLightTheme={isLight}
+          />
+        ))}
+      </div>
+    </InteractiveUIContext.Provider>
   );
 };
 

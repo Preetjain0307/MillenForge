@@ -47,7 +47,7 @@ const runTests = async () => {
 
   await test('Multi-provider loading from environment', async () => {
     process.env.AI_PROVIDER_1_API_KEY = 'key-1';
-    process.env.AI_PROVIDER_1_MODEL = 'gemini-2.0-flash';
+    process.env.AI_PROVIDER_1_MODEL = 'gemini-3.6-flash';
     process.env.AI_PROVIDER_1_ENABLED = 'true';
 
     process.env.AI_PROVIDER_2_API_KEY = 'key-2';
