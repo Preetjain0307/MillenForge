@@ -4,7 +4,7 @@ const initialState = {
   brand: {
     logo: '',
     name: 'NeuraMind',
-    primaryColor: '#6366f1',
+    primaryColor: '#6c63ff',
     secondaryColor: '#f43f5e',
     typography: 'Inter',
     borderRadius: '8px',

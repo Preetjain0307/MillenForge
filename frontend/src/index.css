@@ -6,7 +6,7 @@
 @import "primereact/resources/primereact.min.css";
 @import "primeicons/primeicons.css";
 
-/* Design tokens */
+/* Design tokens — NeuraMind Deep Space Theme (Sneha) */
 :root {
   --nm-bg-primary: #0a0a0f;
   --nm-bg-secondary: #111118;
@@ -27,14 +27,14 @@
   --nm-radius-sm: 8px;
   --nm-radius-lg: 16px;
 
-  /* Dynamic Canvas Theme Tokens */
+  /* Dynamic Canvas Theme Tokens (Sanika's color engine defaults) */
   --background: #0a0a0f;
-  --surface: #16213e;
+  --surface: #1a1a2e;
   --primary: #6c63ff;
   --primary-text: #ffffff;
   --text: #e8e8f0;
-  --muted-text: #9898b0;
-  --border: rgba(108, 99, 255, 0.2);
+  --muted-text: #5a5a72;
+  --border: rgba(255, 255, 255, 0.06);
   --accent: #6c63ff;
   --heading-color: #e8e8f0;
   --header-bg: #16213e;

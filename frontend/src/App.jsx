@@ -23,11 +23,11 @@ function App() {
   useEffect(() => {
     const root = document.documentElement;
     if (theme?.colors) {
-      root.style.setProperty('--nm-bg-primary', theme.colors.background || '#ffffff');
-      root.style.setProperty('--nm-text-primary', theme.colors.text || '#000000');
-      root.style.setProperty('--nm-primary', theme.colors.primary || brand.primaryColor);
+      root.style.setProperty('--nm-bg-primary', theme.colors.background || '#0a0a0f');
+      root.style.setProperty('--nm-text-primary', theme.colors.text || '#e8e8f0');
+      root.style.setProperty('--nm-primary', theme.colors.primary || brand?.primaryColor || '#6c63ff');
     } else {
-      root.style.setProperty('--nm-primary', brand.primaryColor);
+      root.style.setProperty('--nm-primary', brand?.primaryColor || '#6c63ff');
     }
   }, [theme, brand]);
 

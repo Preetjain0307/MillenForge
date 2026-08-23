@@ -1,10 +1,10 @@
-/**
- * GeneratePage — /generate
+﻿/**
+ * GeneratePage ΓÇö /generate
  *
  * Sprint F2: Generation Experience + UI/UX Polish
  *
  * Pipeline:
- *   Upload wireframe (optional) → Enter prompt → Generate → AI processing → Preview
+ *   Upload wireframe (optional) ΓåÆ Enter prompt ΓåÆ Generate ΓåÆ AI processing ΓåÆ Preview
  *
  * Changes from Sprint F2:
  *   - Richer upload area with meaningful file meta display
@@ -43,16 +43,16 @@ import {
 } from '../features/generation/generationSlice';
 import { setPage, setActivePage } from '../features/pages/pagesSlice';
 
-// ── Generation stage labels (truthful — match actual server behavior) ─────────
+// ΓöÇΓöÇ Generation stage labels (truthful ΓÇö match actual server behavior) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const GENERATION_STAGES = [
-  { key: 'upload',   label: 'Uploading wireframe…',  icon: 'pi pi-upload' },
-  { key: 'analyze',  label: 'Analysing wireframe…',  icon: 'pi pi-eye' },
-  { key: 'generate', label: 'Generating UI…',         icon: 'pi pi-sparkles' },
-  { key: 'validate', label: 'Validating output…',     icon: 'pi pi-check-circle' },
-  { key: 'preview',  label: 'Preparing preview…',     icon: 'pi pi-desktop' },
+  { key: 'upload',   label: 'Uploading wireframeΓÇª',  icon: 'pi pi-upload' },
+  { key: 'analyze',  label: 'Analysing wireframeΓÇª',  icon: 'pi pi-eye' },
+  { key: 'generate', label: 'Generating UIΓÇª',         icon: 'pi pi-sparkles' },
+  { key: 'validate', label: 'Validating outputΓÇª',     icon: 'pi pi-check-circle' },
+  { key: 'preview',  label: 'Preparing previewΓÇª',     icon: 'pi pi-desktop' },
 ];
 
-// ── Friendly error mapper — never exposes API keys / stack traces ──────────────
+// ΓöÇΓöÇ Friendly error mapper ΓÇö never exposes API keys / stack traces ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const friendlyError = (raw = '') => {
   const msg = String(raw).toLowerCase();
   if (msg.includes('api key') || msg.includes('not configured') || msg.includes('503'))
@@ -74,7 +74,7 @@ const friendlyError = (raw = '') => {
   return raw.length > 200 ? 'An unexpected error occurred. Please try again.' : raw;
 };
 
-// ── Example prompts for guided UX ─────────────────────────────────────────────
+// ΓöÇΓöÇ Example prompts for guided UX ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const EXAMPLE_PROMPTS = [
   'A responsive SaaS landing page with a split hero section, primary CTA, and three feature cards in a dark theme.',
   'A modern analytics dashboard with a sidebar nav, key metric cards, and a data table.',
@@ -88,7 +88,7 @@ const PROMPT_TABS = [
   { id: 'architecture', label: 'Architecture / Flow',   icon: 'pi pi-sitemap' },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 
 const GeneratePage = () => {
   const dispatch   = useDispatch();
@@ -129,7 +129,7 @@ const GeneratePage = () => {
     }
   }, [generation.prompt, hasPrompt, promptError, uploadStatus, uploadedFile]);
 
-  // ── Upload handlers ────────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Upload handlers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleFileSelect = useCallback(async (file) => {
     dispatch(clearUpload());
     setWireframeFile(file);
@@ -155,11 +155,12 @@ const GeneratePage = () => {
     if (wireframeFile) handleFileSelect(wireframeFile);
   }, [wireframeFile, handleFileSelect]);
 
-  // ── Generation handler ─────────────────────────────────────────────────────
+  // ΓöÇΓöÇ Generation handler ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   const handleGenerate = async (e) => {
     e.preventDefault();
 
     const prompt   = generation.prompt?.trim() || '';
+    const pageName = generation.pageName?.trim() || 'Home';
     const hasUploadedWireframe = uploadStatus === 'success' && Boolean(uploadedFile);
 
     // If no wireframe and no prompt, require user to provide at least one
@@ -167,24 +168,6 @@ const GeneratePage = () => {
       setPromptError('Please upload/paste a wireframe or describe the UI with a prompt.');
       return;
     }
-
-    // Infer dynamic domain page name from prompt intent
-    const pLower = prompt.toLowerCase();
-    const inferredPageName = pLower.includes('college') || pLower.includes('university') ? 'College University Website'
-      : pLower.includes('hospital') || pLower.includes('medical') ? 'Hospital Healthcare Portal'
-      : pLower.includes('bank') || pLower.includes('fintech') ? 'Banking Financial Portal'
-      : pLower.includes('food') || pLower.includes('pizza') || pLower.includes('burger') ? 'Food Delivery Page'
-      : pLower.includes('travel') || pLower.includes('resort') || pLower.includes('hotel') ? 'Travel Booking Page'
-      : pLower.includes('fashion') || pLower.includes('apparel') || pLower.includes('store') ? 'Fashion Store Page'
-      : pLower.includes('job') || pLower.includes('career') ? 'Job Recruitment Portal'
-      : pLower.includes('fitness') || pLower.includes('gym') ? 'Fitness Gym Website'
-      : pLower.includes('news') || pLower.includes('media') ? 'News Media Portal'
-      : pLower.includes('portfolio') || pLower.includes('developer') ? 'Developer Portfolio'
-      : 'Generated UI Page';
-
-    const pageName = (generation.pageName?.trim() && generation.pageName.trim() !== 'Home')
-      ? generation.pageName.trim()
-      : inferredPageName;
 
     setShowSuccess(false);
     dispatch(setStatus('loading'));
@@ -209,12 +192,11 @@ const GeneratePage = () => {
       const response = await generateUI(payload);
 
       if (response.success && response.page) {
-        const finalName = response.page.page || pageName;
         dispatch(setResult(response.page));
-        dispatch(setPage({ pageName: finalName, data: response.page }));
-        dispatch(setActivePage(finalName));
+        dispatch(setPage({ pageName, data: response.page }));
+        dispatch(setActivePage(pageName));
         dispatch(setStatus('succeeded'));
-        setGeneratedPageName(finalName);
+        setGeneratedPageName(pageName);
         setShowSuccess(true);
       } else {
         dispatch(setError(friendlyError(response.message || 'Generation failed.')));
@@ -244,11 +226,11 @@ const GeneratePage = () => {
 
   const currentStage = GENERATION_STAGES[stageIndex];
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   return (
     <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 py-8 nm-animate-in">
 
-      {/* ── Visual Hero Header ────────────────────────────────────────────────── */}
+      {/* ΓöÇΓöÇ Visual Hero Header ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
       <div className="mb-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center nm-card p-6 sm:p-8 overflow-hidden relative border border-[var(--nm-border-subtle)] bg-gradient-to-br from-[var(--nm-bg-card)] via-[var(--nm-bg-surface)] to-[var(--nm-bg-primary)]">
         {/* Ambient background glow */}
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-[var(--nm-accent-glow)] rounded-full blur-3xl opacity-30 pointer-events-none" />
@@ -264,7 +246,7 @@ const GeneratePage = () => {
           </h1>
           <p className="text-[var(--nm-text-secondary)] text-sm sm:text-base leading-relaxed max-w-xl">
             Upload a wireframe sketch, describe your vision, and let NeuraMind build
-            a structured, production-ready React UI in seconds — complete with live preview and CMS editing.
+            a structured, production-ready React UI in seconds ΓÇö complete with live preview and CMS editing.
           </p>
 
           {/* Key Capabilities Badges */}
@@ -302,7 +284,7 @@ const GeneratePage = () => {
             <div className="absolute bottom-3 left-3 right-3 p-3 rounded-lg bg-[rgba(15,23,42,0.9)] border border-[var(--nm-border-subtle)] backdrop-blur-md">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-[var(--nm-text-primary)] font-semibold flex items-center gap-1.5">
-                  <i className="pi pi-check-circle text-[var(--nm-success)]" /> Wireframe → UIPage
+                  <i className="pi pi-check-circle text-[var(--nm-success)]" /> Wireframe ΓåÆ UIPage
                 </span>
                 <span className="text-[var(--nm-text-muted)] font-mono text-[10px]">JSON Schema Valid</span>
               </div>
@@ -311,7 +293,7 @@ const GeneratePage = () => {
         </div>
       </div>
 
-      {/* ── Workflow Steps Indicator ────────────────────────────────────────── */}
+      {/* ΓöÇΓöÇ Workflow Steps Indicator ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
       <div className="mb-10">
         <h2 className="text-xs uppercase tracking-widest font-semibold text-[var(--nm-text-muted)] text-center mb-4">
           End-to-End Product Workflow
@@ -346,7 +328,7 @@ const GeneratePage = () => {
         </div>
       </div>
 
-      {/* ── Success State ────────────────────────────────────────────────────── */}
+      {/* ΓöÇΓöÇ Success State ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
       {showSuccess && (
         <div className="mb-6 rounded-[var(--nm-radius)] border border-[rgba(34,197,94,0.4)] bg-[rgba(34,197,94,0.08)] p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-[rgba(34,197,94,0.15)] border border-[rgba(34,197,94,0.4)] flex items-center justify-center flex-shrink-0">
@@ -382,11 +364,11 @@ const GeneratePage = () => {
         </div>
       )}
 
-      {/* ── Main Form ────────────────────────────────────────────────────────── */}
+      {/* ΓöÇΓöÇ Main Form ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
       <form onSubmit={handleGenerate} noValidate>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
-          {/* ── Left Column: Page Name + Upload ────────────────────────────── */}
+          {/* ΓöÇΓöÇ Left Column: Page Name + Upload ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
           <div className="flex flex-col gap-5">
 
             {/* Page Name */}
@@ -413,7 +395,7 @@ const GeneratePage = () => {
                 />
                 {generation.pageName && (
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[var(--nm-text-muted)]">
-                    /preview/{encodeURIComponent(generation.pageName || '…')}
+                    /preview/{encodeURIComponent(generation.pageName || 'ΓÇª')}
                   </span>
                 )}
               </div>
@@ -433,7 +415,7 @@ const GeneratePage = () => {
                         Optional
                       </span>
                     </h3>
-                    <p className="text-xs text-[var(--nm-text-secondary)]">Supported formats: JPG, JPEG, PNG, WEBP — up to 10 MB</p>
+                    <p className="text-xs text-[var(--nm-text-secondary)]">Supported formats: JPG, JPEG, PNG, WEBP ΓÇö up to 10 MB</p>
                   </div>
                 </div>
                 {uploadStatus === 'success' && (
@@ -460,7 +442,7 @@ const GeneratePage = () => {
                     <div className="min-w-0">
                       <p className="font-medium text-[var(--nm-text-primary)] truncate">{uploadedFile.originalName}</p>
                       <p className="text-[var(--nm-text-muted)]">
-                        {(uploadedFile.size / 1024).toFixed(1)} KB · {uploadedFile.mimetype}
+                        {(uploadedFile.size / 1024).toFixed(1)} KB ┬╖ {uploadedFile.mimetype}
                       </p>
                     </div>
                   </div>
@@ -499,7 +481,7 @@ const GeneratePage = () => {
             </div>
           </div>
 
-          {/* ── Right Column: Prompt + Generate ──────────────────────────────── */}
+          {/* ΓöÇΓöÇ Right Column: Prompt + Generate ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
           <div className="flex flex-col gap-5">
 
             {/* Tabbed Prompt Input */}
@@ -605,7 +587,7 @@ const GeneratePage = () => {
                 <div className="flex flex-col gap-2">
                   <label htmlFor="existing-code-input" className="text-xs font-semibold text-[var(--nm-text-primary)]">
                     Paste existing code
-                    <span className="ml-2 font-normal text-[var(--nm-text-muted)]">— used as context for generation</span>
+                    <span className="ml-2 font-normal text-[var(--nm-text-muted)]">ΓÇö used as context for generation</span>
                   </label>
                   <textarea
                     id="existing-code-input"
@@ -624,7 +606,7 @@ const GeneratePage = () => {
                 <div className="flex flex-col gap-2">
                   <label htmlFor="architecture-input" className="text-xs font-semibold text-[var(--nm-text-primary)]">
                     Architecture / Flow description
-                    <span className="ml-2 font-normal text-[var(--nm-text-muted)]">— optional context</span>
+                    <span className="ml-2 font-normal text-[var(--nm-text-muted)]">ΓÇö optional context</span>
                   </label>
                   <textarea
                     id="architecture-input"
@@ -694,7 +676,7 @@ const GeneratePage = () => {
                     type="submit"
                     className="mt-2 text-xs text-[var(--nm-accent-light)] hover:underline bg-transparent border-0 cursor-pointer p-0"
                   >
-                    Try again →
+                    Try again ΓåÆ
                   </button>
                 </div>
               </div>
@@ -709,9 +691,9 @@ const GeneratePage = () => {
                     Tips for best results
                   </p>
                   <ul className="text-xs text-[var(--nm-text-secondary)] space-y-0.5 list-none pl-0">
-                    <li>• Be specific about layout, colors, and tone</li>
-                    <li>• Mention number of columns, sections, or components</li>
-                    <li>• Wireframes significantly improve output quality</li>
+                    <li>ΓÇó Be specific about layout, colors, and tone</li>
+                    <li>ΓÇó Mention number of columns, sections, or components</li>
+                    <li>ΓÇó Wireframes significantly improve output quality</li>
                   </ul>
                 </div>
               </div>
@@ -731,12 +713,12 @@ const GeneratePage = () => {
               {isGenerating ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Generating…
+                  GeneratingΓÇª
                 </>
               ) : uploadStatus === 'uploading' ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Uploading wireframe…
+                  Uploading wireframeΓÇª
                 </>
               ) : (
                 <>
@@ -749,14 +731,14 @@ const GeneratePage = () => {
             {/* Disabled reason hint */}
             {uploadStatus === 'uploading' && (
               <p className="text-center text-[11px] text-[var(--nm-text-muted)]">
-                Waiting for wireframe upload to complete…
+                Waiting for wireframe upload to completeΓÇª
               </p>
             )}
           </div>
         </div>
       </form>
 
-      {/* ── Product Feature Showcase Cards ───────────────────────────────────── */}
+      {/* ΓöÇΓöÇ Product Feature Showcase Cards ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
       <div className="mt-14 pt-8 border-t border-[var(--nm-border-subtle)]">
         <div className="text-center mb-8">
           <h2 className="text-xs uppercase tracking-widest font-semibold text-[var(--nm-text-muted)] mb-1">
