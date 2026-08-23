@@ -160,7 +160,6 @@ const GeneratePage = () => {
     e.preventDefault();
 
     const prompt   = generation.prompt?.trim() || '';
-    const pageName = generation.pageName?.trim() || 'Home';
     const hasUploadedWireframe = uploadStatus === 'success' && Boolean(uploadedFile);
 
     // If no wireframe and no prompt, require user to provide at least one
