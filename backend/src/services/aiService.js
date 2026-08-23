@@ -12,7 +12,10 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
 const { geminiProviderManager } = require('./geminiProviderManager');
+<<<<<<< HEAD
 const { resolveContextualImage } = require('./imageService');
+=======
+>>>>>>> adb9933 (feat(ai): integrate Gemini multi-provider resilience and failover manager)
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -570,6 +573,7 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
  * @returns {Promise<object>} parsed UIPage JSON
  */
 const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
+const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
   const { extractPromptRequirements, formatRequirementSpecPrompt } = require('./promptRequirementExtractor');
   const reqSpec = extractPromptRequirements(prompt);
   const reqSpecPrompt = formatRequirementSpecPrompt(reqSpec);
@@ -595,33 +599,19 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
   if (existingCode) userMessage += `\n\nExisting code context (use as reference for styling/structure):\n${existingCode}`;
   if (architectureFlow) userMessage += `\n\nArchitecture / user flow:\n${architectureFlow}`;
 
-  try {
-    return await geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      return executeWithModelFallback(
-        genAI,
-        providerModel,
-        (modelName) => ({
-          contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-          config: buildGenerationConfig(modelName),
-        }),
-        prompt,
-        pageName
-      );
-    });
-  } catch (err) {
-    if (
-      err.message?.includes('rate limit') ||
-      err.message?.includes('quota') ||
-      err.message?.includes('temporarily unavailable') ||
-      err.message?.includes('429') ||
-      err.message?.includes('RESOURCE_EXHAUSTED')
-    ) {
-      console.warn('[AI] All providers rate-limited — engaging NeuraMind Intelligent Fallback engine.');
-      return buildSmartFallbackPage(pageName || 'Home', prompt || '');
-    }
-    throw err;
-  }
+  return geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return executeWithModelFallback(
+      genAI,
+      providerModel,
+      (modelName) => ({
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        config: buildGenerationConfig(modelName),
+      }),
+      prompt,
+      pageName
+    );
+  });
 };
 
 /**
@@ -657,38 +647,24 @@ const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
     userMessage += `\n\nAdditional instructions from the user:\n${prompt}${formatRequirementSpecPrompt(reqSpec)}`;
   }
 
-  try {
-    return await geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      return executeWithModelFallback(
-        genAI,
-        providerModel,
-        (modelName) => ({
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: userMessage }, imagePart],
-            },
-          ],
-          config: buildGenerationConfig(modelName),
-        }),
-        prompt,
-        pageName
-      );
-    });
-  } catch (err) {
-    if (
-      err.message?.includes('rate limit') ||
-      err.message?.includes('quota') ||
-      err.message?.includes('temporarily unavailable') ||
-      err.message?.includes('429') ||
-      err.message?.includes('RESOURCE_EXHAUSTED')
-    ) {
-      console.warn('[AI] All providers rate-limited — engaging NeuraMind Intelligent Fallback engine.');
-      return buildSmartFallbackPage(pageName || 'Home', prompt || '');
-    }
-    throw err;
-  }
+  return geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    return executeWithModelFallback(
+      genAI,
+      providerModel,
+      (modelName) => ({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: userMessage }, imagePart],
+          },
+        ],
+        config: buildGenerationConfig(modelName),
+      }),
+      prompt,
+      pageName
+    );
+  });
 };
 
 /**
