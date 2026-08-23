@@ -1,4 +1,4 @@
-﻿/**
+/**
  * WorkspacePage — Unified NeuraMind Product Workbench & Dashboard
  *
  * Unites:

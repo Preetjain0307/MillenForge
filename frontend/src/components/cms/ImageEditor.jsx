@@ -25,6 +25,8 @@ const PRESET_IMAGES = [
  * @param {boolean} [props.disabled=false]
  */
 const ImageEditor = ({ element, onUpdate, disabled = false }) => {
+  const [imgError, setImgError] = useState(false);
+
   if (!element || typeof element !== 'object') {
     return (
       <div className="p-4 text-xs text-[var(--nm-text-muted)] text-center">
@@ -50,8 +52,6 @@ const ImageEditor = ({ element, onUpdate, disabled = false }) => {
   if (element.props?.alt) {
     currentAlt = element.props.alt;
   }
-
-  const [imgError, setImgError] = useState(false);
 
   const handleSrcChange = (e) => {
     const newSrc = e.target.value;

@@ -10,16 +10,11 @@
  *                              ↓
  *                       React component
  *
- * Supported element types:
- *   text | image | button | input | textfield | card | cards |
- *   carousel | wizard | icon | divider | link | list | badge
- *
  * Safety Guarantees:
  * - Never throws "Objects are not valid as a React child".
- * - Intelligently resolves display fields: text, label, title, name, description, value, content, src, alt.
- * - Handles string, number, boolean, null, undefined, object, and array values gracefully.
- * - Unknown types: renders a safe placeholder — never crashes.
- * - Malformed elements: caught by ElementErrorBoundary — never crashes.
+ * - Intelligently resolves display fields.
+ * - Unknown types & Malformed elements caught safely.
+ * - Interactive element inspection boundary overlays (Electric Violet highlights).
  */
 
 import { Component } from 'react';
@@ -28,12 +23,6 @@ import { resolveDisplayString, normalizeElementData } from '../utils/valueNormal
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
-/**
- * Safely resolve display content from string, object, or fallback.
- * @param {object} element
- * @param {string} [preferredKey=null]
- * @returns {string}
- */
 const safeContent = (element, preferredKey = null) => {
   if (!element) return '';
   const c = resolveDisplayString(element.content, '', preferredKey);
@@ -43,29 +32,15 @@ const safeContent = (element, preferredKey = null) => {
   return '';
 };
 
-/**
- * Safely read element.props with fallback to empty object.
- * @param {object} element
- * @returns {object}
- */
 const safeProps = (element) =>
   element && typeof element.props === 'object' && element.props !== null && !Array.isArray(element.props)
     ? element.props
     : {};
 
-/**
- * Normalize an element object using the central value normalizer.
- * @param {*} raw
- * @returns {object}
- */
 const normalizeElement = (raw) => normalizeElementData(raw);
 
 // ─── Error Boundary ───────────────────────────────────────────────────────────
 
-/**
- * Wraps each individual element render.
- * If one element throws, the rest of the page still renders safely.
- */
 class ElementErrorBoundary extends Component {
   constructor(props) {
     super(props);
@@ -81,8 +56,8 @@ class ElementErrorBoundary extends Component {
       return (
         <div
           role="alert"
-          className="px-3 py-2 rounded-[var(--nm-radius-sm)] border border-dashed border-[var(--nm-error)]
-                     text-xs text-[var(--nm-error)] flex items-center gap-2"
+          className="px-3 py-2 rounded-lg border border-dashed border-[#FB7185]
+                     text-xs text-[#FB7185] flex items-center gap-2"
         >
           <i className="pi pi-exclamation-triangle" aria-hidden="true" />
           Element render error: {resolveDisplayString(this.state.message, 'Render error')}
@@ -94,7 +69,6 @@ class ElementErrorBoundary extends Component {
 }
 
 // ─── Element Registry ─────────────────────────────────────────────────────────
-// Each entry is a function: (element) => JSX
 
 const ELEMENT_REGISTRY = {
 
@@ -105,22 +79,12 @@ const ELEMENT_REGISTRY = {
     const ALLOWED_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'label', 'strong', 'em'];
     const Tag = ALLOWED_TAGS.includes(props.tag) ? props.tag : 'p';
 
-    const tagClasses = {
-      h1: 'text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight nm-gradient-text leading-tight mb-3',
-      h2: 'text-2xl sm:text-3xl font-bold tracking-tight text-[var(--nm-text-primary)] mb-2.5',
-      h3: 'text-xl sm:text-2xl font-bold text-[var(--nm-text-primary)] mb-2',
-      h4: 'text-lg font-semibold text-[var(--nm-text-primary)] mb-1',
-      p: 'text-sm sm:text-base text-[var(--nm-text-secondary)] leading-relaxed mb-1',
-      span: 'text-sm text-[var(--nm-text-secondary)]',
-      label: 'text-xs font-semibold text-[var(--nm-text-muted)] uppercase tracking-wider',
-    }[Tag] || 'text-sm text-[var(--nm-text-primary)] leading-relaxed';
-
     return (
       <Tag
         id={element.id}
-        className={`${tagClasses} ${props.className || ''}`}
+        className={`text-[#F8FAFC] leading-relaxed ${props.className || ''}`}
       >
-        {display || <span className="text-[var(--nm-text-muted)] italic">(empty text)</span>}
+        {display || <span className="text-[#94A3B8] italic">(empty text)</span>}
       </Tag>
     );
   },
@@ -134,28 +98,26 @@ const ELEMENT_REGISTRY = {
     } else if (element.content && typeof element.content === 'object') {
       src = element.content.src || element.content.url || '';
     }
-    if (!src) src = props.src || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80';
+    if (!src) src = props.src || 'https://placehold.co/600x400/18181B/8B5CF6?text=Image';
 
     const alt = resolveDisplayString(
       props.alt || (typeof element.content === 'object' ? element.content.alt : '') || element.fallback,
-      'Generated visual',
+      'Generated image',
       'alt'
     );
 
     return (
-      <div className="relative w-full overflow-hidden rounded-2xl shadow-xl border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-surface)] group">
-        <img
-          id={element.id}
-          src={src}
-          alt={alt}
-          className={`w-full h-auto max-h-[480px] object-cover transition-transform duration-500 group-hover:scale-102 ${props.className || ''}`}
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80';
-            e.currentTarget.alt = 'Visual asset';
-          }}
-        />
-      </div>
+      <img
+        id={element.id}
+        src={src}
+        alt={alt}
+        className={`max-w-full rounded-lg object-cover ${props.className || ''}`}
+        loading="lazy"
+        onError={(e) => {
+          e.currentTarget.src = 'https://placehold.co/600x400/18181B/8B5CF6?text=Image+Error';
+          e.currentTarget.alt = 'Image failed to load';
+        }}
+      />
     );
   },
 
@@ -172,7 +134,7 @@ const ELEMENT_REGISTRY = {
         variant={props.variant || 'primary'}
         label={label}
         icon={icon || undefined}
-        className={`font-semibold shadow-md ${props.className || ''}`}
+        className={props.className || ''}
         aria-label={resolveDisplayString(props['aria-label'] || label, 'Button')}
         onClick={() => {}}
         type="button"
@@ -192,7 +154,7 @@ const ELEMENT_REGISTRY = {
       <div className={`flex flex-col gap-1.5 ${props.className || ''}`}>
         <label
           htmlFor={inputId}
-          className="text-sm font-medium text-[var(--nm-text-secondary)]"
+          className="text-sm font-medium text-[#CBD5E1]"
         >
           {labelText}
         </label>
@@ -202,21 +164,20 @@ const ELEMENT_REGISTRY = {
           placeholder={placeholderText}
           aria-label={labelText}
           className="
-            w-full px-4 py-2.5 rounded-[var(--nm-radius-sm)]
-            bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]
-            text-[var(--nm-text-primary)] placeholder-[var(--nm-text-muted)]
-            text-sm focus:outline-none focus:border-[var(--nm-accent)]
-            focus:ring-1 focus:ring-[var(--nm-accent)] transition-colors"
+            w-full px-4 py-2.5 rounded-lg
+            bg-[#18181B] border border-[#2A2A30]
+            text-[#F8FAFC] placeholder-[#94A3B8]
+            text-sm focus:outline-none focus:border-[#8B5CF6]
+            focus:ring-1 focus:ring-[#8B5CF6] transition-colors"
           readOnly
         />
       </div>
     );
   },
 
-  // textfield is an alias for input
   textfield: null,
 
-  // ── Card (single) ─────────────────────────────────────────────────────────
+  // ── Card ──────────────────────────────────────────────────────────────────
   card: (element) => {
     const props = safeProps(element);
     const rawContent = element.content;
@@ -249,72 +210,55 @@ const ELEMENT_REGISTRY = {
     return (
       <article
         id={element.id}
-        className={`group relative overflow-hidden rounded-2xl border border-[var(--nm-border-subtle)] bg-gradient-to-b from-[var(--nm-bg-card)] to-[var(--nm-bg-surface)] p-6 flex flex-col gap-4 h-full transition-all duration-300 hover:-translate-y-1.5 hover:border-[var(--nm-accent)] hover:shadow-[0_12px_36px_var(--nm-accent-glow)] ${props.className || ''}`}
+        className={`nm-card p-5 flex flex-col gap-3 h-full transition-all duration-200 hover:border-[#8B5CF6] ${props.className || ''}`}
         aria-label={title || description || 'Card'}
       >
-        {/* Card Top Image if present (for food/travel/product cards) */}
         {imgSrc && (
-          <div className="w-full h-48 sm:h-52 rounded-xl -mt-6 -mx-6 mb-1 overflow-hidden bg-[var(--nm-bg-surface)] self-center relative">
+          <div className="w-full h-44 rounded-t-lg -mt-5 -mx-5 mb-2 overflow-hidden bg-[#18181B] self-center">
             <img
               src={imgSrc}
               alt={imgAlt}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
               loading="lazy"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
             />
-            {badge && (
-              <span className="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold font-mono bg-black/70 backdrop-blur-md text-[var(--nm-accent-light)] border border-[var(--nm-border)] shadow-md">
-                {badge}
-              </span>
-            )}
           </div>
         )}
 
-        {/* Badge & Icon Header (if no top image) */}
-        {!imgSrc && (badge || icon) && (
-          <div className="flex items-center justify-between gap-2">
-            {icon && (
-              <div
-                className="w-11 h-11 rounded-xl bg-[rgba(108,99,255,0.15)] border border-[rgba(108,99,255,0.3)] flex items-center justify-center text-[var(--nm-accent-light)] shadow-sm"
-                aria-hidden="true"
-              >
-                <i className={`${icon} text-xl`} />
-              </div>
-            )}
-            {badge && (
-              <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] border border-[var(--nm-border)] ml-auto">
-                {badge}
-              </span>
-            )}
-          </div>
-        )}
+        <div className="flex items-center justify-between gap-2">
+          {icon && (
+            <div
+              className="w-10 h-10 rounded-lg bg-[#8B5CF6]/15 flex items-center justify-center text-[#A78BFA]"
+              aria-hidden="true"
+            >
+              <i className={`${icon} text-lg`} />
+            </div>
+          )}
+          {badge && (
+            <span className="nm-badge ml-auto">{badge}</span>
+          )}
+        </div>
 
-        {/* Card Title */}
         {title && (
-          <h4 className="font-bold text-[var(--nm-text-primary)] text-lg leading-snug tracking-tight">
+          <h4 className="font-semibold text-[#F8FAFC] text-base leading-snug">
             {title}
           </h4>
         )}
 
-        {/* Card Description */}
         {description && (
-          <p className="text-sm text-[var(--nm-text-secondary)] leading-relaxed flex-1">
+          <p className="text-sm text-[#CBD5E1] leading-relaxed flex-1">
             {description}
           </p>
         )}
 
-        {/* Price & Action Footer (for food menu / products / bookings) */}
         {price && (
-          <div className="flex items-center justify-between mt-auto pt-4 border-t border-[var(--nm-border-subtle)]">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-[var(--nm-text-muted)] font-semibold uppercase tracking-wider">Price</span>
-              <span className="font-extrabold text-lg text-[var(--nm-accent-light)] font-mono">
-                {price}
-              </span>
-            </div>
-            <span className="px-3.5 py-1.5 rounded-lg bg-[var(--nm-accent)] text-white font-semibold text-xs transition-all group-hover:shadow-[0_0_16px_var(--nm-accent-glow)]">
+          <div className="flex items-center justify-between mt-auto pt-3 border-t border-[#2A2A30]">
+            <span className="font-bold text-base text-[#A78BFA] font-mono">
+              {price}
+            </span>
+            <span className="text-xs px-2.5 py-1 rounded bg-[#8B5CF6]/20 text-[#A78BFA] font-medium">
               Select
             </span>
           </div>
@@ -323,7 +267,7 @@ const ELEMENT_REGISTRY = {
     );
   },
 
-  // ── Cards — repeating loop ────────────────────────────────────────────────
+  // ── Cards Grid ────────────────────────────────────────────────────────────
   cards: (element) => {
     const props = safeProps(element);
     const items = Array.isArray(props.items)
@@ -341,8 +285,8 @@ const ELEMENT_REGISTRY = {
       return (
         <div
           id={element.id}
-          className="px-4 py-6 rounded-[var(--nm-radius-sm)] border border-dashed
-                     border-[var(--nm-border)] text-sm text-[var(--nm-text-muted)] text-center"
+          className="px-4 py-6 rounded-lg border border-dashed
+                     border-[#2A2A30] text-sm text-[#94A3B8] text-center"
         >
           <i className="pi pi-th-large mr-2" aria-hidden="true" />
           No card items provided
@@ -388,8 +332,8 @@ const ELEMENT_REGISTRY = {
       return (
         <div
           id={element.id}
-          className="px-4 py-6 rounded-[var(--nm-radius-sm)] border border-dashed
-                     border-[var(--nm-border)] text-sm text-[var(--nm-text-muted)] text-center"
+          className="px-4 py-6 rounded-lg border border-dashed
+                     border-[#2A2A30] text-sm text-[#94A3B8] text-center"
         >
           <i className="pi pi-images mr-2" aria-hidden="true" />
           No carousel slides provided
@@ -425,23 +369,23 @@ const ELEMENT_REGISTRY = {
                     className="nm-carousel__img"
                     loading="lazy"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://placehold.co/800x400/1a1a2e/6c63ff?text=Slide';
+                      e.currentTarget.src = 'https://placehold.co/800x400/18181B/8B5CF6?text=Slide';
                     }}
                   />
                 ) : (
                   <div className="nm-carousel__placeholder" aria-hidden="true">
-                    <i className="pi pi-image text-[var(--nm-accent)] text-3xl" />
+                    <i className="pi pi-image text-[#8B5CF6] text-3xl" />
                   </div>
                 )}
                 {(slideTitle || slideDesc) && (
                   <div className="nm-carousel__caption">
                     {slideTitle && (
-                      <p className="text-sm font-semibold text-[var(--nm-text-primary)]">
+                      <p className="text-sm font-semibold text-[#F8FAFC]">
                         {slideTitle}
                       </p>
                     )}
                     {slideDesc && (
-                      <p className="text-xs text-[var(--nm-text-secondary)]">
+                      <p className="text-xs text-[#CBD5E1]">
                         {slideDesc}
                       </p>
                     )}
@@ -451,9 +395,6 @@ const ELEMENT_REGISTRY = {
             );
           })}
         </div>
-        <p className="text-xs text-[var(--nm-text-muted)] text-center mt-2">
-          ← scroll to see more →
-        </p>
       </div>
     );
   },
@@ -468,8 +409,8 @@ const ELEMENT_REGISTRY = {
       return (
         <div
           id={element.id}
-          className="px-4 py-6 rounded-[var(--nm-radius-sm)] border border-dashed
-                     border-[var(--nm-border)] text-sm text-[var(--nm-text-muted)] text-center"
+          className="px-4 py-6 rounded-lg border border-dashed
+                     border-[#2A2A30] text-sm text-[#94A3B8] text-center"
         >
           <i className="pi pi-list-check mr-2" aria-hidden="true" />
           No wizard steps provided
@@ -509,11 +450,11 @@ const ELEMENT_REGISTRY = {
                 </div>
 
                 <div className="nm-wizard__content">
-                  <p className={`text-sm font-semibold ${isActive ? 'text-[var(--nm-accent-light)]' : isDone ? 'text-[var(--nm-text-secondary)]' : 'text-[var(--nm-text-muted)]'}`}>
+                  <p className={`text-sm font-semibold ${isActive ? 'text-[#A78BFA]' : isDone ? 'text-[#CBD5E1]' : 'text-[#94A3B8]'}`}>
                     {stepLabel}
                   </p>
                   {stepDesc && (
-                    <p className="text-xs text-[var(--nm-text-muted)] mt-0.5">
+                    <p className="text-xs text-[#94A3B8] mt-0.5">
                       {stepDesc}
                     </p>
                   )}
@@ -537,7 +478,7 @@ const ELEMENT_REGISTRY = {
     return (
       <i
         id={element.id}
-        className={`${iconClass} text-[var(--nm-accent)] text-xl ${props.className || ''}`}
+        className={`${iconClass} text-[#8B5CF6] text-xl ${props.className || ''}`}
         aria-hidden={!label}
         aria-label={label || undefined}
         role={label ? 'img' : undefined}
@@ -551,7 +492,7 @@ const ELEMENT_REGISTRY = {
     return (
       <hr
         id={element.id}
-        className={`border-[var(--nm-border-subtle)] my-4 ${props.className || ''}`}
+        className={`border-[#2A2A30] my-4 ${props.className || ''}`}
         role="separator"
         aria-hidden="true"
       />
@@ -566,7 +507,7 @@ const ELEMENT_REGISTRY = {
       <a
         id={element.id}
         href={props.href || '#'}
-        className={`text-[var(--nm-accent-light)] hover:underline text-sm ${props.className || ''}`}
+        className={`text-[#A78BFA] hover:underline text-sm font-medium ${props.className || ''}`}
         onClick={(e) => e.preventDefault()}
         aria-label={resolveDisplayString(props['aria-label'] || display, 'Link')}
         rel="noopener noreferrer"
@@ -591,7 +532,7 @@ const ELEMENT_REGISTRY = {
     return (
       <Tag
         id={element.id}
-        className={`${isOrdered ? 'list-decimal' : 'list-disc'} list-inside text-sm text-[var(--nm-text-secondary)] space-y-1 ${props.className || ''}`}
+        className={`${isOrdered ? 'list-decimal' : 'list-disc'} list-inside text-sm text-[#CBD5E1] space-y-1 ${props.className || ''}`}
         aria-label={resolveDisplayString(props['aria-label'], undefined)}
       >
         {items.length > 0 ? (
@@ -601,7 +542,7 @@ const ELEMENT_REGISTRY = {
             </li>
           ))
         ) : (
-          <li className="text-[var(--nm-text-muted)] italic">(no items)</li>
+          <li className="text-[#94A3B8] italic">(no items)</li>
         )}
       </Tag>
     );
@@ -630,51 +571,73 @@ const propsLabel = (element) => {
   return props.label || element.content || element.fallback || 'Badge';
 };
 
-/**
- * Resolve the renderer function for a given element type.
- * @param {string} type
- * @returns {function|null}
- */
 const getRenderer = (type) => {
   if (type === 'textfield') return ELEMENT_REGISTRY.input;
   return ELEMENT_REGISTRY[type] ?? null;
 };
 
-// ─── ElementRenderer ──────────────────────────────────────────────────────────
+// ─── ElementRenderer with Interactive Electric Violet Inspector Overlay ─────
 
-const ElementRenderer = ({ element: rawElement }) => {
+const ElementRenderer = ({ element: rawElement, selectedElementId, onSelectElement }) => {
   const element = normalizeElement(rawElement);
   const renderer = getRenderer(element.type);
+  const isSelected = selectedElementId && selectedElementId === element.id;
 
-  if (renderer) {
-    return (
-      <ElementErrorBoundary>
-        {renderer(element)}
-      </ElementErrorBoundary>
-    );
-  }
-
-  // Unknown type — safe placeholder, never crashes
-  const display = safeContent(element);
-  return (
+  const content = renderer ? (
+    <ElementErrorBoundary>
+      {renderer(element)}
+    </ElementErrorBoundary>
+  ) : (
     <div
       id={element.id}
       role="note"
-      className="px-3 py-2 rounded-[var(--nm-radius-sm)] border border-dashed
-                 border-[var(--nm-border)] text-xs text-[var(--nm-text-muted)]
+      className="px-3 py-2 rounded-lg border border-dashed
+                 border-[#2A2A30] text-xs text-[#94A3B8]
                  flex items-center gap-2"
-      aria-label={`Unknown element type: ${element.type}`}
     >
       <i className="pi pi-box" aria-hidden="true" />
       <span>
-        <strong className="text-[var(--nm-text-secondary)]">{element.type}</strong>
-        {display ? `: ${display}` : ' (unknown type)'}
+        <strong className="text-[#CBD5E1]">{element.type}</strong>
+        {safeContent(element) ? `: ${safeContent(element)}` : ' (unknown type)'}
       </span>
+    </div>
+  );
+
+  return (
+    <div
+      onClick={(e) => {
+        if (onSelectElement) {
+          e.stopPropagation();
+          onSelectElement(element);
+        }
+      }}
+      className={`
+        relative group transition-all duration-150 rounded-lg p-1 cursor-pointer
+        ${isSelected 
+          ? 'ring-2 ring-[#8B5CF6] bg-[#8B5CF6]/10 shadow-[0_0_12px_rgba(139,92,246,0.3)]' 
+          : 'hover:ring-1 hover:ring-[#8B5CF6]/50 hover:bg-[#8B5CF6]/5'
+        }
+      `}
+    >
+      {/* Component ID Badge overlay on hover/selection */}
+      <div className={`
+        absolute -top-2.5 left-2 z-20 px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider
+        transition-opacity duration-150 flex items-center gap-1 shadow-md pointer-events-none
+        ${isSelected
+          ? 'bg-[#8B5CF6] text-white opacity-100 font-bold'
+          : 'bg-[#18181B] text-[#A78BFA] border border-[#8B5CF6]/40 opacity-0 group-hover:opacity-100'
+        }
+      `}>
+        <span className="capitalize">{element.type}</span>
+        <span className="text-white/60">#{element.id}</span>
+      </div>
+
+      {content}
     </div>
   );
 };
 
-// ─── Section Layout Helpers ───────────────────────────────────────────────────
+// ─── Section Layout & Renderer ────────────────────────────────────────────────
 
 const getLayoutClasses = (section) => {
   const layout = section.props?.layout || '';
@@ -707,23 +670,23 @@ const getLayoutClasses = (section) => {
   return 'flex flex-col gap-6 w-full';
 };
 
-// ─── Section Renderer ─────────────────────────────────────────────────────────
-
-const SectionRenderer = ({ section }) => {
+const SectionRenderer = ({ section, selectedElementId, onSelectElement }) => {
   if (!section || typeof section !== 'object') return null;
 
   const safeSection = {
     id: section.id || `sec-${Math.random().toString(36).slice(2, 8)}`,
-    type: typeof section.type === 'string' ? section.type.toLowerCase() : 'custom',
+    type: typeof section.type === 'string' ? section.type : 'custom',
     elements: Array.isArray(section.elements) ? section.elements : [],
     props: (section.props && typeof section.props === 'object' && !Array.isArray(section.props)) ? section.props : {},
   };
 
+  const layoutClasses = getLayoutClasses(safeSection);
   const bg = safeSection.props.background || '';
+
   const bgClass =
-    bg === 'gradient' ? 'bg-gradient-to-br from-[var(--nm-bg-card)] to-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]'
-    : bg === 'surface' ? 'bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]'
-    : bg === 'accent'  ? 'bg-[var(--nm-accent-glow)] border border-[rgba(108,99,255,0.3)]'
+    bg === 'gradient' ? 'bg-gradient-to-br from-[#18181B] to-[#111113]'
+    : bg === 'surface' ? 'bg-[#18181B]'
+    : bg === 'accent'  ? 'bg-[#8B5CF6]/10 border border-[#8B5CF6]/20'
     : '';
 
   if (safeSection.elements.length === 0) {
@@ -731,9 +694,9 @@ const SectionRenderer = ({ section }) => {
       <section
         id={safeSection.id}
         aria-label={`${safeSection.type} section (empty)`}
-        className={`py-8 px-6 rounded-[var(--nm-radius)] border border-dashed border-[var(--nm-border-subtle)] ${bgClass}`}
+        className={`py-8 px-6 rounded-xl border border-dashed border-[#2A2A30] ${bgClass}`}
       >
-        <p className="text-sm text-[var(--nm-text-muted)] text-center">
+        <p className="text-sm text-[#94A3B8] text-center">
           <i className="pi pi-inbox mr-2" aria-hidden="true" />
           Section &ldquo;{safeSection.type}&rdquo; has no elements.
         </p>
@@ -741,148 +704,19 @@ const SectionRenderer = ({ section }) => {
     );
   }
 
-  // 1. Special Layout: HERO Section Intelligence
-  if (safeSection.type === 'hero') {
-    const mediaTypes = new Set(['image', 'carousel']);
-    const mediaElements = safeSection.elements.filter((el) => mediaTypes.has((el?.type || '').toLowerCase()));
-    const nonMediaElements = safeSection.elements.filter((el) => !mediaTypes.has((el?.type || '').toLowerCase()));
-
-    const textElements = nonMediaElements.filter((el) => (el?.type || '').toLowerCase() !== 'button');
-    const buttonElements = nonMediaElements.filter((el) => (el?.type || '').toLowerCase() === 'button');
-
-    const hasMedia = mediaElements.length > 0;
-
-    return (
-      <section
-        id={safeSection.id}
-        aria-label={resolveDisplayString(safeSection.props['aria-label'] || 'Hero Section')}
-        className={`py-12 px-6 sm:px-8 rounded-2xl ${bgClass || 'bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)]'}`}
-      >
-        {hasMedia ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center w-full min-h-[380px]">
-            {/* Left Content Column */}
-            <div className="flex flex-col items-start text-left gap-3.5">
-              {textElements.map((el) => (
-                <ElementRenderer
-                  key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
-                  element={el}
-                />
-              ))}
-
-              {buttonElements.length > 0 && (
-                <div className="flex items-center gap-3.5 flex-wrap pt-3">
-                  {buttonElements.map((el) => (
-                    <ElementRenderer
-                      key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
-                      element={el}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Right Media Column */}
-            <div className="w-full flex items-center justify-center">
-              {mediaElements.map((el) => (
-                <ElementRenderer
-                  key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
-                  element={el}
-                />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center text-center max-w-3xl mx-auto gap-4 py-4">
-            {textElements.map((el) => (
-              <ElementRenderer
-                key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
-                element={el}
-              />
-            ))}
-
-            {buttonElements.length > 0 && (
-              <div className="flex items-center justify-center gap-4 flex-wrap pt-3">
-                {buttonElements.map((el) => (
-                  <ElementRenderer
-                    key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
-                    element={el}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-    );
-  }
-
-  // 2. Special Layout: CARDS / FEATURES / PRICING / TESTIMONIALS / GALLERY Sections
-  if (['features', 'cards', 'pricing', 'testimonials', 'gallery'].includes(safeSection.type)) {
-    const gridTypes = new Set(['cards', 'card', 'carousel', 'list']);
-    const gridElements = safeSection.elements.filter((el) => gridTypes.has((el?.type || '').toLowerCase()));
-    const headerElements = safeSection.elements.filter((el) => !gridTypes.has((el?.type || '').toLowerCase()));
-
-    return (
-      <section
-        id={safeSection.id}
-        aria-label={resolveDisplayString(safeSection.props['aria-label'] || `${safeSection.type} section`)}
-        className={`py-12 px-6 sm:px-8 rounded-2xl ${bgClass || 'bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)]'}`}
-      >
-        {headerElements.length > 0 && (
-          <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-2.5 mb-8">
-            {headerElements.map((el) => (
-              <ElementRenderer
-                key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
-                element={el}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="w-full">
-          {gridElements.map((el) => (
-            <ElementRenderer
-              key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
-              element={el}
-            />
-          ))}
-        </div>
-      </section>
-    );
-  }
-
-  // 3. Special Layout: CTA Section
-  if (safeSection.type === 'cta') {
-    return (
-      <section
-        id={safeSection.id}
-        aria-label={resolveDisplayString(safeSection.props['aria-label'] || 'CTA section')}
-        className={`py-12 px-8 rounded-2xl text-center flex flex-col items-center gap-4 max-w-4xl mx-auto my-4 w-full bg-gradient-to-br from-[var(--nm-bg-card)] via-[rgba(108,99,255,0.12)] to-[var(--nm-bg-surface)] border border-[rgba(108,99,255,0.3)] shadow-2xl ${bgClass}`}
-      >
-        {safeSection.elements.map((el) => (
-          <ElementRenderer
-            key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
-            element={el}
-          />
-        ))}
-      </section>
-    );
-  }
-
-  // Standard Section Fallback
-  const layoutClasses = getLayoutClasses(safeSection);
-
   return (
     <section
       id={safeSection.id}
       aria-label={resolveDisplayString(safeSection.props['aria-label'] || `${safeSection.type} section`)}
-      className={`py-10 px-6 rounded-2xl ${bgClass || 'bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)]'}`}
+      className={`py-8 px-6 rounded-xl ${bgClass}`}
     >
       <div className={layoutClasses}>
         {safeSection.elements.map((el) => (
           <ElementRenderer
             key={(el && el.id) ? el.id : `el-${Math.random().toString(36).slice(2, 8)}`}
             element={el}
+            selectedElementId={selectedElementId}
+            onSelectElement={onSelectElement}
           />
         ))}
       </div>
@@ -890,19 +724,19 @@ const SectionRenderer = ({ section }) => {
   );
 };
 
-// ─── Page Renderer (exported) ─────────────────────────────────────────────────
-
 /**
- * UIRenderer — Renders a UIPage JSON object.
+ * UIRenderer — Renders a UIPage JSON object with component selection overlays.
  *
  * @param {object} props
  * @param {object} props.pageData - UIPage object conforming to frontend/src/types/ui.js
+ * @param {string} [props.selectedElementId]
+ * @param {function} [props.onSelectElement]
  */
-const UIRenderer = ({ pageData }) => {
+const UIRenderer = ({ pageData, selectedElementId, onSelectElement }) => {
   if (!pageData || typeof pageData !== 'object') {
     return (
       <div
-        className="flex flex-col items-center justify-center py-16 gap-3 text-[var(--nm-text-muted)]"
+        className="flex flex-col items-center justify-center py-16 gap-3 text-[#94A3B8]"
         role="status"
         aria-live="polite"
       >
@@ -917,25 +751,24 @@ const UIRenderer = ({ pageData }) => {
   if (sections.length === 0) {
     return (
       <div
-        className="flex flex-col items-center justify-center py-16 gap-3 text-[var(--nm-text-muted)]"
+        className="flex flex-col items-center justify-center py-16 gap-3 text-[#94A3B8]"
         role="status"
         aria-live="polite"
       >
         <i className="pi pi-desktop text-3xl opacity-40" aria-hidden="true" />
         <p className="text-sm">No sections to render.</p>
-        <p className="text-xs opacity-70">
-          Generate a UI first, or check your UIPage data.
-        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2 nm-animate-in" aria-label={`Preview: ${pageData.page || 'Untitled'}`}>
+    <div className="flex flex-col gap-4 nm-animate-in" aria-label={`Preview: ${pageData.page || 'Untitled'}`}>
       {sections.map((section) => (
         <SectionRenderer
           key={(section && section.id) ? section.id : `sec-${Math.random().toString(36).slice(2, 8)}`}
           section={section}
+          selectedElementId={selectedElementId}
+          onSelectElement={onSelectElement}
         />
       ))}
     </div>

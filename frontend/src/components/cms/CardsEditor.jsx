@@ -34,6 +34,8 @@ const POPULAR_CARD_ICONS = [
  * @param {boolean} [props.disabled=false]
  */
 const CardsEditor = ({ element, onUpdate, disabled = false }) => {
+  const [expandedIndex, setExpandedIndex] = useState(0);
+
   if (!element || typeof element !== 'object') {
     return (
       <div className="p-4 text-xs text-[var(--nm-text-muted)] text-center">
@@ -46,9 +48,6 @@ const CardsEditor = ({ element, onUpdate, disabled = false }) => {
   const rawItems = Array.isArray(element.items)
     ? element.items
     : (Array.isArray(element.props?.items) ? element.props.items : []);
-
-  // For single card, wrap in an array or edit single fields
-  const [expandedIndex, setExpandedIndex] = useState(0);
 
   // If single card
   if (isSingleCard) {
@@ -192,7 +191,7 @@ const CardsEditor = ({ element, onUpdate, disabled = false }) => {
   };
 
   const handleRemoveItem = (index) => {
-    if (items.length <= 1) return; // keep at least 1 item for safety
+    if (items.length <= 1) return;
     const updated = items.filter((_, idx) => idx !== index);
 
     onUpdate?.({

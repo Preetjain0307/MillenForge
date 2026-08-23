@@ -1,11 +1,11 @@
 /**
- * AppShell — Top navigation bar for NeuraMind
+ * AppShell — Top navigation header bar for NeuroMinds
  */
 import { Link, useLocation } from 'react-router-dom';
 
 const NAV_LINKS = [
   { label: 'Workspace', path: '/home', icon: 'pi pi-th-large' },
-  { label: 'Generate', path: '/generate', icon: 'pi pi-sparkles' },
+  { label: 'Generate', path: '/generate', icon: 'pi pi-sparkles', highlight: true },
   { label: 'Diagrams', path: '/diagrams', icon: 'pi pi-sitemap' },
   { label: 'Preview & CMS', path: '/preview/Home', icon: 'pi pi-desktop' },
   { label: 'Intelligence', path: '/intelligence', icon: 'pi pi-brain' },
@@ -17,24 +17,27 @@ const AppShell = () => {
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 nm-glass border-b border-[var(--nm-border-subtle)] bg-[rgba(10,10,15,0.85)] backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-[#111113]/90 backdrop-blur-xl border-b border-[#2A2A30]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4" aria-label="Main Navigation">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 no-underline group" aria-label="NeuraMind Home">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--nm-accent)] to-[var(--nm-accent-glow)] flex items-center justify-center group-hover:shadow-[0_0_16px_var(--nm-accent-glow)] transition-all">
-            <i className="pi pi-bolt text-white text-base" aria-hidden="true" />
+        {/* Left: Brand Identity */}
+        <Link to="/" className="flex items-center gap-3 no-underline group" aria-label="NeuroMinds Home">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition-all">
+            <i className="pi pi-bolt text-white text-sm" aria-hidden="true" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-lg tracking-tight nm-gradient-text leading-none">
-              NeuraMind
+            <span className="font-bold text-base tracking-tight text-[#F8FAFC] flex items-center gap-1.5 leading-none">
+              NeuroMinds
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-semibold bg-[#8B5CF6]/20 text-[#A78BFA] border border-[#8B5CF6]/30 uppercase">
+                Studio
+              </span>
             </span>
-            <span className="text-[10px] font-mono text-[var(--nm-text-muted)] tracking-wider uppercase">
+            <span className="text-[10px] font-mono text-[#94A3B8] tracking-wider uppercase mt-0.5">
               AI UI & CMS Engine
             </span>
           </div>
         </Link>
 
-        {/* Right side: Nav links & Engine status */}
+        {/* Center/Right: Navigation Items */}
         <div className="flex items-center gap-3">
           <ul className="flex items-center gap-1 list-none m-0 p-0" role="menubar">
             {NAV_LINKS.map((link) => {
@@ -49,14 +52,14 @@ const AppShell = () => {
                     role="menuitem"
                     aria-current={isActive ? 'page' : undefined}
                     className={`
-                      px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium no-underline transition-all flex items-center gap-1.5
+                      px-3 py-1.5 rounded-md text-xs font-medium no-underline transition-all flex items-center gap-1.5
                       ${isActive
-                        ? 'text-[var(--nm-accent-light)] bg-[rgba(108,99,255,0.15)] border border-[rgba(108,99,255,0.3)] shadow-sm'
-                        : 'text-[var(--nm-text-secondary)] hover:text-[var(--nm-text-primary)] hover:bg-[var(--nm-bg-surface)]'
+                        ? 'text-[#F8FAFC] bg-[#8B5CF6]/20 border border-[#8B5CF6]/40 shadow-[0_0_10px_rgba(139,92,246,0.2)]'
+                        : 'text-[#CBD5E1] hover:text-[#F8FAFC] hover:bg-[#18181B] border border-transparent'
                       }
                     `}
                   >
-                    <i className={`${link.icon} text-xs`} aria-hidden="true" />
+                    <i className={`${link.icon} text-xs ${isActive ? 'text-[#A78BFA]' : 'text-[#94A3B8]'}`} aria-hidden="true" />
                     <span>{link.label}</span>
                   </Link>
                 </li>
@@ -64,9 +67,12 @@ const AppShell = () => {
             })}
           </ul>
 
-          {/* Engine Status Pill */}
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.25)] text-[var(--nm-success)] text-[11px] font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--nm-success)] animate-pulse" />
+          {/* Engine Status Indicator */}
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-[#18181B] border border-[#2A2A30] text-[#34D399] text-[11px] font-mono">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]"></span>
+            </span>
             <span>AI Ready</span>
           </div>
         </div>

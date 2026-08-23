@@ -1,13 +1,12 @@
 /**
- * NmUploadArea — Drag-and-drop wireframe upload area (Task 2 complete)
+ * NmUploadArea — Drag-and-drop wireframe upload area
  *
  * Supports:
  *  - Drag-and-drop or click-to-browse
- *  - PNG / JPG / JPEG / WEBP only
- *  - Local image preview
+ *  - PNG / JPG / JPEG / WEBP
+ *  - Local image preview & metadata display
  *  - Remove / replace file
  *  - Uploading / success / error visual states (driven by props)
- *  - Prevents unsupported types (client-side guard, server also validates)
  *  - Single file only
  */
 import { useRef, useState } from 'react';
@@ -66,7 +65,6 @@ const NmUploadArea = ({
 
   const handleInputChange = (e) => {
     validateAndSelect(e.target.files[0]);
-    // Reset so the same file can be re-selected after removal
     e.target.value = '';
   };
 
@@ -75,24 +73,24 @@ const NmUploadArea = ({
   };
 
   const handleRemove = (e) => {
-    e.stopPropagation(); // don't re-open file picker
+    e.stopPropagation();
     setTypeError(null);
     onRemove();
   };
 
-  // Determine border / background colour from state
+  // Determine styling state
   const areaStyle = (() => {
-    if (isSuccess) return 'border-[var(--nm-success)] bg-[rgba(34,197,94,0.05)]';
-    if (uploadStatus === 'error') return 'border-[var(--nm-error)] bg-[rgba(239,68,68,0.05)]';
-    if (dragging) return 'border-[var(--nm-accent)] bg-[var(--nm-accent-glow)] scale-[1.01]';
-    return 'border-[var(--nm-border)] bg-[var(--nm-bg-surface)] hover:border-[var(--nm-accent)] hover:bg-[rgba(108,99,255,0.05)]';
+    if (isSuccess) return 'border-[#34D399] bg-[#34D399]/5';
+    if (uploadStatus === 'error') return 'border-[#FB7185] bg-[#FB7185]/5';
+    if (dragging) return 'border-[#8B5CF6] bg-[#8B5CF6]/15 scale-[1.01] shadow-[0_0_20px_rgba(139,92,246,0.2)]';
+    return 'border-[#2A2A30] bg-[#18181B] hover:border-[#8B5CF6]/60 hover:bg-[#8B5CF6]/5';
   })();
 
   const localPreview = file ? URL.createObjectURL(file) : null;
+  const fileSizeMb = file ? (file.size / (1024 * 1024)).toFixed(2) : null;
 
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      {/* ── Drop zone ─────────────────────────────────────────────────────── */}
       <div
         id="wireframe-upload-zone"
         role="button"
@@ -105,8 +103,8 @@ const NmUploadArea = ({
         onDragLeave={handleDragLeave}
         className={`
           relative flex flex-col items-center justify-center gap-3
-          rounded-[var(--nm-radius)] border-2 border-dashed
-          min-h-[200px] transition-all duration-200
+          rounded-xl border-2 border-dashed
+          min-h-[190px] transition-all duration-200
           ${isUploading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer select-none'}
           ${areaStyle}
         `}
@@ -122,7 +120,7 @@ const NmUploadArea = ({
           aria-hidden="true"
         />
 
-        {/* ── Remove button (shown when file is selected) ── */}
+        {/* Remove button */}
         {file && !isUploading && (
           <button
             id="wireframe-remove-btn"
@@ -130,84 +128,86 @@ const NmUploadArea = ({
             onClick={handleRemove}
             aria-label="Remove wireframe"
             className="
-              absolute top-2 right-2 z-10
+              absolute top-3 right-3 z-10
               w-7 h-7 rounded-full
-              bg-[var(--nm-bg-primary)] border border-[var(--nm-border)]
+              bg-[#09090B] border border-[#2A2A30]
               flex items-center justify-center
-              text-[var(--nm-text-secondary)] hover:text-[var(--nm-error)]
-              hover:border-[var(--nm-error)]
-              transition-colors duration-150
+              text-[#CBD5E1] hover:text-[#FB7185]
+              hover:border-[#FB7185]
+              transition-colors duration-150 shadow-md
             "
           >
             <i className="pi pi-times text-xs" />
           </button>
         )}
 
-        {/* ── Content area ── */}
+        {/* Content area */}
         {isUploading ? (
-          /* Uploading state */
           <div className="flex flex-col items-center gap-3 py-6">
-            <div className="w-10 h-10 border-2 border-[var(--nm-accent)] border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-[var(--nm-text-secondary)]">Uploading wireframe…</p>
+            <div className="w-10 h-10 border-2 border-[#8B5CF6] border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-mono text-[#A78BFA]">Analyzing & uploading wireframe…</p>
           </div>
         ) : isSuccess ? (
-          /* Success state — show server-confirmed preview */
           <div className="relative w-full flex flex-col items-center gap-2 p-4">
             {localPreview && (
               <img
                 src={localPreview}
                 alt="Wireframe preview"
-                className="max-h-[150px] max-w-full object-contain rounded-[var(--nm-radius-sm)]"
+                className="max-h-[140px] max-w-full object-contain rounded-lg border border-[#2A2A30] shadow-md"
               />
             )}
-            <div className="flex items-center gap-1.5 text-xs text-[var(--nm-success)]">
+            <div className="flex items-center gap-2 text-xs font-mono text-[#34D399]">
               <i className="pi pi-check-circle" />
-              <span>Uploaded successfully — click to replace</span>
+              <span>Wireframe Ready ({fileSizeMb} MB) — Click to replace</span>
             </div>
           </div>
         ) : file ? (
-          /* File selected but not yet uploaded */
           <div className="relative w-full flex flex-col items-center gap-2 p-4">
-            <img
-              src={localPreview}
-              alt="Wireframe preview"
-              className="max-h-[150px] max-w-full object-contain rounded-[var(--nm-radius-sm)]"
-            />
-            <p className="text-xs text-[var(--nm-text-muted)]">
-              Click elsewhere to replace · ✕ to remove
+            {localPreview && (
+              <img
+                src={localPreview}
+                alt="Wireframe preview"
+                className="max-h-[140px] max-w-full object-contain rounded-lg border border-[#2A2A30] shadow-md"
+              />
+            )}
+            <div className="flex items-center gap-2 text-xs text-[#CBD5E1]">
+              <span className="font-mono text-[#A78BFA] font-medium">{file.name}</span>
+              <span className="text-[#94A3B8]">({fileSizeMb} MB)</span>
+            </div>
+            <p className="text-[11px] text-[#94A3B8]">
+              Click to replace · ✕ button to remove
             </p>
           </div>
         ) : (
-          /* Empty / idle state */
-          <>
-            <div className="w-12 h-12 rounded-full bg-[var(--nm-bg-card)] border border-[var(--nm-border)] flex items-center justify-center">
-              <i className="pi pi-image text-[var(--nm-accent)] text-xl" />
+          <div className="flex flex-col items-center gap-2.5 p-4 text-center">
+            <div className="w-12 h-12 rounded-xl bg-[#202024] border border-[#2A2A30] flex items-center justify-center shadow-inner">
+              <i className="pi pi-[#8B5CF6] pi-image text-[#8B5CF6] text-xl" />
             </div>
-            <div className="text-center px-4">
-              <p className="text-sm font-medium text-[var(--nm-text-primary)]">
-                Drop wireframe here
+            <div>
+              <p className="text-sm font-medium text-[#F8FAFC]">
+                Drop your wireframe image here
               </p>
-              <p className="text-xs text-[var(--nm-text-muted)] mt-0.5">
-                or click to browse — {ACCEPTED_LABEL}
+              <p className="text-xs text-[#94A3B8] mt-1 font-mono">
+                {ACCEPTED_LABEL}
               </p>
             </div>
-          </>
+          </div>
         )}
       </div>
 
-      {/* ── Validation error (client-side type check) ── */}
+      {/* Validation error */}
       {typeError && (
-        <p id="wireframe-type-error" role="alert" className="text-xs text-[var(--nm-error)] flex items-center gap-1">
-          <i className="pi pi-exclamation-circle" />
-          {typeError}
+        <p id="wireframe-type-error" role="alert" className="text-xs text-[#FB7185] flex items-center gap-1.5 px-1 mt-1">
+          <i className="pi pi-exclamation-circle text-xs" />
+          <span>{typeError}</span>
         </p>
       )}
 
-      {/* ── Upload error (from server) ── */}
+      {/* Upload error */}
       {uploadStatus === 'error' && uploadError && (
-        <p id="wireframe-upload-error" role="alert" className="text-xs text-[var(--nm-error)] flex items-center gap-1">
-          <i className="pi pi-exclamation-triangle" />
-          {uploadError}
+        <p id="wireframe-upload-error" role="alert" className="text-xs text-[#FB7185] flex items-center gap-1.5 px-1 mt-1">
+          <i className="pi pi-exclamation-triangle text-xs" />
+          <span>{uploadError}</span>
         </p>
       )}
     </div>
