@@ -22,7 +22,7 @@ const PreviewContainer = ({ pageName, children, isEmpty = true }) => {
         return 'max-w-[768px] mx-auto border-x border-[var(--nm-border)] shadow-xl';
       case 'desktop':
       default:
-        return 'w-full';
+        return 'w-full max-w-[1400px] mx-auto nm-viewport-desktop';
     }
   };
 
@@ -94,7 +94,7 @@ const PreviewContainer = ({ pageName, children, isEmpty = true }) => {
 
       {/* Content area */}
       <div className="flex-1 overflow-auto p-4 sm:p-6 transition-all duration-300 bg-[var(--nm-bg-primary)]">
-        <div className={`${getViewportWidthClass()} transition-all duration-300`}>
+        <div className={`${getViewportWidthClass()} transition-all duration-300 nm-viewport-${viewportMode}`}>
           {isEmpty ? (
             <div className="h-full flex flex-col items-center justify-center gap-4 py-16">
               <div

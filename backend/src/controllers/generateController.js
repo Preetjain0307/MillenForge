@@ -148,7 +148,7 @@ const generate = async (req, res) => {
     // ── Final gate result ─────────────────────────────────────────────────────
     // Always use bestResult (don't use a worse retry result)
     const finalGate = bestResult;
-    const finalPage = finalGate.page;
+    let finalPage = finalGate.page;
 
     if (!finalPage) {
       return res.status(502).json({
@@ -157,13 +157,32 @@ const generate = async (req, res) => {
       });
     }
 
-    // ── Attach generation metadata ─────────────────────────────────────────────
+    // Re-enrich page images on healed page
+    finalPage = enrichPageImages(finalPage, prompt);
+
+    // ── Attach generation metadata & theme ─────────────────────────────────────
+    const { extractPromptRequirements } = require('../services/promptRequirementExtractor');
+    const reqSpec = finalGate.reqSpec || extractPromptRequirements(prompt);
+
     finalPage.page = resolvedPageName;
+    finalPage.themeTokens = reqSpec.themeTokens || finalPage.themeTokens;
+    finalPage.props = {
+      ...(finalPage.props || {}),
+      themeTokens: reqSpec.themeTokens || finalPage.props?.themeTokens,
+      bgColor: reqSpec.customBgColor || reqSpec.colorSpec?.background || finalPage.props?.bgColor,
+      buttonColor: reqSpec.primaryButtonColor || reqSpec.colorSpec?.buttonBackground || finalPage.props?.buttonColor,
+      theme: reqSpec.isLightThemeRequested ? 'light' : (reqSpec.theme || finalPage.props?.theme || 'dark'),
+    };
+
     finalPage.meta = {
       ...(finalPage.meta || {}),
       title: finalPage.meta?.title || resolvedPageName,
       description: finalPage.meta?.description || `AI generated interface for ${resolvedPageName}`,
-      domain: resolvedPageName,
+      domain: reqSpec.domain || resolvedPageName,
+      themeTokens: reqSpec.themeTokens || finalPage.meta?.themeTokens,
+      customBgColor: reqSpec.customBgColor || reqSpec.colorSpec?.background,
+      primaryButtonColor: reqSpec.primaryButtonColor || reqSpec.colorSpec?.buttonBackground,
+      theme: reqSpec.isLightThemeRequested ? 'light' : (reqSpec.theme || finalPage.props?.theme || 'dark'),
       generatedAt: new Date().toISOString(),
       generationSource: hasDiagram
         ? `diagram-${diagramType || 'software'}`

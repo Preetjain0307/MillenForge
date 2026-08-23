@@ -1,0 +1,751 @@
+/**
+ * NeuraMind — Prompt Requirement Extraction & Financial Calculation Engine
+ *
+ * Converts arbitrary user prompts into an internal, structured Requirement Specification:
+ *   1. Domain Detection (food, travel, fashion, saas, realestate, portfolio, education, healthcare, finance, docs, auth, generic)
+ *   2. Page Type Identification (landing, detail, checkout, dashboard, booking, pricing, etc.)
+ *   3. Required Sections Extraction (hero, categories, menu, popular items, checkout, features, pricing, footer)
+ *   4. Required Elements (image, text, button, input, cards, list, badge, divider, link)
+ *   5. Required Data Fields (price, GST, GST %, GST amount, discount, total, rating, location, date, email, etc.)
+ *   6. Required Actions (Add to Cart, Buy Now, Book Now, Search, Checkout, Login, Sign Up)
+ *   7. Required Financial Calculations (Price + GST % = GST Amount -> Total)
+ */
+
+// ── Domain Keywords & Rules ──────────────────────────────────────────────────
+const DOMAIN_PATTERNS = [
+  {
+    domain: 'grocery',
+    keywords: ['grocery', 'supermarket', 'produce', 'vegetables', 'dairy', 'milk', 'farm fresh', 'organic store'],
+    defaultPageType: 'grocery delivery portal',
+    defaultActions: ['Add to Cart', 'Order Fresh', 'View Aisles'],
+    defaultSections: ['hero', 'categories', 'fresh-produce', 'checkout', 'footer'],
+  },
+  {
+    domain: 'movie',
+    keywords: ['movie', 'cinema', 'film', 'popcorn', 'multiplex', 'theater', 'showtimes', 'seats', 'ticket booking', 'box office'],
+    defaultPageType: 'movie ticket booking portal',
+    defaultActions: ['Book Tickets', 'View Showtimes', 'Watch Trailer'],
+    defaultSections: ['hero', 'now-showing', 'coming-soon', 'showtimes', 'footer'],
+  },
+  {
+    domain: 'carrental',
+    keywords: ['car rental', 'rent a car', 'vehicle rental', 'sedan rental', 'suv rental', 'auto hire'],
+    defaultPageType: 'car rental booking page',
+    defaultActions: ['Reserve Car', 'Select Dates', 'View Fleet'],
+    defaultSections: ['hero', 'fleet-cards', 'search-controls', 'pricing', 'footer'],
+  },
+  {
+    domain: 'law',
+    keywords: ['law', 'legal', 'attorney', 'lawyer', 'litigation', 'law firm', 'counsel', 'legal defense'],
+    defaultPageType: 'law firm corporate portal',
+    defaultActions: ['Schedule Consultation', 'Our Practice Areas', 'Contact Attorney'],
+    defaultSections: ['hero', 'practice-areas', 'attorneys', 'consultation', 'footer'],
+  },
+  {
+    domain: 'photography',
+    keywords: ['photography', 'photo studio', 'camera', 'portrait', 'photographer', 'shutter', 'photo gallery'],
+    defaultPageType: 'photography showcase portfolio',
+    defaultActions: ['Book Session', 'View Gallery', 'Contact Photographer'],
+    defaultSections: ['hero', 'gallery', 'services', 'about', 'footer'],
+  },
+  {
+    domain: 'gaming',
+    keywords: ['gaming', 'esports', 'twitch', 'streamer', 'playstation', 'xbox', 'nintendo', 'gamer'],
+    defaultPageType: 'gaming esports portal',
+    defaultActions: ['Play Now', 'Join Tournament', 'Watch Stream'],
+    defaultSections: ['hero', 'games-grid', 'leaderboard', 'streams', 'footer'],
+  },
+  {
+    domain: 'music',
+    keywords: ['music', 'song', 'album', 'track', 'artist', 'audio', 'band', 'soundstream', 'playlist', 'spotify'],
+    defaultPageType: 'music streaming platform',
+    defaultActions: ['Listen Now', 'Play Track', 'Subscribe VIP'],
+    defaultSections: ['hero', 'trending-tracks', 'featured-artists', 'playlists', 'footer'],
+  },
+  {
+    domain: 'hospital',
+    keywords: ['hospital', 'medical', 'clinic', 'doctor', 'healthcare', 'patient', 'appointment', 'emergency', 'surgery', 'wellness', 'pharmacy', 'dental', 'clinical'],
+    defaultPageType: 'hospital healthcare portal',
+    defaultActions: ['Book Appointment', 'Find Doctor', 'Emergency Contact', 'View Departments'],
+    defaultSections: ['hero', 'services', 'doctors', 'departments', 'appointment', 'contact', 'footer'],
+  },
+  {
+    domain: 'college',
+    keywords: ['college', 'university', 'campus', 'academic', 'admissions', 'faculty', 'student portal', 'institute', 'degree program', 'curriculum'],
+    defaultPageType: 'college university website',
+    defaultActions: ['Apply Now', 'View Courses', 'Admission Enquiry', 'Student Portal'],
+    defaultSections: ['hero', 'departments', 'courses', 'faculty', 'campus', 'admissions', 'footer'],
+  },
+  {
+    domain: 'banking',
+    keywords: ['bank', 'banking', 'fintech', 'wallet', 'transfer', 'balance', 'account summary', 'credit card', 'mortgage', 'deposit', 'financial dashboard'],
+    defaultPageType: 'banking financial portal',
+    defaultActions: ['Transfer Funds', 'Pay Bill', 'View Account', 'Apply for Card'],
+    defaultSections: ['hero', 'accounts', 'transfer', 'recent-transactions', 'footer'],
+  },
+  {
+    domain: 'realestate',
+    keywords: ['real estate', 'property', 'house', 'apartment', 'listing', 'mortgage', 'architectural villa', 'home for sale', 'realty', 'estate'],
+    defaultPageType: 'property listing page',
+    defaultActions: ['Inquire Now', 'Schedule Tour', 'Contact Agent'],
+    defaultSections: ['hero', 'listings', 'features', 'agent-contact', 'footer'],
+  },
+  {
+    domain: 'food',
+    keywords: ['food', 'pizza', 'restaurant', 'burger', 'cafe', 'dining', 'sushi', 'menu', 'meal', 'lunch', 'dinner', 'chef', 'cuisine', 'takeaway', 'delivery', 'dish', 'recipe', 'bakery'],
+    defaultPageType: 'food delivery item page',
+    defaultActions: ['Order Online', 'Add to Cart', 'View Menu'],
+    defaultSections: ['hero', 'categories', 'cards', 'checkout', 'footer'],
+  },
+  {
+    domain: 'travel',
+    keywords: ['travel', 'hotel', 'resort', 'tour', 'vacation', 'holiday', 'flight', 'destination', 'trip', 'hospitality', 'cabin'],
+    defaultPageType: 'travel booking page',
+    defaultActions: ['Book Now', 'Explore Destination', 'Check Availability'],
+    defaultSections: ['hero', 'destinations', 'hotel-cards', 'search', 'footer'],
+  },
+  {
+    domain: 'fashion',
+    keywords: ['fashion', 'ecommerce', 'e-commerce', 'store', 'shop', 'clothing', 'apparel', 'wear', 'sneakers', 'accessories', 'boutique', 'collection', 'dress', 'outfit'],
+    defaultPageType: 'fashion store page',
+    defaultActions: ['Add to Bag', 'Buy Now', 'Explore Collection'],
+    defaultSections: ['hero', 'collections', 'product-cards', 'footer'],
+  },
+  {
+    domain: 'saas',
+    keywords: ['saas', 'dashboard', 'analytics', 'software', 'crm', 'erp', 'monitoring', 'metrics', 'data', 'api', 'integration', 'admin'],
+    defaultPageType: 'saas product dashboard',
+    defaultActions: ['Start Free Trial', 'View Demo', 'Export Report'],
+    defaultSections: ['hero', 'kpis', 'charts', 'activity', 'footer'],
+  },
+  {
+    domain: 'jobportal',
+    keywords: ['job', 'career', 'hiring', 'recruitment', 'vacancy', 'resume', 'applicant', 'job portal', 'employment'],
+    defaultPageType: 'job recruitment portal',
+    defaultActions: ['Apply Now', 'Upload Resume', 'Search Jobs'],
+    defaultSections: ['hero', 'job-search', 'featured-jobs', 'companies', 'footer'],
+  },
+  {
+    domain: 'fitness',
+    keywords: ['fitness', 'gym', 'workout', 'trainer', 'exercise', 'bodybuilding', 'nutrition', 'crossfit', 'membership'],
+    defaultPageType: 'fitness gym website',
+    defaultActions: ['Join Now', 'Book Class', 'Free Trial Pass'],
+    defaultSections: ['hero', 'classes', 'trainers', 'pricing', 'footer'],
+  },
+  {
+    domain: 'news',
+    keywords: ['news', 'magazine', 'journal', 'article', 'breaking news', 'editorial', 'newspaper', 'media'],
+    defaultPageType: 'news media portal',
+    defaultActions: ['Read Full Story', 'Subscribe', 'View Headlines'],
+    defaultSections: ['hero', 'breaking-news', 'categories', 'latest-articles', 'footer'],
+  },
+  {
+    domain: 'portfolio',
+    keywords: ['portfolio', 'creative', 'designer', 'artist', 'photographer', 'showcase', 'projects', 'work', 'freelance', 'resume'],
+    defaultPageType: 'creative portfolio page',
+    defaultActions: ['View Project', 'Hire Me', 'Get in Touch'],
+    defaultSections: ['hero', 'about', 'skills', 'projects', 'contact', 'footer'],
+  },
+  {
+    domain: 'education',
+    keywords: ['education', 'course', 'learn', 'school', 'academy', 'class', 'tutor', 'degree', 'training', 'lms'],
+    defaultPageType: 'course learning portal',
+    defaultActions: ['Enroll Now', 'Start Learning', 'Download Syllabus'],
+    defaultSections: ['hero', 'courses', 'curriculum', 'instructors', 'footer'],
+  },
+  {
+    domain: 'auth',
+    keywords: ['login', 'signup', 'sign up', 'sign in', 'register', 'authentication', 'onboarding', 'create account'],
+    defaultPageType: 'authentication sign up page',
+    defaultActions: ['Sign Up', 'Log In', 'Continue with Email'],
+    defaultSections: ['auth-form', 'footer'],
+  },
+  {
+    domain: 'education',
+    keywords: ['education', 'course', 'learn', 'school', 'academy', 'class', 'tutor', 'degree', 'training', 'lms'],
+    defaultPageType: 'course learning portal',
+    defaultActions: ['Enroll Now', 'Start Learning', 'Download Syllabus'],
+    defaultSections: ['hero', 'courses', 'curriculum', 'instructors', 'footer'],
+  },
+  {
+    domain: 'auth',
+    keywords: ['login', 'signup', 'sign up', 'sign in', 'register', 'authentication', 'onboarding', 'create account'],
+    defaultPageType: 'authentication sign up page',
+    defaultActions: ['Sign Up', 'Log In', 'Continue with Email'],
+    defaultSections: ['auth-form', 'footer'],
+  },
+];
+
+// ── Financial Calculation Helper ──────────────────────────────────────────────
+/**
+ * Calculate accurate financial breakdown (Price, GST, Subtotal, Discount, Total).
+ * Handles Indian GST / VAT / standard sales tax rules deterministically.
+ */
+const calculateFinancials = ({
+  basePrice = 500,
+  gstPercentage = null,
+  discountPercentage = null,
+  currency = '₹',
+}) => {
+  const price = Number(basePrice) > 0 ? Number(basePrice) : 500;
+
+  let discountAmount = 0;
+  if (discountPercentage !== null && Number(discountPercentage) > 0) {
+    discountAmount = Math.round((price * Number(discountPercentage)) / 100 * 100) / 100;
+  }
+
+  const subtotal = Math.round((price - discountAmount) * 100) / 100;
+  const effectiveGstPct = gstPercentage !== null ? Number(gstPercentage) : 5;
+  const gstAmount = Math.round((subtotal * effectiveGstPct) / 100 * 100) / 100;
+  const totalPrice = Math.round((subtotal + gstAmount) * 100) / 100;
+
+  return {
+    currency,
+    basePrice: price,
+    basePriceFormatted: `${currency}${price}`,
+    gstPercentage: effectiveGstPct,
+    gstAmount,
+    gstAmountFormatted: `${currency}${gstAmount}`,
+    discountPercentage: discountPercentage || 0,
+    discountAmount,
+    discountAmountFormatted: `${currency}${discountAmount}`,
+    subtotal,
+    subtotalFormatted: `${currency}${subtotal}`,
+    totalPrice,
+    totalPriceFormatted: `${currency}${totalPrice}`,
+  };
+};
+
+// ── Requirement Specification Extraction ──────────────────────────────────────
+/**
+ * Parse an arbitrary user prompt into a structured Requirement Specification.
+ *
+ * @param {string} prompt - Raw prompt string from user
+ * @returns {object} Structured Requirement Specification
+ */
+const extractPromptRequirements = (prompt = '') => {
+  const p = String(prompt).toLowerCase().trim();
+
+  // 1. Domain Detection
+  let matchedDomainPattern = DOMAIN_PATTERNS.find((item) =>
+    item.keywords.some((kw) => p.includes(kw))
+  );
+
+  if (!matchedDomainPattern) {
+    matchedDomainPattern = {
+      domain: 'generic',
+      defaultPageType: 'landing page',
+      defaultActions: ['Explore Now', 'Get Started'],
+    };
+  }
+
+  const domain = matchedDomainPattern.domain;
+
+  // 2. Page Type Identification
+  let pageType = matchedDomainPattern.defaultPageType;
+  if (p.includes('detail') || p.includes('item page') || p.includes('product page')) {
+    pageType = `${domain} item detail page`;
+  } else if (p.includes('checkout') || p.includes('cart')) {
+    pageType = `${domain} checkout page`;
+  } else if (p.includes('dashboard') || p.includes('admin')) {
+    pageType = `${domain} dashboard`;
+  } else if (p.includes('booking') || p.includes('reservation')) {
+    pageType = `${domain} booking page`;
+  } else if (p.includes('pricing') || p.includes('plans')) {
+    pageType = `${domain} pricing page`;
+  } else if (p.includes('landing')) {
+    pageType = `${domain} landing page`;
+  }
+
+  // 3. Required Sections Extraction
+  const requiredSections = new Set();
+  requiredSections.add('hero'); // Always start with hero/header
+
+  if (p.includes('categories') || p.includes('category')) requiredSections.add('categories');
+  if (p.includes('popular') || p.includes('menu') || p.includes('items') || p.includes('products') || p.includes('cards') || domain === 'food' || domain === 'fashion' || domain === 'travel') {
+    requiredSections.add('cards');
+  }
+  if (p.includes('checkout') || p.includes('gst') || p.includes('price breakdown') || p.includes('cart') || p.includes('summary')) {
+    requiredSections.add('checkout');
+  }
+  if (p.includes('pricing') || p.includes('plans')) requiredSections.add('pricing');
+  if (p.includes('features') || p.includes('services')) requiredSections.add('features');
+  if (p.includes('footer') || p.includes('contact')) requiredSections.add('footer');
+
+  // 4. Required Elements & Data Requirements
+  const requiresImage =
+    p.includes('image') ||
+    p.includes('photo') ||
+    p.includes('picture') ||
+    p.includes('visual') ||
+    p.includes('banner') ||
+    ['food', 'travel', 'fashion', 'realestate', 'portfolio', 'college', 'hospital'].includes(domain);
+
+  const imageDensity = (p.includes('more images') || p.includes('lots of images') || p.includes('photo gallery')) ? 'high' : 'standard';
+
+  const requiresPrice =
+    p.includes('price') ||
+    p.includes('cost') ||
+    p.includes('amount') ||
+    p.includes('rate') ||
+    p.includes('gst') ||
+    p.includes('total') ||
+    ['food', 'fashion', 'travel', 'realestate'].includes(domain);
+
+  const requiresGST = p.includes('gst') || p.includes('tax');
+
+  // Extract explicit item card count requirement (e.g. "5 food cards", "4 departments", "3 plans")
+  let requestedCardCount = null;
+  const countMatch = p.match(/(\d+)\s*(?:cards?|items?|products?|departments?|plans?|options?|categories?)/i);
+  if (countMatch) {
+    requestedCardCount = Math.min(Math.max(Number(countMatch[1]), 1), 12);
+  }
+
+  // 5. Visual Theme Detection (White / Light theme vs Dark theme vs Domain theme)
+  const isLightThemeRequested =
+    p.includes('white color') ||
+    p.includes('white page') ||
+    p.includes('white theme') ||
+    p.includes('light theme') ||
+    p.includes('white background') ||
+    p.includes('light background') ||
+    p.includes('clean light');
+
+  let theme = isLightThemeRequested ? 'light' : 'dark';
+  if (!isLightThemeRequested) {
+    if (['food', 'grocery'].includes(domain)) theme = 'food';
+    else if (['hospital', 'healthcare'].includes(domain)) theme = 'healthcare';
+    else if (['banking', 'finance'].includes(domain)) theme = 'finance';
+    else if (['fashion'].includes(domain)) theme = 'fashion';
+    else if (['realestate'].includes(domain)) theme = 'luxury';
+    else if (['college', 'education'].includes(domain)) theme = 'light';
+  }
+
+  // 6. User Roles & Authentication Login Detection
+  const users = [];
+  if (p.includes('student')) users.push('student');
+  if (p.includes('teacher') || p.includes('faculty')) users.push('teacher');
+  if (p.includes('doctor')) users.push('doctor');
+  if (p.includes('patient')) users.push('patient');
+  if (p.includes('admin')) users.push('admin');
+
+  const requiresAuth = p.includes('login') || p.includes('signup') || p.includes('auth') || p.includes('sign in') || users.length > 0;
+  const loginTypes = [];
+  if (users.includes('student')) loginTypes.push('Student Login');
+  if (users.includes('teacher')) loginTypes.push('Teacher Login');
+  if (users.includes('doctor')) loginTypes.push('Doctor Login');
+  if (users.includes('patient')) loginTypes.push('Patient Login');
+  if (loginTypes.length === 0 && requiresAuth) loginTypes.push('User Login');
+
+  // Extract explicit Base Price from prompt (e.g. "$500", "₹500", "500 rs", "pizza ₹299")
+  let basePrice = domain === 'food' ? 350 : domain === 'fashion' ? 1200 : domain === 'travel' ? 4500 : 500;
+  const priceMatch = p.match(/(?:₹|\$|rs\.?|price\s*of?)\s*(\d+(?:\.\d+)?)/i) || p.match(/(?:pizza|burger|item|product)\s*(?:₹|\$|rs\.?)?\s*(\d+(?:\.\d+)?)/i);
+  if (priceMatch) {
+    basePrice = Number(priceMatch[1]);
+  }
+
+  // Extract explicit GST % or explicit GST Amount from prompt (e.g. "GST 5%", "18% GST", "GST ₹53.82")
+  let gstPercentage = null;
+  const gstPctMatch = p.match(/(?:gst|tax)\s*(?:of|is|@)?\s*(\d+)%/i) || p.match(/(\d+)%\s*(?:gst|tax)/i);
+  const gstAmountMatch = p.match(/gst\s*(?:amount|is|:|=|₹|\$)?\s*(?:₹|\$)?\s*(\d+(?:\.\d+)?)/i);
+
+  if (gstPctMatch) {
+    gstPercentage = Number(gstPctMatch[1]);
+  } else if (gstAmountMatch && basePrice > 0) {
+    const explicitGstAmount = Number(gstAmountMatch[1]);
+    gstPercentage = Math.round((explicitGstAmount / basePrice) * 100 * 100) / 100;
+  } else if (requiresGST) {
+    gstPercentage = domain === 'food' ? 5 : 18; // standard defaults
+  }
+
+  // Calculate financials
+  const currency = p.includes('$') ? '$' : '₹';
+  const financials = (requiresPrice || requiresGST)
+    ? calculateFinancials({ basePrice, gstPercentage, currency })
+    : null;
+
+  // 7. Actions Extraction
+  const requiredActions = [...matchedDomainPattern.defaultActions];
+  if (p.includes('add to cart') || p.includes('add to bag')) requiredActions.push('Add to Cart');
+  if (p.includes('buy now')) requiredActions.push('Buy Now');
+  if (p.includes('book now')) requiredActions.push('Book Now');
+  if (p.includes('search')) requiredActions.push('Search');
+  if (p.includes('checkout')) requiredActions.push('Proceed to Checkout');
+  loginTypes.forEach((lt) => requiredActions.push(lt));
+
+  // 8. Explicit User Requirements Checklist
+  const checklist = [];
+  if (requiresImage) checklist.push({ id: 'req-image', label: `${domain} photo visuals (${imageDensity})`, type: 'image' });
+  if (isLightThemeRequested) checklist.push({ id: 'req-theme', label: 'Clean White/Light Visual Theme', type: 'theme' });
+  if (loginTypes.length > 0) checklist.push({ id: 'req-login', label: `Login Portals: ${loginTypes.join(', ')}`, type: 'auth' });
+  if (requiresPrice) checklist.push({ id: 'req-price', label: 'Item price display', type: 'price' });
+  if (requiresGST) {
+    checklist.push({ id: 'req-gst-pct', label: `GST Percentage (${financials?.gstPercentage}%)`, type: 'gst' });
+    checklist.push({ id: 'req-gst-amt', label: `GST Amount (${financials?.gstAmountFormatted})`, type: 'gst' });
+    checklist.push({ id: 'req-total', label: `Final Total Amount (${financials?.totalPriceFormatted})`, type: 'total' });
+  }
+
+  // Determine design personality & hero pattern based on domain & style keywords
+  let designPersonality = 'modern';
+  let heroPattern = 'split';
+
+  if (p.includes('minimal')) designPersonality = 'minimal';
+  else if (p.includes('luxury') || p.includes('estate') || domain === 'realestate') designPersonality = 'luxury';
+  else if (p.includes('fun') || p.includes('playful') || domain === 'food') designPersonality = 'energetic';
+  else if (domain === 'college' || domain === 'education') designPersonality = 'prestigious';
+  else if (domain === 'travel') designPersonality = 'cinematic';
+  else if (domain === 'hospital' || domain === 'law') designPersonality = 'trustworthy';
+  else if (domain === 'fashion' || domain === 'photography') designPersonality = 'editorial';
+  else if (domain === 'saas' || domain === 'banking') designPersonality = 'technical';
+  else if (domain === 'gaming' || domain === 'fitness') designPersonality = 'bold';
+
+  if (domain === 'food' || domain === 'travel' || domain === 'realestate') heroPattern = 'search';
+  else if (domain === 'college' || domain === 'fashion' || domain === 'photography') heroPattern = 'editorial';
+  else if (domain === 'saas' || domain === 'banking') heroPattern = 'dashboard';
+  else if (domain === 'travel') heroPattern = 'full-bleed';
+
+  // Extract explicit Button & Background Color Requirements
+  const colorSpec = extractColorSpec(prompt);
+  const themeTokens = buildThemeTokens(colorSpec, domain, theme);
+
+  let primaryButtonColor = colorSpec.buttonBackground || null;
+  if (!primaryButtonColor) {
+    if (p.includes('red button') || p.includes('red buttons') || p.includes('button in red') || p.includes('buttons in red') || p.includes('red theme')) primaryButtonColor = 'red';
+    else if (p.includes('gold button') || p.includes('gold buttons') || p.includes('buttons in gold') || p.includes('gold theme')) primaryButtonColor = 'gold';
+    else if (p.includes('blue button') || p.includes('blue buttons') || p.includes('blue design')) primaryButtonColor = 'blue';
+    else if (p.includes('green button') || p.includes('green buttons') || p.includes('green design')) primaryButtonColor = 'green';
+  }
+
+  let customBgColor = colorSpec.background || null;
+
+  if (primaryButtonColor) checklist.push({ id: 'req-btn-color', label: `Primary Button Color: ${primaryButtonColor}`, type: 'color' });
+  if (customBgColor) checklist.push({ id: 'req-bg-color', label: `Background Canvas: ${customBgColor}`, type: 'color' });
+
+  return {
+    domain,
+    pageType: matchedDomainPattern.defaultPageType,
+    rawPrompt: prompt,
+    designPersonality,
+    heroPattern,
+    primaryButtonColor,
+    customBgColor,
+    colorSpec,
+    themeTokens,
+    requiredSections: Array.from(requiredSections),
+    requiresImage,
+    imageDensity,
+    requiresPrice,
+    requiresGST,
+    theme,
+    isLightThemeRequested: isLightThemeRequested || customBgColor === 'white' || colorSpec.background === 'grey' || colorSpec.background === 'light grey',
+    users,
+    requiresAuth,
+    loginTypes,
+    requestedCardCount,
+    financials,
+    requiredActions: Array.from(new Set(requiredActions)),
+    checklist,
+  };
+};
+
+// ── Color Name Map & Resolver Engine ──────────────────────────────────────────
+const NAMED_COLOR_MAP = {
+  'white': '#FFFFFF',
+  'off-white': '#F8FAFC',
+  'cream': '#FDFBF7',
+  'beige': '#F5F5DC',
+  'light grey': '#F3F4F6',
+  'light gray': '#F3F4F6',
+  'grey': '#6B7280',
+  'gray': '#6B7280',
+  'dark grey': '#374151',
+  'dark gray': '#374151',
+  'black': '#020617',
+  'dark': '#0F172A',
+  'red': '#DC2626',
+  'light red': '#F87171',
+  'dark red': '#991B1B',
+  'blue': '#2563EB',
+  'dark blue': '#1E3A8A',
+  'light blue': '#60A5FA',
+  'navy': '#0F172A',
+  'green': '#059669',
+  'pastel green': '#A7F3D0',
+  'light green': '#34D399',
+  'dark green': '#065F46',
+  'yellow': '#FACC15',
+  'gold': '#F59E0B',
+  'orange': '#EA580C',
+  'purple': '#9333EA',
+  'lavender': '#E9D5FF',
+  'pink': '#EC4899',
+  'maroon': '#9F1239',
+};
+
+const resolveColorToHex = (rawColor, fallbackHex = '#6366F1') => {
+  if (!rawColor) return fallbackHex;
+  const str = String(rawColor).trim().toLowerCase();
+
+  if (/^#([0-9a-f]{3}){1,2}$/i.test(str)) return str;
+  if (/^(rgb|hsl)a?\(/i.test(str)) return str;
+  if (NAMED_COLOR_MAP[str]) return NAMED_COLOR_MAP[str];
+
+  for (const [name, hex] of Object.entries(NAMED_COLOR_MAP)) {
+    if (str.includes(name)) return hex;
+  }
+
+  return fallbackHex;
+};
+
+const extractColorSpec = (prompt = '') => {
+  const p = String(prompt).toLowerCase();
+
+  let background = null;
+  let buttonBackground = null;
+  let buttonText = null;
+  let surface = null;
+  let headings = null;
+  let text = null;
+  let border = null;
+  let accent = null;
+
+  // Specific multi-color combination shortcuts
+  if (p.includes('green and black') || p.includes('black and green')) {
+    background = 'black';
+    buttonBackground = 'green';
+  } else if (p.includes('white and blue') || p.includes('blue and white')) {
+    background = 'white';
+    buttonBackground = 'blue';
+  }
+
+  if (p.includes('except the cards') || p.includes('cards white')) {
+    surface = 'white';
+  }
+
+  // List of recognized color terms
+  const colorTerms = 'yellow|gold|green|red|blue|purple|white|black|grey|gray|light grey|light gray|dark grey|dark gray|navy|orange|pink|lavender|cream|beige|maroon|off-white';
+
+  // 1. Background regex pattern (handles: "background color is yellow", "background should be in yellow", "page to grey", "yellow background", etc.)
+  if (!background) {
+    const bgRegex = new RegExp(`(?:background|bg|canvas|page)\\s*(?:color|colors|style|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i');
+    const bgRegexRev = new RegExp(`(${colorTerms})\\s*(?:color|colors|style|theme)?\\s*(?:background|bg|canvas|page)`, 'i');
+    const bgMatch = p.match(bgRegex) || p.match(bgRegexRev);
+    if (bgMatch) {
+      background = bgMatch[1].trim();
+    }
+  }
+
+  // 2. Button Background regex pattern (handles: "button should green", "button color is green", "white buttons", "buttons to yellow", etc.)
+  if (!buttonBackground) {
+    const btnRegex = new RegExp(`(?:buttons?|ctas?)\\s*(?:color|colors|style|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i');
+    const btnRegexRev = new RegExp(`(${colorTerms})\\s*(?:color|colors|style|theme)?\\s*(?:buttons?|ctas?)`, 'i');
+    const btnMatch = p.match(btnRegex) || p.match(btnRegexRev);
+    if (btnMatch) {
+      buttonBackground = btnMatch[1].trim();
+    }
+  }
+
+  // Fallback phrases if regex misses
+  if (!background) {
+    if (p.includes('light grey') && (p.includes('background') || p.includes('bg') || p.includes('page'))) background = 'light grey';
+    else if ((p.includes('grey') || p.includes('gray')) && (p.includes('background') || p.includes('bg') || p.includes('page'))) background = 'grey';
+    else if (p.includes('everything dark') || p.includes('make dark') || (p.includes('black') && (p.includes('background') || p.includes('bg') || p.includes('page') || p.includes('dark')))) background = 'black';
+    else if (p.includes('white') && (p.includes('background') || p.includes('bg') || p.includes('page'))) background = 'white';
+    else if (p.includes('yellow') && (p.includes('background') || p.includes('bg') || p.includes('page'))) background = 'yellow';
+    else if (p.includes('blue') && (p.includes('background') || p.includes('bg') || p.includes('page'))) background = 'blue';
+    else if (p.includes('green') && (p.includes('background') || p.includes('bg') || p.includes('page'))) background = 'green';
+  }
+
+  if (!buttonBackground) {
+    if (p.includes('white') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'white';
+    else if (p.includes('yellow') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'yellow';
+    else if (p.includes('green') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'green';
+    else if (p.includes('red') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'red';
+    else if (p.includes('blue') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'blue';
+  }
+
+  // 3. Surface / Card regex pattern
+  const surfaceRegex = new RegExp(`(?:cards?|surfaces?)\\s*(?:color|colors|style|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i');
+  const surfaceRegexRev = new RegExp(`(${colorTerms})\\s*(?:color|colors|style|theme)?\\s*(?:cards?|surfaces?)`, 'i');
+  const surfaceMatch = p.match(surfaceRegex) || p.match(surfaceRegexRev);
+  if (surfaceMatch) {
+    surface = surfaceMatch[1].trim();
+  }
+
+  // 4. Headings & Text regex pattern
+  const headingRegex = new RegExp(`(?:headings?|titles?)\\s*(?:color|colors|style|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i');
+  const headingRegexRev = new RegExp(`(${colorTerms})\\s*(?:color|colors|style|theme)?\\s*(?:headings?|titles?)`, 'i');
+  const headingMatch = p.match(headingRegex) || p.match(headingRegexRev);
+  if (headingMatch) {
+    headings = headingMatch[1].trim();
+  }
+
+  return {
+    background,
+    buttonBackground,
+    buttonText,
+    surface,
+    headings,
+    text,
+    border,
+    accent,
+  };
+};
+
+const buildThemeTokens = (colorSpec = {}, domain = 'generic', themeName = 'dark') => {
+  const isExplicitDark = colorSpec.background === 'black' || colorSpec.background === 'dark';
+  const isLightMode =
+    !isExplicitDark && (
+      colorSpec.background === 'white' ||
+      colorSpec.background === 'grey' ||
+      colorSpec.background === 'light grey' ||
+      colorSpec.background === 'yellow' ||
+      colorSpec.background === 'cream' ||
+      colorSpec.background === 'beige' ||
+      themeName === 'light' ||
+      themeName === 'college' ||
+      themeName === 'healthcare' ||
+      domain === 'hospital' ||
+      domain === 'college'
+    );
+
+  // Base background hex
+  let bgHex = isLightMode ? '#F3F4F6' : '#0B0914';
+  if (colorSpec.background) {
+    if (colorSpec.background === 'yellow') bgHex = '#FEF08A';
+    else if (colorSpec.background === 'grey' || colorSpec.background === 'gray') bgHex = '#F3F4F6';
+    else if (colorSpec.background === 'light grey' || colorSpec.background === 'light gray') bgHex = '#F8FAFC';
+    else if (colorSpec.background === 'white') bgHex = '#FFFFFF';
+    else if (colorSpec.background === 'black' || colorSpec.background === 'dark') bgHex = '#020617';
+    else bgHex = resolveColorToHex(colorSpec.background, isLightMode ? '#F3F4F6' : '#0B0914');
+  }
+
+  // Surface / Cards hex
+  let surfaceHex = isLightMode ? '#FFFFFF' : '#141024';
+  if (colorSpec.surface || String(colorSpec.rawPrompt || '').toLowerCase().includes('except the cards')) {
+    if (colorSpec.surface === 'off-white') surfaceHex = '#F8FAFC';
+    else if (colorSpec.surface === 'white' || String(colorSpec.rawPrompt || '').toLowerCase().includes('except the cards')) surfaceHex = '#FFFFFF';
+    else if (colorSpec.surface === 'grey') surfaceHex = '#E5E7EB';
+    else surfaceHex = resolveColorToHex(colorSpec.surface, isLightMode ? '#FFFFFF' : '#141024');
+  }
+
+  // Primary Button hex
+  let buttonBgHex = '#6366F1';
+  if (colorSpec.buttonBackground) {
+    buttonBgHex = resolveColorToHex(colorSpec.buttonBackground, '#6366F1');
+  } else if (domain === 'hospital') {
+    buttonBgHex = '#DC2626';
+  } else if (domain === 'banking' || domain === 'saas') {
+    buttonBgHex = '#2563EB';
+  }
+
+  // Primary Button Text hex (Auto-calculate high contrast)
+  let buttonTextHex = '#FFFFFF';
+  const lightBtnBgs = ['#FFFFFF', '#F8FAFC', '#FDFBF7', '#F5F5DC', '#F3F4F6', '#E5E7EB', '#FACC15', '#FEF08A', '#F59E0B', '#E9D5FF', '#A7F3D0'];
+  if (lightBtnBgs.includes(buttonBgHex.toUpperCase()) || colorSpec.buttonBackground === 'white' || colorSpec.buttonBackground === 'yellow') {
+    buttonTextHex = '#111827';
+  }
+
+  // Base Text hex
+  let textHex = isLightMode ? '#111827' : '#F8FAFC';
+  let mutedHex = isLightMode ? '#6B7280' : '#94A3B8';
+  let borderHex = isLightMode ? '#E2E8F0' : 'rgba(255, 255, 255, 0.12)';
+
+  // Headings hex
+  let headingHex = textHex;
+  if (colorSpec.headings) {
+    headingHex = resolveColorToHex(colorSpec.headings, textHex);
+  }
+
+  // Accent hex
+  let accentHex = buttonBgHex !== '#FFFFFF' ? buttonBgHex : '#6366F1';
+
+  return {
+    background: bgHex,
+    surface: surfaceHex,
+    primary: buttonBgHex,
+    primaryText: buttonTextHex,
+    secondary: isLightMode ? '#E5E7EB' : '#1F2937',
+    text: textHex,
+    headings: headingHex,
+    mutedText: mutedHex,
+    border: borderHex,
+    accent: accentHex,
+    headerBg: surfaceHex,
+    headerText: textHex,
+  };
+};
+
+// ── Gemini System Prompt Formatter ────────────────────────────────────────────
+/**
+ * Formats a Requirement Specification into explicit system instructions for Gemini.
+ *
+ * @param {object} spec - Output of extractPromptRequirements()
+ * @returns {string} Explicit system instruction text
+ */
+const formatRequirementSpecPrompt = (spec) => {
+  if (!spec) return '';
+
+  let text = `\n\n==================================================\n`;
+  text += `MANDATORY REQUIREMENT SPECIFICATION (MUST COMPLY 100%):\n`;
+  text += `==================================================\n`;
+  text += `DOMAIN: ${spec.domain.toUpperCase()}\n`;
+  text += `PAGE TYPE: ${spec.pageType}\n\n`;
+
+  text += `REQUIRED SECTIONS:\n`;
+  spec.requiredSections.forEach((sec) => {
+    text += `- MUST generate a section of type "${sec}"\n`;
+  });
+
+  text += `\nMANDATORY COLOR THEME TOKENS (HIGHEST PRIORITY):\n`;
+  if (spec.themeTokens) {
+    text += `- themeTokens: ${JSON.stringify(spec.themeTokens)}\n`;
+    text += `- BACKGROUND COLOR: "${spec.themeTokens.background}"\n`;
+    text += `- SURFACE / CARD COLOR: "${spec.themeTokens.surface}"\n`;
+    text += `- BUTTON BACKGROUND: "${spec.themeTokens.primary}"\n`;
+    text += `- BUTTON TEXT COLOR: "${spec.themeTokens.primaryText}"\n`;
+    text += `- TEXT COLOR: "${spec.themeTokens.text}"\n`;
+    if (spec.themeTokens.headings) text += `- HEADING TEXT COLOR: "${spec.themeTokens.headings}"\n`;
+    text += `Include "themeTokens": ${JSON.stringify(spec.themeTokens)} inside "props" of output UIPage.\n`;
+  }
+
+  if (spec.loginTypes?.length > 0) {
+    text += `- LOGIN PORTAL REQUIREMENT: MUST include dedicated login functionality for ${spec.loginTypes.join(' and ')} (e.g. Student Login card/form AND Teacher Login card/form).\n`;
+  }
+
+  if (spec.requiresImage) {
+    text += `- MUST include high-quality, domain-specific IMAGE elements (type "image") with descriptive "imageQuery" e.g. "${spec.domain} photo". NEVER use empty images.\n`;
+  }
+
+  if (spec.requiresPrice) {
+    text += `- MUST include explicit price text (e.g. "${spec.financials?.basePriceFormatted || '₹500'}") for items and products.\n`;
+  }
+
+  if (spec.requiresGST && spec.financials) {
+    text += `- MUST include GST tax breakdown with exact amounts:\n`;
+    text += `  • Item Price: ${spec.financials.basePriceFormatted}\n`;
+    text += `  • GST Rate: ${spec.financials.gstPercentage}%\n`;
+    text += `  • GST Amount: ${spec.financials.gstAmountFormatted}\n`;
+    text += `  • Final Total Price: ${spec.financials.totalPriceFormatted}\n`;
+    text += `  Include a clear price breakdown element/card showing Subtotal, GST Amount, and Final Total.\n`;
+  }
+
+  text += `\nMANDATORY ACTION BUTTONS:\n`;
+  spec.requiredActions.forEach((act) => {
+    text += `- MUST include a button element with content "${act}" and variant "primary" or "secondary"\n`;
+  });
+
+  text += `\nCRITICAL RULE: Every mandatory requirement above MUST be represented in the output JSON. Do NOT omit any requested element.\n`;
+
+  return text;
+};
+
+module.exports = {
+  extractPromptRequirements,
+  extractColorSpec,
+  buildThemeTokens,
+  resolveColorToHex,
+  calculateFinancials,
+  formatRequirementSpecPrompt,
+  DOMAIN_PATTERNS,
+};

@@ -11,6 +11,8 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
+const { geminiProviderManager } = require('./geminiProviderManager');
+const { resolveContextualImage } = require('./imageService');
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -290,50 +292,100 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
   const promptLower = String(prompt).toLowerCase();
   const name = pageName || 'Home';
 
-  let heroTitle = `Welcome to ${name}`;
+  const contextAsset = resolveContextualImage(prompt || pageName, 'Hero visual asset');
+  let heroTitle = `${name} Portal`;
   let heroDesc = `Discover modern solutions designed for exceptional digital experiences.`;
-  let heroImage = 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80';
-  let cardTitle = 'Core Services';
+  let heroImage = contextAsset.src;
+  let heroCta = 'Explore Now';
+  let cardTitle = 'Core Services & Programs';
   let items = [
     { id: 'item-1', title: 'Streamlined Analytics', description: 'Real-time performance tracking and actionable business metrics.', price: '$29/mo' },
     { id: 'item-2', title: 'Automated Workflows', description: 'Intelligent process automation designed for modern teams.', price: '$49/mo' },
     { id: 'item-3', title: 'Enterprise Security', description: 'Bank-grade encryption and access controls across all touchpoints.', price: '$99/mo' },
   ];
 
-  if (promptLower.includes('food') || promptLower.includes('pizza') || promptLower.includes('burger')) {
+  if (promptLower.includes('college') || promptLower.includes('university') || promptLower.includes('campus') || promptLower.includes('academic')) {
+    heroTitle = 'Excellence in Higher Education & Academic Innovation';
+    heroDesc = 'Empowering future leaders through world-class degree programs, pioneering research, and vibrant campus life.';
+    heroImage = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Apply Now';
+    cardTitle = 'Academic Departments & Degree Programs';
+    items = [
+      { id: 'edu-1', title: 'School of Computer Science & AI', description: 'B.S. and M.S. programs in Software Engineering, Data Science, and Robotics.', price: 'Admissions Open' },
+      { id: 'edu-2', title: 'Department of Business Administration', description: 'MBA and Undergraduate programs in Global Finance, Leadership, and Marketing.', price: 'Admissions Open' },
+      { id: 'edu-3', title: 'College of Engineering & Architecture', description: 'ABET-accredited majors in Electrical, Mechanical, and Sustainable Design.', price: 'Admissions Open' },
+    ];
+  } else if (promptLower.includes('hospital') || promptLower.includes('medical') || promptLower.includes('clinic') || promptLower.includes('doctor')) {
+    heroTitle = 'World-Class Healthcare & Compassionate Patient Care';
+    heroDesc = 'Advanced clinical care, state-of-the-art diagnostic facilities, and dedicated medical specialists available 24/7.';
+    heroImage = 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Book Appointment';
+    cardTitle = 'Specialized Clinical Services & Departments';
+    items = [
+      { id: 'hosp-1', title: 'Cardiology & Vascular Institute', description: 'Comprehensive heart care, non-invasive imaging, and advanced cardiac surgery.', price: 'Emergency 24/7' },
+      { id: 'hosp-2', title: 'Orthopedics & Joint Replacement', description: 'Robotic joint surgery, sports medicine, and specialized rehabilitation therapies.', price: 'Consultation Available' },
+      { id: 'hosp-3', title: 'Pediatric & Neonatal Care Center', description: 'Specialized pediatric ICU, emergency care, and child development specialists.', price: 'Consultation Available' },
+    ];
+  } else if (promptLower.includes('bank') || promptLower.includes('banking') || promptLower.includes('fintech')) {
+    heroTitle = 'Next-Generation Digital Banking & Financial Freedom';
+    heroDesc = 'Manage accounts, transfer funds instantly, and grow investments with institutional-grade security.';
+    heroImage = 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Open Account';
+    cardTitle = 'Financial Accounts & Digital Solutions';
+    items = [
+      { id: 'bank-1', title: 'High-Yield Premier Savings Account', description: '4.85% APY interest rate with zero monthly fees and instant mobile access.', price: '4.85% APY' },
+      { id: 'bank-2', title: 'Cashback World Rewards Card', description: '3% unlimited cashback on dining and travel with zero foreign transaction fees.', price: 'No Annual Fee' },
+      { id: 'bank-3', title: 'Automated Portfolio Investment', description: 'AI-driven robo-advisory portfolio rebalancing tailored to your risk profile.', price: '$0 Commission' },
+    ];
+  } else if (promptLower.includes('job') || promptLower.includes('career') || promptLower.includes('hiring')) {
+    heroTitle = 'Discover Your Next Career at Leading Tech Enterprises';
+    heroDesc = 'Connect with top engineering, design, and product roles offering competitive compensation and remote flexibility.';
+    heroImage = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Search Jobs';
+    cardTitle = 'Featured Career Vacancies';
+    items = [
+      { id: 'job-1', title: 'Senior Full Stack Engineer', description: 'React, Node.js, GraphQL • Remote / Hybrid • Full-time', price: '$140k - $180k' },
+      { id: 'job-2', title: 'Lead Product Designer (UX/UI)', description: 'Figma, Design Systems, Mobile Apps • San Francisco, CA', price: '$130k - $165k' },
+      { id: 'job-3', title: 'Principal Cloud Architect', description: 'AWS, Kubernetes, Terraform • New York, NY / Remote', price: '$170k - $210k' },
+    ];
+  } else if (promptLower.includes('food') || promptLower.includes('pizza') || promptLower.includes('burger') || promptLower.includes('restaurant')) {
     heroTitle = 'Artisan Culinary Delivered Fresh to Your Door';
     heroDesc = 'Savor hand-crafted gourmet meals prepared by master chefs using locally sourced organic ingredients.';
     heroImage = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Order Online';
     cardTitle = 'Popular Menu Items';
     items = [
-      { id: 'food-1', title: 'Truffle & Mushroom Pizza', description: 'Wood-fired sourdough base with wild mushrooms and truffle oil.', price: '$22.99' },
-      { id: 'food-2', title: 'Gourmet Wagyu Burger', description: 'Double wagyu beef patty, aged cheddar, and smoked aioli on brioche.', price: '$18.50' },
-      { id: 'food-3', title: 'Artisan Rigatoni Carbonara', description: 'Handmade pasta with crispy guanciale, pecorino romano, and egg yolk.', price: '$19.99' },
+      { id: 'food-1', title: 'Truffle & Mushroom Pizza', description: 'Wood-fired sourdough base with wild mushrooms and truffle oil.', price: '₹350' },
+      { id: 'food-2', title: 'Gourmet Wagyu Burger', description: 'Double wagyu beef patty, aged cheddar, and smoked aioli on brioche.', price: '₹280' },
+      { id: 'food-3', title: 'Artisan Rigatoni Carbonara', description: 'Handmade pasta with crispy guanciale, pecorino romano, and egg yolk.', price: '₹320' },
     ];
   } else if (promptLower.includes('travel') || promptLower.includes('resort') || promptLower.includes('hotel')) {
     heroTitle = 'Explore Breathtaking Global Destinations';
     heroDesc = 'Plan your next dream luxury escape with curated resort packages, private tours, and exclusive travel deals.';
     heroImage = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Book Now';
     cardTitle = 'Featured Luxury Resorts';
     items = [
       { id: 'travel-1', title: 'Overwater Bungalow Resort', description: 'Maldives turquoise lagoon villa with private infinity plunge pool.', price: '$650/night' },
       { id: 'travel-2', title: 'Swiss Alpine Lodge', description: 'Panoramic mountain views with ski-in access and luxury spa amenities.', price: '$480/night' },
       { id: 'travel-3', title: 'Santorini Cliffside Suites', description: 'Sunset ocean views overlooking the Caldera with private terrace dining.', price: '$520/night' },
     ];
-  } else if (promptLower.includes('fashion') || promptLower.includes('clothes') || promptLower.includes('store')) {
+  } else if (promptLower.includes('fashion') || promptLower.includes('clothes') || promptLower.includes('store') || promptLower.includes('ecommerce')) {
     heroTitle = 'Elevate Your Style with Autumn Luxe Collection';
     heroDesc = 'Discover minimalist luxury apparel crafted with sustainable textiles and timeless design aesthetics.';
     heroImage = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Shop Now';
     cardTitle = 'Trending Seasonal Apparel';
     items = [
       { id: 'fashion-1', title: 'Tailored Cashmere Coat', description: 'Double-breasted wool-cashmere blend with structured lapels.', price: '$340.00' },
       { id: 'fashion-2', title: 'Italian Leather Jacket', description: 'Hand-finished full-grain leather jacket with matte black hardware.', price: '$490.00' },
       { id: 'fashion-3', title: 'Minimalist Designer Sneakers', description: 'Premium calfskin leather low-top sneakers with ergonomic insoles.', price: '$220.00' },
     ];
-  } else if (promptLower.includes('estate') || promptLower.includes('villa') || promptLower.includes('house')) {
+  } else if (promptLower.includes('estate') || promptLower.includes('villa') || promptLower.includes('house') || promptLower.includes('property')) {
     heroTitle = 'Discover Exceptional Architectural Properties';
     heroDesc = 'Browse luxury waterfront estates, modern architectural villas, and exclusive penthouse residences.';
     heroImage = 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Inquire Now';
     cardTitle = 'Featured Prime Listings';
     items = [
       { id: 'estate-1', title: 'Modern Oceanfront Villa', description: '5 Beds • 6 Baths • 6,500 Sq Ft with private beach access.', price: '$3,850,000' },
@@ -352,49 +404,111 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
     ];
   }
 
+  const isLightTheme = promptLower.includes('white color') || promptLower.includes('light theme') || promptLower.includes('white page');
+  const hasLogin = promptLower.includes('student') || promptLower.includes('teacher') || promptLower.includes('login');
+  const isCollege = promptLower.includes('college') || promptLower.includes('university') || promptLower.includes('campus');
+
+  const pageProps = isLightTheme ? { theme: 'light' } : {};
+
+  const pageSections = [
+    {
+      id: 'sec-nav',
+      type: 'navbar',
+      elements: [
+        { id: 'nav-logo', type: 'text', content: name, props: { tag: 'h2' }, fallback: name },
+        { id: 'nav-btn', type: 'button', content: heroCta, props: { variant: 'primary' }, fallback: heroCta },
+      ],
+    },
+    {
+      id: 'sec-hero',
+      type: 'hero',
+      elements: [
+        { id: 'hero-title', type: 'text', content: heroTitle, props: { tag: 'h1' }, fallback: heroTitle },
+        { id: 'hero-desc', type: 'text', content: heroDesc, props: { tag: 'p' }, fallback: heroDesc },
+        { id: 'hero-btn', type: 'button', content: heroCta, props: { variant: 'primary' }, fallback: heroCta },
+        { id: 'hero-img', type: 'image', props: { src: heroImage, alt: heroTitle }, fallback: heroTitle },
+      ],
+    },
+  ];
+
+  if (isCollege && hasLogin) {
+    pageSections.push({
+      id: 'sec-auth-portal',
+      type: 'features',
+      elements: [
+        { id: 'auth-header', type: 'text', content: 'College Student & Faculty Access Portal', props: { tag: 'h2' }, fallback: 'Student & Faculty Portal' },
+        {
+          id: 'auth-cards-grid',
+          type: 'cards',
+          props: {
+            columns: 2,
+            items: [
+              { id: 'card-student-login', title: 'Student Login', description: 'Access coursework, gradebooks, assignment submissions, and student notices.', price: 'Student Portal', badge: 'Students', icon: 'pi pi-user' },
+              { id: 'card-teacher-login', title: 'Teacher Login', description: 'Access faculty dashboard, attendance tracking, syllabus management, and grading.', price: 'Faculty Portal', badge: 'Faculty', icon: 'pi pi-briefcase' },
+            ],
+          },
+          fallback: 'Role Login Portals',
+        },
+        { id: 'btn-student-login', type: 'button', content: 'Student Login', props: { variant: 'primary', label: 'Student Login' }, fallback: 'Student Login' },
+        { id: 'btn-teacher-login', type: 'button', content: 'Teacher Login', props: { variant: 'primary', label: 'Teacher Login' }, fallback: 'Teacher Login' },
+      ],
+    });
+
+    pageSections.push({
+      id: 'sec-gallery',
+      type: 'gallery',
+      elements: [
+        { id: 'gallery-header', type: 'text', content: 'Campus Life & Academic Facilities', props: { tag: 'h2' }, fallback: 'Campus Life' },
+        { id: 'img-campus-1', type: 'image', props: { src: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=800&q=80', alt: 'University Campus Quad & Hall' }, fallback: 'Campus Quad' },
+        { id: 'img-campus-2', type: 'image', props: { src: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80', alt: 'Students Studying on Campus' }, fallback: 'Students Studying' },
+        { id: 'img-campus-3', type: 'image', props: { src: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=800&q=80', alt: 'University Library & Study Space' }, fallback: 'University Library' },
+      ],
+    });
+  }
+
+  pageSections.push(
+    {
+      id: 'sec-cards',
+      type: 'cards',
+      elements: [
+        { id: 'cards-heading', type: 'text', content: cardTitle, props: { tag: 'h2' }, fallback: cardTitle },
+        { id: 'cards-collection', type: 'cards', props: { items }, fallback: cardTitle },
+      ],
+    },
+    {
+      id: 'sec-footer',
+      type: 'footer',
+      elements: [
+        { id: 'footer-text', type: 'text', content: `© ${new Date().getFullYear()} ${name}. All rights reserved.`, props: { tag: 'p' }, fallback: `© ${name}` },
+      ],
+    }
+  );
+
+  const { extractPromptRequirements } = require('./promptRequirementExtractor');
+  const reqSpec = extractPromptRequirements(prompt);
+
+  const finalProps = {
+    ...(pageProps || {}),
+    themeTokens: reqSpec.themeTokens,
+    bgColor: reqSpec.customBgColor || reqSpec.colorSpec?.background,
+    buttonColor: reqSpec.primaryButtonColor || reqSpec.colorSpec?.buttonBackground,
+  };
+
   return {
     page: name,
+    props: finalProps,
+    themeTokens: reqSpec.themeTokens,
     meta: {
       title: name,
       description: heroDesc,
       prompt: prompt,
+      themeTokens: reqSpec.themeTokens,
+      customBgColor: reqSpec.customBgColor || reqSpec.colorSpec?.background,
+      primaryButtonColor: reqSpec.primaryButtonColor || reqSpec.colorSpec?.buttonBackground,
+      theme: isLightTheme ? 'light' : 'dark',
       generatedAt: new Date().toISOString(),
     },
-    sections: [
-      {
-        id: 'sec-nav',
-        type: 'navbar',
-        elements: [
-          { id: 'nav-logo', type: 'text', content: name, props: { tag: 'h2' }, fallback: name },
-          { id: 'nav-btn', type: 'button', content: 'Explore Now', props: { variant: 'primary' }, fallback: 'Explore Now' },
-        ],
-      },
-      {
-        id: 'sec-hero',
-        type: 'hero',
-        elements: [
-          { id: 'hero-title', type: 'text', content: heroTitle, props: { tag: 'h1' }, fallback: heroTitle },
-          { id: 'hero-desc', type: 'text', content: heroDesc, props: { tag: 'p' }, fallback: heroDesc },
-          { id: 'hero-btn', type: 'button', content: 'Get Started Today', props: { variant: 'primary' }, fallback: 'Get Started Today' },
-          { id: 'hero-img', type: 'image', props: { src: heroImage, alt: heroTitle }, fallback: heroTitle },
-        ],
-      },
-      {
-        id: 'sec-cards',
-        type: 'cards',
-        elements: [
-          { id: 'cards-heading', type: 'text', content: cardTitle, props: { tag: 'h2' }, fallback: cardTitle },
-          { id: 'cards-collection', type: 'cards', props: { items }, fallback: cardTitle },
-        ],
-      },
-      {
-        id: 'sec-footer',
-        type: 'footer',
-        elements: [
-          { id: 'footer-text', type: 'text', content: `© ${new Date().getFullYear()} ${name}. All rights reserved.`, props: { tag: 'p' }, fallback: `© ${name}` },
-        ],
-      },
-    ],
+    sections: pageSections,
   };
 };
 
@@ -456,24 +570,58 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
  * @returns {Promise<object>} parsed UIPage JSON
  */
 const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
-  const config = getConfig();
-  console.log(`[AI] generateUIFromPrompt — model: ${config.model}, page: "${pageName || 'Home'}"`);
+  const { extractPromptRequirements, formatRequirementSpecPrompt } = require('./promptRequirementExtractor');
+  const reqSpec = extractPromptRequirements(prompt);
+  const reqSpecPrompt = formatRequirementSpecPrompt(reqSpec);
 
-  const genAI = new GoogleGenerativeAI(config.apiKey);
-  let userMessage = `Generate a complete UI page named "${pageName || 'Home'}".\n\nUser prompt:\n${prompt}`;
+  console.log(`\n================ GENERATION REQUEST ================`);
+  console.log(`prompt: "${prompt}"`);
+  console.log(`pageName: "${pageName || 'Home'}"`);
+  console.log(`wireframe: none`);
+  console.log(`detected requirements:`, JSON.stringify({
+    domain: reqSpec.domain,
+    pageType: reqSpec.pageType,
+    theme: reqSpec.theme,
+    users: reqSpec.users,
+    loginTypes: reqSpec.loginTypes,
+    requiresImage: reqSpec.requiresImage,
+    imageDensity: reqSpec.imageDensity,
+    requiredSections: reqSpec.requiredSections,
+    requiredActions: reqSpec.requiredActions,
+  }, null, 2));
+  console.log(`====================================================\n`);
+
+  let userMessage = `Generate a complete UI page named "${pageName || 'Home'}".\n\nUser prompt:\n${prompt}${reqSpecPrompt}`;
   if (existingCode) userMessage += `\n\nExisting code context (use as reference for styling/structure):\n${existingCode}`;
   if (architectureFlow) userMessage += `\n\nArchitecture / user flow:\n${architectureFlow}`;
 
-  return executeWithModelFallback(
-    genAI,
-    config.model,
-    (modelName) => ({
-      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-      config: buildGenerationConfig(modelName),
-    }),
-    prompt,
-    pageName
-  );
+  try {
+    return await geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      return executeWithModelFallback(
+        genAI,
+        providerModel,
+        (modelName) => ({
+          contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+          config: buildGenerationConfig(modelName),
+        }),
+        prompt,
+        pageName
+      );
+    });
+  } catch (err) {
+    if (
+      err.message?.includes('rate limit') ||
+      err.message?.includes('quota') ||
+      err.message?.includes('temporarily unavailable') ||
+      err.message?.includes('429') ||
+      err.message?.includes('RESOURCE_EXHAUSTED')
+    ) {
+      console.warn('[AI] All providers rate-limited — engaging NeuraMind Intelligent Fallback engine.');
+      return buildSmartFallbackPage(pageName || 'Home', prompt || '');
+    }
+    throw err;
+  }
 };
 
 /**
@@ -486,30 +634,61 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
  * @returns {Promise<object>} parsed UIPage JSON
  */
 const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
-  const config = getConfig();
-  console.log(`[AI] generateUIFromWireframe — model: ${config.model}, image: "${imagePath}", page: "${pageName || 'Home'}"`);
+  const { extractPromptRequirements, formatRequirementSpecPrompt } = require('./promptRequirementExtractor');
+  const reqSpec = extractPromptRequirements(prompt || 'wireframe layout');
+  console.log(`\n================ GENERATION REQUEST ================`);
+  console.log(`prompt: "${prompt || ''}"`);
+  console.log(`pageName: "${pageName || 'Home'}"`);
+  console.log(`wireframe: "${imagePath}"`);
+  console.log(`detected requirements:`, JSON.stringify({
+    domain: reqSpec.domain,
+    pageType: reqSpec.pageType,
+    theme: reqSpec.theme,
+    users: reqSpec.users,
+    loginTypes: reqSpec.loginTypes,
+    requiresImage: reqSpec.requiresImage,
+  }, null, 2));
+  console.log(`====================================================\n`);
 
-  const genAI = new GoogleGenerativeAI(config.apiKey);
   const imagePart = imageFileToPart(imagePath);
 
   let userMessage = `Analyse this wireframe image carefully and generate a structured UI page named "${pageName || 'Home'}" that faithfully reproduces its layout, sections, and component hierarchy.`;
-  if (prompt) userMessage += `\n\nAdditional instructions from the user:\n${prompt}`;
+  if (prompt) {
+    userMessage += `\n\nAdditional instructions from the user:\n${prompt}${formatRequirementSpecPrompt(reqSpec)}`;
+  }
 
-  return executeWithModelFallback(
-    genAI,
-    config.model,
-    (modelName) => ({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: userMessage }, imagePart],
-        },
-      ],
-      config: buildGenerationConfig(modelName),
-    }),
-    prompt,
-    pageName
-  );
+  try {
+    return await geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      return executeWithModelFallback(
+        genAI,
+        providerModel,
+        (modelName) => ({
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: userMessage }, imagePart],
+            },
+          ],
+          config: buildGenerationConfig(modelName),
+        }),
+        prompt,
+        pageName
+      );
+    });
+  } catch (err) {
+    if (
+      err.message?.includes('rate limit') ||
+      err.message?.includes('quota') ||
+      err.message?.includes('temporarily unavailable') ||
+      err.message?.includes('429') ||
+      err.message?.includes('RESOURCE_EXHAUSTED')
+    ) {
+      console.warn('[AI] All providers rate-limited — engaging NeuraMind Intelligent Fallback engine.');
+      return buildSmartFallbackPage(pageName || 'Home', prompt || '');
+    }
+    throw err;
+  }
 };
 
 /**

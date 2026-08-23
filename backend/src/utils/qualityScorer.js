@@ -68,13 +68,26 @@ const calculateQualityScore = (uiPage, prompt = '', wireframeMeta = null) => {
   ).length;
   let imageQualityScore = totalImages === 0 ? 8 : Math.round((validImages / totalImages) * 10);
 
-  // 9. Fallback Safety Score (0-10)
+  // 9. Fallback Safety & Generic Stub Penalty Score (0-10)
   const elementsWithFallback = allElements.filter((el) => el.fallback && String(el.fallback).trim().length > 0).length;
   let fallbackScore = allElements.length === 0 ? 10 : Math.round((elementsWithFallback / allElements.length) * 10);
 
-  // 10. CMS Compatibility Score (0-10)
+  // Deduct points if generic "Welcome to Home" stubs exist on domain-specific prompts
+  const hasGenericStubs = allElements.some((el) => {
+    const txt = (el.content || el.fallback || '').toString().toLowerCase();
+    return txt.includes('welcome to home') || txt.includes('discover modern solutions');
+  });
+  if (hasGenericStubs && (promptLower.includes('college') || promptLower.includes('food') || promptLower.includes('hospital') || promptLower.includes('bank'))) {
+    fallbackScore = Math.max(0, fallbackScore - 5);
+  }
+
+  // 10. CMS Compatibility & Image Uniqueness Score (0-10)
   const uniqueIds = new Set(allElements.map((el) => el.id));
-  let cmsScore = uniqueIds.size === allElements.length ? 10 : 5;
+  const imageUrls = allElements.filter((el) => el.type === 'image' && (el.props?.src || el.content?.src)).map((el) => el.props?.src || el.content?.src);
+  const uniqueImagesCount = new Set(imageUrls).size;
+  const imageUniquenessPass = imageUrls.length === 0 || uniqueImagesCount === imageUrls.length;
+
+  let cmsScore = (uniqueIds.size === allElements.length ? 5 : 2) + (imageUniquenessPass ? 5 : 2);
 
   const totalPoints =
     structureScore +

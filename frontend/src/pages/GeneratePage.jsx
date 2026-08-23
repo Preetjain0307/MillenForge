@@ -169,6 +169,24 @@ const GeneratePage = () => {
       return;
     }
 
+    // Infer dynamic domain page name from prompt intent
+    const pLower = prompt.toLowerCase();
+    const inferredPageName = pLower.includes('college') || pLower.includes('university') ? 'College University Website'
+      : pLower.includes('hospital') || pLower.includes('medical') ? 'Hospital Healthcare Portal'
+      : pLower.includes('bank') || pLower.includes('fintech') ? 'Banking Financial Portal'
+      : pLower.includes('food') || pLower.includes('pizza') || pLower.includes('burger') ? 'Food Delivery Page'
+      : pLower.includes('travel') || pLower.includes('resort') || pLower.includes('hotel') ? 'Travel Booking Page'
+      : pLower.includes('fashion') || pLower.includes('apparel') || pLower.includes('store') ? 'Fashion Store Page'
+      : pLower.includes('job') || pLower.includes('career') ? 'Job Recruitment Portal'
+      : pLower.includes('fitness') || pLower.includes('gym') ? 'Fitness Gym Website'
+      : pLower.includes('news') || pLower.includes('media') ? 'News Media Portal'
+      : pLower.includes('portfolio') || pLower.includes('developer') ? 'Developer Portfolio'
+      : 'Generated UI Page';
+
+    const pageName = (generation.pageName?.trim() && generation.pageName.trim() !== 'Home')
+      ? generation.pageName.trim()
+      : inferredPageName;
+
     setShowSuccess(false);
     dispatch(setStatus('loading'));
     dispatch(setError(null));
@@ -192,11 +210,12 @@ const GeneratePage = () => {
       const response = await generateUI(payload);
 
       if (response.success && response.page) {
+        const finalName = response.page.page || pageName;
         dispatch(setResult(response.page));
-        dispatch(setPage({ pageName, data: response.page }));
-        dispatch(setActivePage(pageName));
+        dispatch(setPage({ pageName: finalName, data: response.page }));
+        dispatch(setActivePage(finalName));
         dispatch(setStatus('succeeded'));
-        setGeneratedPageName(pageName);
+        setGeneratedPageName(finalName);
         setShowSuccess(true);
       } else {
         dispatch(setError(friendlyError(response.message || 'Generation failed.')));

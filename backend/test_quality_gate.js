@@ -280,6 +280,19 @@ console.log('\n--- Quality Threshold Verification ---');
 assert(QUALITY_THRESHOLD === 55, `29. QUALITY_THRESHOLD is 55 (got ${QUALITY_THRESHOLD})`);
 assert(MATCH_THRESHOLD === 60, `30. MATCH_THRESHOLD is 60 (got ${MATCH_THRESHOLD})`);
 
+// ── 31–33: Theme & Explicit Color Compliance ────────────────────────────────
+console.log('\n--- Theme & Explicit Color Compliance ---');
+const hospPrompt = 'Create a hospital website with a white background and red buttons.';
+const rawHospPage = { page: 'Hospital', sections: [{ id: 's1', type: 'hero', elements: [{ id: 'b1', type: 'button', content: 'Book Appointment', props: {} }] }] };
+const hospGate = runGenerationQualityGate(rawHospPage, hospPrompt);
+assert(hospGate.page.props.buttonColor === 'red', '31. Hospital page primary button color auto-healed to red');
+assert(hospGate.page.props.theme === 'light', '32. Hospital page theme auto-healed to light');
+
+const luxuryPrompt = 'Create a luxury fashion website with black background and gold buttons.';
+const rawLuxPage = { page: 'Luxury Fashion', sections: [{ id: 's1', type: 'hero', elements: [{ id: 'b1', type: 'button', content: 'Shop Collection', props: {} }] }] };
+const luxGate = runGenerationQualityGate(rawLuxPage, luxuryPrompt);
+assert(luxGate.page.props.buttonColor === 'gold', '33. Luxury page primary button color auto-healed to gold');
+
 console.log('\n========================================');
 console.log(`QUALITY GATE TEST SUMMARY: ${passed} passed, ${failed} failed`);
 console.log('========================================\n');

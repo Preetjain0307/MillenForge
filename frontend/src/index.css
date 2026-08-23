@@ -26,6 +26,19 @@
   --nm-radius: 12px;
   --nm-radius-sm: 8px;
   --nm-radius-lg: 16px;
+
+  /* Dynamic Canvas Theme Tokens */
+  --background: #0a0a0f;
+  --surface: #16213e;
+  --primary: #6c63ff;
+  --primary-text: #ffffff;
+  --text: #e8e8f0;
+  --muted-text: #9898b0;
+  --border: rgba(108, 99, 255, 0.2);
+  --accent: #6c63ff;
+  --heading-color: #e8e8f0;
+  --header-bg: #16213e;
+  --header-text: #e8e8f0;
 }
 
 /* Base */
@@ -280,3 +293,26 @@ html, body {
   outline-offset: 2px !important;
 }
 
+/* ── Viewport Mode Grid & Responsive Overrides for Preview Container ───────── */
+.nm-viewport-mobile .grid {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.nm-viewport-mobile section {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.nm-viewport-tablet .grid,
+.nm-viewport-tablet .grid-cols-3,
+.nm-viewport-tablet .grid-cols-4,
+.nm-viewport-tablet .lg\:grid-cols-3,
+.nm-viewport-tablet .lg\:grid-cols-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* Natural Word Wrapping for Card Titles & Descriptions */
+.break-words {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
