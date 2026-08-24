@@ -1,5 +1,5 @@
 /**
- * PreviewContainer — Reusable browser-like preview wrapper component for NeuraMindss
+ * PreviewContainer — Reusable browser-like preview wrapper component for NeuraMinds
  */
 
 import { useState } from 'react';
