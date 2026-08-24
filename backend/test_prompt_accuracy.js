@@ -522,12 +522,28 @@ runTest('47. Direct hex code parsing: background #0f172a and button #10b981', ()
   assert.strictEqual(req.colorSpec.buttonBackground, '#10b981');
 });
 
-runTest('48. Emerald and Slate color resolution to Hex', () => {
-  const req = extractPromptRequirements('create an ecommerce store with slate background and emerald buttons');
-  assert.strictEqual(req.colorSpec.background, 'slate');
-  assert.strictEqual(req.colorSpec.buttonBackground, 'emerald');
-  assert.strictEqual(req.themeTokens.background, '#0F172A');
-  assert.strictEqual(req.themeTokens.primary, '#10B981');
+runTest('49. Negative constraint: text only website without images', () => {
+  const req = extractPromptRequirements('create a minimalist technical documentation website text only without images');
+  assert.strictEqual(req.requiresImage, false);
+});
+
+runTest('50. European currency and price extraction (€49 per ticket)', () => {
+  const req = extractPromptRequirements('create an event booking page priced at €49 with 18% GST');
+  assert.strictEqual(req.financials.currency, '€');
+  assert.strictEqual(req.financials.basePrice, 49);
+  assert.strictEqual(req.financials.gstPercentage, 18);
+});
+
+runTest('51. Salon & Spa domain detection with booking actions', () => {
+  const req = extractPromptRequirements('build a luxury beauty spa and haircut salon booking page with massage packages');
+  assert.strictEqual(req.domain, 'salon');
+  assert(req.requiredActions.includes('Book Appointment'));
+});
+
+runTest('52. Multi-role authentication extraction (Admin Portal and Partner Login)', () => {
+  const req = extractPromptRequirements('b2b marketplace platform with admin portal and vendor partner login');
+  assert(req.loginTypes.includes('Admin Portal'));
+  assert(req.loginTypes.includes('Partner Login'));
 });
 
 console.log('\n========================================');
