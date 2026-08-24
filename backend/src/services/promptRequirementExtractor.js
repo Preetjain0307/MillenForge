@@ -460,23 +460,34 @@ const NAMED_COLOR_MAP = {
   'gray': '#6B7280',
   'dark grey': '#374151',
   'dark gray': '#374151',
+  'slate': '#0F172A',
+  'zinc': '#18181B',
   'black': '#020617',
   'dark': '#0F172A',
   'red': '#DC2626',
+  'crimson': '#BE123C',
+  'rose': '#E11D48',
   'light red': '#F87171',
   'dark red': '#991B1B',
   'blue': '#2563EB',
+  'sky': '#0284C7',
   'dark blue': '#1E3A8A',
   'light blue': '#60A5FA',
   'navy': '#0F172A',
+  'indigo': '#4F46E5',
   'green': '#059669',
+  'emerald': '#10B981',
+  'teal': '#0D9488',
+  'cyan': '#0891B2',
   'pastel green': '#A7F3D0',
   'light green': '#34D399',
   'dark green': '#065F46',
   'yellow': '#FACC15',
+  'amber': '#D97706',
   'gold': '#F59E0B',
   'orange': '#EA580C',
   'purple': '#9333EA',
+  'violet': '#7C3AED',
   'lavender': '#E9D5FF',
   'pink': '#EC4899',
   'maroon': '#9F1239',
@@ -523,9 +534,32 @@ const extractColorSpec = (prompt = '') => {
   }
 
   // List of recognized color terms
-  const colorTerms = 'yellow|gold|green|red|blue|purple|white|black|grey|gray|light grey|light gray|dark grey|dark gray|navy|orange|pink|lavender|cream|beige|maroon|off-white';
+  const colorTerms = 'yellow|gold|green|emerald|teal|cyan|red|crimson|rose|blue|sky|indigo|purple|violet|white|black|slate|zinc|grey|gray|light grey|light gray|dark grey|dark gray|navy|orange|amber|pink|lavender|cream|beige|maroon|off-white';
 
-  // 1. Background regex pattern (handles: "background color is yellow", "background should be in yellow", "page to grey", "yellow background", etc.)
+  // Direct Hex Color Code Extraction (e.g. "#1e293b", "#ff007f")
+  const hexBgMatch = p.match(/(?:background|bg|canvas|page)\s*(?:color|colors|theme)?\s*(?:should\s*)?(?:be\s*)?(?:in\s*|to\s*|is\s*|=|:)?\s*(#[0-9a-f]{3,6})/i);
+  if (hexBgMatch) {
+    background = hexBgMatch[1];
+  }
+  const hexBtnMatch = p.match(/(?:buttons?|ctas?)\s*(?:color|colors|theme)?\s*(?:should\s*)?(?:be\s*)?(?:in\s*|to\s*|is\s*|=|:)?\s*(#[0-9a-f]{3,6})/i);
+  if (hexBtnMatch) {
+    buttonBackground = hexBtnMatch[1];
+  }
+
+  // 1. Compound phrase parsing (e.g. "background should in yellow and button should in green", "yellow background and green buttons")
+  const compoundMatch = p.match(new RegExp(`(?:background|bg|page)\\s*(?:color|colors|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})\\s*(?:and|,)?\\s*(?:buttons?|ctas?)\\s*(?:color|colors|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i'));
+  if (compoundMatch) {
+    background = compoundMatch[1].trim();
+    buttonBackground = compoundMatch[2].trim();
+  }
+
+  const compoundMatchRev = p.match(new RegExp(`(${colorTerms})\\s*(?:background|bg|page)\\s*(?:and|,)?\\s*(${colorTerms})\\s*(?:buttons?|ctas?)`, 'i'));
+  if (compoundMatchRev) {
+    background = compoundMatchRev[1].trim();
+    buttonBackground = compoundMatchRev[2].trim();
+  }
+
+  // 1b. Background regex pattern (handles: "background color is yellow", "background should be in yellow", "page to grey", "yellow background", etc.)
   if (!background) {
     const bgRegex = new RegExp(`(?:background|bg|canvas|page)\\s*(?:color|colors|style|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i');
     const bgRegexRev = new RegExp(`(${colorTerms})\\s*(?:color|colors|style|theme)?\\s*(?:background|bg|canvas|page)`, 'i');
@@ -562,6 +596,7 @@ const extractColorSpec = (prompt = '') => {
     else if (p.includes('green') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'green';
     else if (p.includes('red') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'red';
     else if (p.includes('blue') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'blue';
+    else if (p.includes('gold') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'gold';
   }
 
   // 3. Surface / Card regex pattern

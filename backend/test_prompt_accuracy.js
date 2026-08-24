@@ -510,6 +510,26 @@ runTest('45. USER SPECIFIC PROMPT 2: create a college website background color i
 });
 
 // ── Summary ──────────────────────────────────────────────────────────────────
+runTest('46. Compound color parsing: background in cream and button in navy', () => {
+  const req = extractPromptRequirements('create a portfolio website background in cream and button in navy');
+  assert.strictEqual(req.colorSpec.background, 'cream');
+  assert.strictEqual(req.colorSpec.buttonBackground, 'navy');
+});
+
+runTest('47. Direct hex code parsing: background #0f172a and button #10b981', () => {
+  const req = extractPromptRequirements('make an analytics page with background #0f172a and button #10b981');
+  assert.strictEqual(req.colorSpec.background, '#0f172a');
+  assert.strictEqual(req.colorSpec.buttonBackground, '#10b981');
+});
+
+runTest('48. Emerald and Slate color resolution to Hex', () => {
+  const req = extractPromptRequirements('create an ecommerce store with slate background and emerald buttons');
+  assert.strictEqual(req.colorSpec.background, 'slate');
+  assert.strictEqual(req.colorSpec.buttonBackground, 'emerald');
+  assert.strictEqual(req.themeTokens.background, '#0F172A');
+  assert.strictEqual(req.themeTokens.primary, '#10B981');
+});
+
 console.log('\n========================================');
 console.log(`PROMPT ACCURACY TEST SUMMARY: ${passedTests} passed, ${failedTests} failed`);
 console.log('========================================\n');
