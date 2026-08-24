@@ -718,34 +718,46 @@ const buildThemeTokens = (colorSpec = {}, domain = 'generic', themeName = 'dark'
       domain === 'college'
     );
 
+  // Default Domain Color Palettes (Vibrant & Distinct per Domain!)
+  const DOMAIN_DEFAULT_PALETTES = {
+    food: { bg: '#181216', surface: '#261A20', primary: '#E11D48', accent: '#F97316' },
+    college: { bg: '#F8FAFC', surface: '#FFFFFF', primary: '#2563EB', accent: '#059669' },
+    hospital: { bg: '#F0FDFA', surface: '#FFFFFF', primary: '#0D9488', accent: '#E11D48' },
+    travel: { bg: '#0C1B2A', surface: '#14283E', primary: '#0284C7', accent: '#F59E0B' },
+    fashion: { bg: '#0F0E17', surface: '#1A1828', primary: '#F43F5E', accent: '#F59E0B' },
+    movie: { bg: '#0D0914', surface: '#1A1326', primary: '#E11D48', accent: '#F59E0B' },
+    gaming: { bg: '#090A0F', surface: '#121420', primary: '#84CC16', accent: '#06B6D4' },
+    banking: { bg: '#0B132B', surface: '#1C2541', primary: '#10B981', accent: '#3B82F6' },
+    realestate: { bg: '#0F172A', surface: '#1E293B', primary: '#10B981', accent: '#38BDF8' },
+    saas: { bg: '#090814', surface: '#131126', primary: '#8B5CF6', accent: '#06B6D4' },
+  };
+
+  const domainPalette = DOMAIN_DEFAULT_PALETTES[domain] || DOMAIN_DEFAULT_PALETTES.saas;
+
   // Base background hex
-  let bgHex = isLightMode ? '#F3F4F6' : '#0B0914';
+  let bgHex = isLightMode ? '#F3F4F6' : domainPalette.bg;
   if (colorSpec.background) {
     if (colorSpec.background === 'yellow') bgHex = '#FEF08A';
     else if (colorSpec.background === 'grey' || colorSpec.background === 'gray') bgHex = '#F3F4F6';
     else if (colorSpec.background === 'light grey' || colorSpec.background === 'light gray') bgHex = '#F8FAFC';
     else if (colorSpec.background === 'white') bgHex = '#FFFFFF';
     else if (colorSpec.background === 'black' || colorSpec.background === 'dark') bgHex = '#020617';
-    else bgHex = resolveColorToHex(colorSpec.background, isLightMode ? '#F3F4F6' : '#0B0914');
+    else bgHex = resolveColorToHex(colorSpec.background, isLightMode ? '#F3F4F6' : domainPalette.bg);
   }
 
   // Surface / Cards hex
-  let surfaceHex = isLightMode ? '#FFFFFF' : '#141024';
+  let surfaceHex = isLightMode ? '#FFFFFF' : domainPalette.surface;
   if (colorSpec.surface || String(colorSpec.rawPrompt || '').toLowerCase().includes('except the cards')) {
     if (colorSpec.surface === 'off-white') surfaceHex = '#F8FAFC';
     else if (colorSpec.surface === 'white' || String(colorSpec.rawPrompt || '').toLowerCase().includes('except the cards')) surfaceHex = '#FFFFFF';
     else if (colorSpec.surface === 'grey') surfaceHex = '#E5E7EB';
-    else surfaceHex = resolveColorToHex(colorSpec.surface, isLightMode ? '#FFFFFF' : '#141024');
+    else surfaceHex = resolveColorToHex(colorSpec.surface, isLightMode ? '#FFFFFF' : domainPalette.surface);
   }
 
   // Primary Button hex
-  let buttonBgHex = '#6366F1';
+  let buttonBgHex = domainPalette.primary;
   if (colorSpec.buttonBackground) {
-    buttonBgHex = resolveColorToHex(colorSpec.buttonBackground, '#6366F1');
-  } else if (domain === 'hospital') {
-    buttonBgHex = '#DC2626';
-  } else if (domain === 'banking' || domain === 'saas') {
-    buttonBgHex = '#2563EB';
+    buttonBgHex = resolveColorToHex(colorSpec.buttonBackground, domainPalette.primary);
   }
 
   // Primary Button Text hex (Auto-calculate high contrast)

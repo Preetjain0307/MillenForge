@@ -11,6 +11,7 @@ import NmUploadArea from '../components/NmUploadArea';
 import PreviewContainer from '../components/PreviewContainer';
 import UIRenderer from '../components/UIRenderer';
 import { uploadWireframe, generateUI } from '../services/api';
+import { saveRecentGeneration } from '../utils/sessionStore';
 import {
   setPrompt,
   setExistingCode,
@@ -170,6 +171,7 @@ const GeneratePage = () => {
         dispatch(setPage({ pageName: finalName, data: response.page }));
         dispatch(setActivePage(finalName));
         dispatch(setStatus('succeeded'));
+        saveRecentGeneration({ prompt, pageName: finalName, pageResult: response.page, timestamp: Date.now() });
       } else {
         dispatch(setError(friendlyError(response.message || 'Generation failed.')));
         dispatch(setStatus('failed'));
@@ -460,6 +462,7 @@ const GeneratePage = () => {
         <div className="lg:col-span-5 border-r border-[#2A2A30] bg-[#09090B] flex flex-col h-full overflow-hidden p-3">
           <PreviewContainer
             pageName={generation.pageName || 'Home'}
+            pageResult={pageResult}
             isEmpty={!pageResult && !isGenerating}
             onRefresh={() => {}}
           >
