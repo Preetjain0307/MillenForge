@@ -510,6 +510,42 @@ runTest('45. USER SPECIFIC PROMPT 2: create a college website background color i
 });
 
 // ── Summary ──────────────────────────────────────────────────────────────────
+runTest('46. Compound color parsing: background in cream and button in navy', () => {
+  const req = extractPromptRequirements('create a portfolio website background in cream and button in navy');
+  assert.strictEqual(req.colorSpec.background, 'cream');
+  assert.strictEqual(req.colorSpec.buttonBackground, 'navy');
+});
+
+runTest('47. Direct hex code parsing: background #0f172a and button #10b981', () => {
+  const req = extractPromptRequirements('make an analytics page with background #0f172a and button #10b981');
+  assert.strictEqual(req.colorSpec.background, '#0f172a');
+  assert.strictEqual(req.colorSpec.buttonBackground, '#10b981');
+});
+
+runTest('49. Negative constraint: text only website without images', () => {
+  const req = extractPromptRequirements('create a minimalist technical documentation website text only without images');
+  assert.strictEqual(req.requiresImage, false);
+});
+
+runTest('50. European currency and price extraction (€49 per ticket)', () => {
+  const req = extractPromptRequirements('create an event booking page priced at €49 with 18% GST');
+  assert.strictEqual(req.financials.currency, '€');
+  assert.strictEqual(req.financials.basePrice, 49);
+  assert.strictEqual(req.financials.gstPercentage, 18);
+});
+
+runTest('51. Salon & Spa domain detection with booking actions', () => {
+  const req = extractPromptRequirements('build a luxury beauty spa and haircut salon booking page with massage packages');
+  assert.strictEqual(req.domain, 'salon');
+  assert(req.requiredActions.includes('Book Appointment'));
+});
+
+runTest('52. Multi-role authentication extraction (Admin Portal and Partner Login)', () => {
+  const req = extractPromptRequirements('b2b marketplace platform with admin portal and vendor partner login');
+  assert(req.loginTypes.includes('Admin Portal'));
+  assert(req.loginTypes.includes('Partner Login'));
+});
+
 console.log('\n========================================');
 console.log(`PROMPT ACCURACY TEST SUMMARY: ${passedTests} passed, ${failedTests} failed`);
 console.log('========================================\n');

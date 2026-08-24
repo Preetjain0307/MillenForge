@@ -360,7 +360,7 @@ const ELEMENT_REGISTRY = {
           {/* Card Title & Rating */}
           <div className="flex flex-col gap-1 pt-1">
             {title && (
-              <h4 className="font-bold text-[var(--heading-color)] text-lg sm:text-xl leading-snug tracking-tight transition-colors break-words">
+              <h4 className="font-bold text-[var(--heading-color)] text-base sm:text-lg md:text-xl leading-snug tracking-tight transition-colors break-words break-normal">
                 {title}
               </h4>
             )}
@@ -373,7 +373,7 @@ const ELEMENT_REGISTRY = {
 
           {/* Card Description */}
           {description && (
-            <p className="text-xs sm:text-sm text-[var(--text)] leading-relaxed flex-1 break-words">
+            <p className="text-xs sm:text-sm text-[var(--text)] leading-relaxed flex-1 break-words break-normal">
               {description}
             </p>
           )}

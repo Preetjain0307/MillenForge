@@ -154,18 +154,46 @@ const DOMAIN_PATTERNS = [
     defaultSections: ['hero', 'courses', 'curriculum', 'instructors', 'footer'],
   },
   {
-    domain: 'auth',
-    keywords: ['login', 'signup', 'sign up', 'sign in', 'register', 'authentication', 'onboarding', 'create account'],
-    defaultPageType: 'authentication sign up page',
-    defaultActions: ['Sign Up', 'Log In', 'Continue with Email'],
-    defaultSections: ['auth-form', 'footer'],
+    domain: 'salon',
+    keywords: ['salon', 'spa', 'massage', 'haircut', 'beauty', 'skincare', 'hair salon', 'manicure', 'pedicure', 'barber'],
+    defaultPageType: 'salon spa booking page',
+    defaultActions: ['Book Appointment', 'View Services', 'Special Packages'],
+    defaultSections: ['hero', 'services-cards', 'packages', 'reviews', 'footer'],
   },
   {
-    domain: 'education',
-    keywords: ['education', 'course', 'learn', 'school', 'academy', 'class', 'tutor', 'degree', 'training', 'lms'],
-    defaultPageType: 'course learning portal',
-    defaultActions: ['Enroll Now', 'Start Learning', 'Download Syllabus'],
-    defaultSections: ['hero', 'courses', 'curriculum', 'instructors', 'footer'],
+    domain: 'dentist',
+    keywords: ['dentist', 'dental', 'teeth', 'orthodontics', 'oral care', 'dental clinic'],
+    defaultPageType: 'dental clinic website',
+    defaultActions: ['Book Checkup', 'Our Treatments', 'Emergency Dental'],
+    defaultSections: ['hero', 'treatments', 'dentists', 'testimonials', 'footer'],
+  },
+  {
+    domain: 'logistics',
+    keywords: ['logistics', 'courier', 'shipping', 'freight', 'cargo', 'tracking', 'transportation'],
+    defaultPageType: 'logistics courier portal',
+    defaultActions: ['Track Package', 'Get Quote', 'Our Fleet'],
+    defaultSections: ['hero', 'tracker', 'services', 'network', 'footer'],
+  },
+  {
+    domain: 'podcast',
+    keywords: ['podcast', 'episode', 'listen', 'audio show', 'host', 'interview', 'spotify podcast'],
+    defaultPageType: 'podcast audio stream page',
+    defaultActions: ['Listen to Latest', 'All Episodes', 'Subscribe on Spotify'],
+    defaultSections: ['hero', 'latest-episodes', 'hosts', 'subscribe', 'footer'],
+  },
+  {
+    domain: 'consultancy',
+    keywords: ['consulting', 'consultancy', 'advisory', 'strategy', 'business audit', 'corporate strategy'],
+    defaultPageType: 'business consulting corporate page',
+    defaultActions: ['Schedule Discovery Call', 'Our Practice', 'Client Results'],
+    defaultSections: ['hero', 'services', 'case-studies', 'consultants', 'footer'],
+  },
+  {
+    domain: 'crypto',
+    keywords: ['crypto', 'web3', 'token', 'blockchain', 'wallet', 'swap', 'defi', 'nft'],
+    defaultPageType: 'crypto web3 exchange portal',
+    defaultActions: ['Connect Wallet', 'Swap Tokens', 'Explore Ecosystem'],
+    defaultSections: ['hero', 'token-stats', 'features', 'roadmap', 'footer'],
   },
   {
     domain: 'auth',
@@ -273,30 +301,34 @@ const extractPromptRequirements = (prompt = '') => {
   if (p.includes('footer') || p.includes('contact')) requiredSections.add('footer');
 
   // 4. Required Elements & Data Requirements
-  const requiresImage =
+  const isNoImageRequested = p.includes('no images') || p.includes('no image') || p.includes('without image') || p.includes('without images') || p.includes('text only');
+  const requiresImage = !isNoImageRequested && (
     p.includes('image') ||
     p.includes('photo') ||
     p.includes('picture') ||
     p.includes('visual') ||
     p.includes('banner') ||
-    ['food', 'travel', 'fashion', 'realestate', 'portfolio', 'college', 'hospital'].includes(domain);
+    ['food', 'travel', 'fashion', 'realestate', 'portfolio', 'college', 'hospital', 'salon', 'dentist'].includes(domain)
+  );
 
   const imageDensity = (p.includes('more images') || p.includes('lots of images') || p.includes('photo gallery')) ? 'high' : 'standard';
 
-  const requiresPrice =
+  const isNoPriceRequested = p.includes('no price') || p.includes('no pricing') || p.includes('without price') || p.includes('free site');
+  const requiresPrice = !isNoPriceRequested && (
     p.includes('price') ||
     p.includes('cost') ||
     p.includes('amount') ||
     p.includes('rate') ||
     p.includes('gst') ||
     p.includes('total') ||
-    ['food', 'fashion', 'travel', 'realestate'].includes(domain);
+    ['food', 'fashion', 'travel', 'realestate', 'salon'].includes(domain)
+  );
 
   const requiresGST = p.includes('gst') || p.includes('tax');
 
   // Extract explicit item card count requirement (e.g. "5 food cards", "4 departments", "3 plans")
   let requestedCardCount = null;
-  const countMatch = p.match(/(\d+)\s*(?:cards?|items?|products?|departments?|plans?|options?|categories?)/i);
+  const countMatch = p.match(/(\d+)\s*(?:cards?|items?|products?|departments?|plans?|options?|categories?|services?|doctors?|rooms?)/i);
   if (countMatch) {
     requestedCardCount = Math.min(Math.max(Number(countMatch[1]), 1), 12);
   }
@@ -314,9 +346,9 @@ const extractPromptRequirements = (prompt = '') => {
   let theme = isLightThemeRequested ? 'light' : 'dark';
   if (!isLightThemeRequested) {
     if (['food', 'grocery'].includes(domain)) theme = 'food';
-    else if (['hospital', 'healthcare'].includes(domain)) theme = 'healthcare';
-    else if (['banking', 'finance'].includes(domain)) theme = 'finance';
-    else if (['fashion'].includes(domain)) theme = 'fashion';
+    else if (['hospital', 'healthcare', 'dentist'].includes(domain)) theme = 'healthcare';
+    else if (['banking', 'finance', 'crypto'].includes(domain)) theme = 'finance';
+    else if (['fashion', 'salon'].includes(domain)) theme = 'fashion';
     else if (['realestate'].includes(domain)) theme = 'luxury';
     else if (['college', 'education'].includes(domain)) theme = 'light';
   }
@@ -328,6 +360,7 @@ const extractPromptRequirements = (prompt = '') => {
   if (p.includes('doctor')) users.push('doctor');
   if (p.includes('patient')) users.push('patient');
   if (p.includes('admin')) users.push('admin');
+  if (p.includes('vendor') || p.includes('partner') || p.includes('seller')) users.push('partner');
 
   const requiresAuth = p.includes('login') || p.includes('signup') || p.includes('auth') || p.includes('sign in') || users.length > 0;
   const loginTypes = [];
@@ -335,11 +368,13 @@ const extractPromptRequirements = (prompt = '') => {
   if (users.includes('teacher')) loginTypes.push('Teacher Login');
   if (users.includes('doctor')) loginTypes.push('Doctor Login');
   if (users.includes('patient')) loginTypes.push('Patient Login');
+  if (users.includes('admin')) loginTypes.push('Admin Portal');
+  if (users.includes('partner')) loginTypes.push('Partner Login');
   if (loginTypes.length === 0 && requiresAuth) loginTypes.push('User Login');
 
-  // Extract explicit Base Price from prompt (e.g. "$500", "₹500", "500 rs", "pizza ₹299")
+  // Extract explicit Base Price from prompt (e.g. "$500", "₹500", "500 rs", "pizza ₹299", "€49")
   let basePrice = domain === 'food' ? 350 : domain === 'fashion' ? 1200 : domain === 'travel' ? 4500 : 500;
-  const priceMatch = p.match(/(?:₹|\$|rs\.?|price\s*of?)\s*(\d+(?:\.\d+)?)/i) || p.match(/(?:pizza|burger|item|product)\s*(?:₹|\$|rs\.?)?\s*(\d+(?:\.\d+)?)/i);
+  const priceMatch = p.match(/(?:₹|\$|€|£|¥|rs\.?|price\s*of?)\s*(\d+(?:\.\d+)?)/i) || p.match(/(?:pizza|burger|item|product)\s*(?:₹|\$|€|£|¥|rs\.?)?\s*(\d+(?:\.\d+)?)/i);
   if (priceMatch) {
     basePrice = Number(priceMatch[1]);
   }
@@ -347,7 +382,7 @@ const extractPromptRequirements = (prompt = '') => {
   // Extract explicit GST % or explicit GST Amount from prompt (e.g. "GST 5%", "18% GST", "GST ₹53.82")
   let gstPercentage = null;
   const gstPctMatch = p.match(/(?:gst|tax)\s*(?:of|is|@)?\s*(\d+)%/i) || p.match(/(\d+)%\s*(?:gst|tax)/i);
-  const gstAmountMatch = p.match(/gst\s*(?:amount|is|:|=|₹|\$)?\s*(?:₹|\$)?\s*(\d+(?:\.\d+)?)/i);
+  const gstAmountMatch = p.match(/gst\s*(?:amount|is|:|=|₹|\$|€|£|¥)?\s*(?:₹|\$|€|£|¥)?\s*(\d+(?:\.\d+)?)/i);
 
   if (gstPctMatch) {
     gstPercentage = Number(gstPctMatch[1]);
@@ -358,8 +393,8 @@ const extractPromptRequirements = (prompt = '') => {
     gstPercentage = domain === 'food' ? 5 : 18; // standard defaults
   }
 
-  // Calculate financials
-  const currency = p.includes('$') ? '$' : '₹';
+  // Calculate financials with multi-currency support
+  const currency = p.includes('$') ? '$' : p.includes('€') ? '€' : p.includes('£') ? '£' : p.includes('¥') ? '¥' : '₹';
   const financials = (requiresPrice || requiresGST)
     ? calculateFinancials({ basePrice, gstPercentage, currency })
     : null;
@@ -460,23 +495,34 @@ const NAMED_COLOR_MAP = {
   'gray': '#6B7280',
   'dark grey': '#374151',
   'dark gray': '#374151',
+  'slate': '#0F172A',
+  'zinc': '#18181B',
   'black': '#020617',
   'dark': '#0F172A',
   'red': '#DC2626',
+  'crimson': '#BE123C',
+  'rose': '#E11D48',
   'light red': '#F87171',
   'dark red': '#991B1B',
   'blue': '#2563EB',
+  'sky': '#0284C7',
   'dark blue': '#1E3A8A',
   'light blue': '#60A5FA',
   'navy': '#0F172A',
+  'indigo': '#4F46E5',
   'green': '#059669',
+  'emerald': '#10B981',
+  'teal': '#0D9488',
+  'cyan': '#0891B2',
   'pastel green': '#A7F3D0',
   'light green': '#34D399',
   'dark green': '#065F46',
   'yellow': '#FACC15',
+  'amber': '#D97706',
   'gold': '#F59E0B',
   'orange': '#EA580C',
   'purple': '#9333EA',
+  'violet': '#7C3AED',
   'lavender': '#E9D5FF',
   'pink': '#EC4899',
   'maroon': '#9F1239',
@@ -523,9 +569,32 @@ const extractColorSpec = (prompt = '') => {
   }
 
   // List of recognized color terms
-  const colorTerms = 'yellow|gold|green|red|blue|purple|white|black|grey|gray|light grey|light gray|dark grey|dark gray|navy|orange|pink|lavender|cream|beige|maroon|off-white';
+  const colorTerms = 'yellow|gold|green|emerald|teal|cyan|red|crimson|rose|blue|sky|indigo|purple|violet|white|black|slate|zinc|grey|gray|light grey|light gray|dark grey|dark gray|navy|orange|amber|pink|lavender|cream|beige|maroon|off-white';
 
-  // 1. Background regex pattern (handles: "background color is yellow", "background should be in yellow", "page to grey", "yellow background", etc.)
+  // Direct Hex Color Code Extraction (e.g. "#1e293b", "#ff007f")
+  const hexBgMatch = p.match(/(?:background|bg|canvas|page)\s*(?:color|colors|theme)?\s*(?:should\s*)?(?:be\s*)?(?:in\s*|to\s*|is\s*|=|:)?\s*(#[0-9a-f]{3,6})/i);
+  if (hexBgMatch) {
+    background = hexBgMatch[1];
+  }
+  const hexBtnMatch = p.match(/(?:buttons?|ctas?)\s*(?:color|colors|theme)?\s*(?:should\s*)?(?:be\s*)?(?:in\s*|to\s*|is\s*|=|:)?\s*(#[0-9a-f]{3,6})/i);
+  if (hexBtnMatch) {
+    buttonBackground = hexBtnMatch[1];
+  }
+
+  // 1. Compound phrase parsing (e.g. "background should in yellow and button should in green", "yellow background and green buttons")
+  const compoundMatch = p.match(new RegExp(`(?:background|bg|page)\\s*(?:color|colors|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})\\s*(?:and|,)?\\s*(?:buttons?|ctas?)\\s*(?:color|colors|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i'));
+  if (compoundMatch) {
+    background = compoundMatch[1].trim();
+    buttonBackground = compoundMatch[2].trim();
+  }
+
+  const compoundMatchRev = p.match(new RegExp(`(${colorTerms})\\s*(?:background|bg|page)\\s*(?:and|,)?\\s*(${colorTerms})\\s*(?:buttons?|ctas?)`, 'i'));
+  if (compoundMatchRev) {
+    background = compoundMatchRev[1].trim();
+    buttonBackground = compoundMatchRev[2].trim();
+  }
+
+  // 1b. Background regex pattern (handles: "background color is yellow", "background should be in yellow", "page to grey", "yellow background", etc.)
   if (!background) {
     const bgRegex = new RegExp(`(?:background|bg|canvas|page)\\s*(?:color|colors|style|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i');
     const bgRegexRev = new RegExp(`(${colorTerms})\\s*(?:color|colors|style|theme)?\\s*(?:background|bg|canvas|page)`, 'i');
@@ -562,6 +631,7 @@ const extractColorSpec = (prompt = '') => {
     else if (p.includes('green') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'green';
     else if (p.includes('red') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'red';
     else if (p.includes('blue') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'blue';
+    else if (p.includes('gold') && (p.includes('button') || p.includes('cta'))) buttonBackground = 'gold';
   }
 
   // 3. Surface / Card regex pattern
