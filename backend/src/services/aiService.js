@@ -629,6 +629,12 @@ const generateUIFromDiagram = async ({ imagePath, diagramCode, diagramType = 'au
     case 'architecture':
       typeGuidance = 'This is a SOFTWARE / SYSTEM ARCHITECTURE diagram (e.g. Microservices, Cloud Infrastructure, Multi-Tier App). Synthesize a production-ready system console / architectural interface displaying service health, active microservices, API Gateway endpoints, real-time message bus metrics, and operational control actions.';
       break;
+    case 'mvc':
+      typeGuidance = 'This is an MVC (MODEL-VIEW-CONTROLLER) ARCHITECTURE diagram. Synthesize a complete 3-tier application structure clearly presenting: (1) View Layer UI (User/Student portals, interactive forms, action buttons, and live dashboards), (2) Controller Layer (API routes, event handlers, workflow controllers, and request status indicators), and (3) Model Layer (Database entity cards, table schemas, records count, and data persistence controls).';
+      break;
+    case 'mvvm':
+      typeGuidance = 'This is an MVVM (MODEL-VIEW-VIEWMODEL) ARCHITECTURE diagram. Synthesize a reactive modern application clearly presenting: (1) Declarative View UI (interactive screens, forms, click handlers, and visual metric displays), (2) ViewModel State Layer (Reactive StateFlow/LiveData status badges, event dispatchers, and state store monitors), and (3) Model Layer (Repository sync cards, remote REST API endpoints, and local cache controls).';
+      break;
     case 'dataflow':
       typeGuidance = 'This is a DATA FLOW DIAGRAM (DFD) / ETL PIPELINE diagram. Synthesize a modern data pipeline dashboard showing data ingestion sources, transformation stages, stream latency/throughput KPI cards, processed record tables, and pipeline execution controls.';
       break;

@@ -20,6 +20,7 @@
 import { Component } from 'react';
 import NmButton from './NmButton';
 import { resolveDisplayString, normalizeElementData } from '../utils/valueNormalizer';
+import { getSvgPlaceholder } from '../utils/svgPlaceholder';
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
@@ -98,13 +99,16 @@ const ELEMENT_REGISTRY = {
     } else if (element.content && typeof element.content === 'object') {
       src = element.content.src || element.content.url || '';
     }
-    if (!src) src = props.src || 'https://placehold.co/600x400/18181B/8B5CF6?text=Image';
 
     const alt = resolveDisplayString(
       props.alt || (typeof element.content === 'object' ? element.content.alt : '') || element.fallback,
-      'Generated image',
+      'Visual Asset',
       'alt'
     );
+
+    if (!src) {
+      src = props.src || getSvgPlaceholder(alt || 'Visual Asset', 600, 400);
+    }
 
     return (
       <img
@@ -114,8 +118,8 @@ const ELEMENT_REGISTRY = {
         className={`max-w-full rounded-lg object-cover ${props.className || ''}`}
         loading="lazy"
         onError={(e) => {
-          e.currentTarget.src = 'https://placehold.co/600x400/18181B/8B5CF6?text=Image+Error';
-          e.currentTarget.alt = 'Image failed to load';
+          e.currentTarget.onerror = null;
+          e.currentTarget.src = getSvgPlaceholder(alt || 'Visual Asset', 600, 400);
         }}
       />
     );
@@ -369,7 +373,8 @@ const ELEMENT_REGISTRY = {
                     className="nm-carousel__img"
                     loading="lazy"
                     onError={(e) => {
-                      e.currentTarget.src = 'https://placehold.co/800x400/18181B/8B5CF6?text=Slide';
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = getSvgPlaceholder(slideTitle || 'Slide', 800, 400);
                     }}
                   />
                 ) : (

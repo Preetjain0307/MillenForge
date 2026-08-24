@@ -300,22 +300,29 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
   }
 
   // Travel & Destinations
-  if (q.includes('travel') || q.includes('destination') || q.includes('vacation') || q.includes('trip') || q.includes('flight') || q.includes('tour') || q.includes('resort')) {
+  if (q.includes('travel') || q.includes('destination') || q.includes('vacation') || q.includes('trip') || q.includes('flight') || q.includes('tour') || q.includes('resort') || q.includes('beach')) {
     if (q.includes('paris')) return CURATED_IMAGE_CATALOG.paris;
     if (q.includes('tokyo')) return CURATED_IMAGE_CATALOG.tokyo;
     if (q.includes('mountain')) return CURATED_IMAGE_CATALOG.mountain;
     if (q.includes('hotel') || q.includes('room')) return CURATED_IMAGE_CATALOG.hotel_room;
+    if (q.includes('beach')) return CURATED_IMAGE_CATALOG.beach;
     if (q.includes('resort')) return CURATED_IMAGE_CATALOG.resort;
     return CURATED_IMAGE_CATALOG.beach;
   }
 
-  // Fashion & Apparel
-  if (q.includes('fashion') || q.includes('cloth') || q.includes('wear') || q.includes('apparel') || q.includes('boutique')) {
+  // Fashion & Apparel (High Priority)
+  if (q.includes('fashion') || q.includes('cloth') || q.includes('wear') || q.includes('apparel') || q.includes('boutique') || q.includes('sneaker') || q.includes('shoe') || q.includes('streetwear')) {
     if (q.includes('sneaker') || q.includes('shoe')) return CURATED_IMAGE_CATALOG.sneakers;
     if (q.includes('watch')) return CURATED_IMAGE_CATALOG.watch;
     if (q.includes('bag') || q.includes('handbag')) return CURATED_IMAGE_CATALOG.handbag;
     if (q.includes('jacket')) return CURATED_IMAGE_CATALOG.jacket;
     return CURATED_IMAGE_CATALOG.fashion_hero;
+  }
+
+  // Portfolio & Creative Design
+  if (q.includes('portfolio') || q.includes('designer') || q.includes('artist') || q.includes('creative') || q.includes('showcase') || q.includes('resume')) {
+    if (q.includes('camera') || q.includes('photo')) return CURATED_IMAGE_CATALOG.photography_camera;
+    return CURATED_IMAGE_CATALOG.portfolio_hero;
   }
 
   // Real Estate & Architecture
@@ -394,10 +401,13 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
     }
   }
 
-  // 3. Fallback placeholder with high aesthetic contrast
-  const encodedQuery = encodeURIComponent(query.slice(0, 30) || 'Visual Asset');
+  // 3. Fallback inline SVG placeholder with high aesthetic contrast (offline, guaranteed load)
+  const cleanTitle = (query.slice(0, 30) || 'Visual Asset').replace(/[<>&"]/g, '');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#11111a"/><stop offset="50%" stop-color="#181826"/><stop offset="100%" stop-color="#23213a"/></linearGradient><linearGradient id="ic" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#bg)"/><g transform="translate(400, 220)"><circle cx="0" cy="0" r="32" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/><path d="M-12 8 L-3 -9 L6 3 L13 -4 L18 8 Z" fill="url(#ic)"/><circle cx="7" cy="-12" r="4" fill="#fbbf24"/></g><text x="50%" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#94a3b8" text-anchor="middle">${cleanTitle}</text></svg>`;
+  const fallbackDataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+
   return {
-    src: `https://placehold.co/800x500/1a1a2e/6c63ff?text=${encodedQuery}`,
+    src: fallbackDataUri,
     alt: defaultAlt || query || 'Generated visual',
   };
 };
