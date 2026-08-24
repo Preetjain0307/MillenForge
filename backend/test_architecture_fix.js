@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Urgent Architecture Fix Audit Suite
+ * NeuraMinds — Urgent Architecture Fix Audit Suite
  *
  * Verifies that:
  * 1. Template similarity score is strictly ZERO across 4 key test prompts
@@ -25,7 +25,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind Urgent Architecture Fix Verification ===\n');
+console.log('\n=== NeuraMinds Urgent Architecture Fix Verification ===\n');
 
 const prompts = [
   { key: 'Fashion', prompt: 'create a website for a premium women fashion store' },

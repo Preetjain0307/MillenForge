@@ -1,7 +1,7 @@
 {
-  "name": "neuraminds-backend",
+  "name": "neuramindss-backend",
   "version": "1.0.0",
-  "description": "NeuraMinds backend - Express REST API",
+  "description": "NeuraMindss backend - Express REST API",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

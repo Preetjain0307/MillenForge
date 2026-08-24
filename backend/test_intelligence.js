@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — AI Product Intelligence Test Suite
+ * NeuraMindss — AI Product Intelligence Test Suite
  * Run: node backend/test_intelligence.js
  */
 
@@ -79,7 +79,7 @@ const mockUIPage = {
 };
 
 async function runTests() {
-  console.log('\n--- Running NeuraMinds AI Product Intelligence Test Suite ---\n');
+  console.log('\n--- Running NeuraMindss AI Product Intelligence Test Suite ---\n');
 
   // 1. Requirement Gap Detection
   console.log('── 1. Requirement Gap Detection ────────────────────────────────');

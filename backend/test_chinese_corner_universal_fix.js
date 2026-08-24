@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Universal Domain Engine & Chinese Corner Verification Suite
+ * NeuraMinds — Universal Domain Engine & Chinese Corner Verification Suite
  *
  * Verifies that:
  * 1. "create a chinese corner website" outputs authentic Chinese restaurant branding & dishes
@@ -25,7 +25,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind Universal Domain Engine & Chinese Corner Tests ===\n');
+console.log('\n=== NeuraMinds Universal Domain Engine & Chinese Corner Tests ===\n');
 
 // ── TEST 1: Topic Extraction for Custom & Niche Domains ─────────────────────
 console.log('--- 1. Topic Extraction & Dynamic Naming ---');

@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Responsive Layout & Viewport QA Test Suite
+ * NeuraMinds — Responsive Layout & Viewport QA Test Suite
  *
  * Tests generated UIPage objects across 8 standard viewports:
  *  - 1440x900  (Large Desktop)
@@ -29,7 +29,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind Responsive QA & Breakpoint Audit Test Suite ===\n');
+console.log('\n=== NeuraMinds Responsive QA & Breakpoint Audit Test Suite ===\n');
 
 const TARGET_VIEWPORTS = [
   { width: 1440, height: 900, device: 'Large Desktop', breakpoint: 'desktop' },
@@ -93,7 +93,7 @@ assert(hotelBp.responsiveStrategy.desktopColumns === 3, 'Hotel blueprint sets 3 
 assert(hotelBp.responsiveStrategy.tabletColumns === 2, 'Hotel blueprint sets 2 tablet card columns');
 assert(hotelBp.responsiveStrategy.mobileLayout === 'stacked', 'Hotel blueprint sets stacked mobile layout');
 
-const saasBp = generateWebsiteBlueprint('Create a SaaS analytics platform for NeuraMind');
+const saasBp = generateWebsiteBlueprint('Create a SaaS analytics platform for NeuraMinds');
 assert(saasBp.responsiveStrategy.desktopColumns === 3 || saasBp.responsiveStrategy.desktopColumns === 4, 'SaaS blueprint defines multi-column desktop strategy');
 
 console.log(`\n========================================`);

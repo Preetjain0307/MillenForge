@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Master AI Website Engineering Platform Test Suite
+ * NeuraMindss — Master AI Website Engineering Platform Test Suite
  *
  * Comprehensive verification of the 4 Generation Modes & AI Orchestrator:
  *  1. MODE A: Prompt to Website ("Create a luxury hotel website called Zaika")
@@ -28,7 +28,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMinds Master AI Website Engineering Platform Audit ===\n');
+console.log('\n=== NeuraMindss Master AI Website Engineering Platform Audit ===\n');
 
 async function runMasterAudit() {
   // ── 1. Generation Mode Detection Audit ──────────────────────────────────────

@@ -1,5 +1,5 @@
 /**
- * NeuraMind — WOW Factor & Experience Generation Test Suite
+ * NeuraMinds — WOW Factor & Experience Generation Test Suite
  */
 
 const { generateBrandIdentity } = require('./src/services/brandIdentityService');
@@ -20,7 +20,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind WOW Factor Test Suite ===\n');
+console.log('\n=== NeuraMinds WOW Factor Test Suite ===\n');
 
 // 1. Brand Identity Tests
 console.log('--- 1. Brand Identity & Emotional Direction ---');

@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Product Workbench & UX Integration Test Suite
+ * NeuraMindss — Product Workbench & UX Integration Test Suite
  *
  * Exercises:
  * 1. Application Navigation Route Mapping (/workspace, /generate, /preview, /diagrams, /intelligence, /review, /history)
@@ -29,7 +29,7 @@ function runTest(name, fn) {
   }
 }
 
-console.log('\n--- Running NeuraMinds Product Workbench & UX Integration Tests ---\n');
+console.log('\n--- Running NeuraMindss Product Workbench & UX Integration Tests ---\n');
 
 // ── 1. Application Navigation Route Mapping ──────────────────────────────────
 runTest('1. Navigation Structure: Validates main product workbench route paths', () => {

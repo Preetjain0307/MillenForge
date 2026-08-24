@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Redux Auth Slice
+ * NeuraMindss — Redux Auth Slice
  */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';

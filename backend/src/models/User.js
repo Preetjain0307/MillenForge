@@ -1,4 +1,4 @@
-// NeuraMinds — User Mongoose Model
+// NeuraMindss — User Mongoose Model
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema(
@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: function () {
-        return this.email ? this.email.split('@')[0] : 'NeuraMinds User';
+        return this.email ? this.email.split('@')[0] : 'NeuraMindss User';
       },
     },
     avatar: {

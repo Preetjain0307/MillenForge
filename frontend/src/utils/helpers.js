@@ -1,5 +1,5 @@
 /**
- * NeuraMinds Frontend Utilities
+ * NeuraMindss Frontend Utilities
  * General-purpose helper functions.
  */
 

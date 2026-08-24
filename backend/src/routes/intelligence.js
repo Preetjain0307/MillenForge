@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — AI Product Intelligence Routes
+ * NeuraMindss — AI Product Intelligence Routes
  */
 
 const express = require('express');

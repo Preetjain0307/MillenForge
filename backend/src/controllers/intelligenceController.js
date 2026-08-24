@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — AI Product Intelligence Controller
+ * NeuraMindss — AI Product Intelligence Controller
  *
  * Exposes API endpoints for:
  * - POST /api/analyze-requirements

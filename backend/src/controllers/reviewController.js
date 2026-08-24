@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — AI Review & Self-Improvement Controller
+ * NeuraMindss — AI Review & Self-Improvement Controller
  *
  * Handles HTTP requests for:
  * - POST /api/review

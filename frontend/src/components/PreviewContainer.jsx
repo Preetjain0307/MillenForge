@@ -1,5 +1,5 @@
 /**
- * PreviewContainer — Reusable browser-like preview wrapper component for NeuraMinds
+ * PreviewContainer — Reusable browser-like preview wrapper component for NeuraMindss
  */
 
 import { useState } from 'react';
@@ -44,7 +44,7 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
 
           <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-[#09090B] border border-[#2A2A30] text-xs font-mono text-[#CBD5E1]">
             <i className="pi pi-lock text-[10px] text-[#34D399]" />
-            <span className="text-[#94A3B8]">https://neuraminds.local/preview/</span>
+            <span className="text-[#94A3B8]">https://neuramindss.local/preview/</span>
             <span className="text-[#A78BFA] font-semibold">{pageName || 'Home'}</span>
           </div>
         </div>

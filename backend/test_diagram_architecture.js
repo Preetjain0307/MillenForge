@@ -16,7 +16,7 @@ const assert = require('assert');
 const { resolveContextualImage } = require('./src/services/imageService');
 const { extractPromptRequirements } = require('./src/services/promptRequirementExtractor');
 
-console.log('\n=== NeuraMinds Architecture & Diagram Module Test Suite ===\n');
+console.log('\n=== NeuraMindss Architecture & Diagram Module Test Suite ===\n');
 
 let passCount = 0;
 let failCount = 0;

@@ -1,5 +1,5 @@
 /**
- * NeuraMinds Backend — Shared Type Definitions (JSDoc)
+ * NeuraMindss Backend — Shared Type Definitions (JSDoc)
  *
  * Mirrors the frontend's types/ui.js contract for use in backend services.
  * Kept in sync with frontend/src/types/ui.js

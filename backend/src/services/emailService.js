@@ -1,4 +1,4 @@
-// NeuraMinds — Email Service Abstraction
+// NeuraMindss — Email Service Abstraction
 // Supports:
 // 1. Nodemailer SMTP (Gmail SMTP, Custom SMTP) -> Sends to ANY recipient email address worldwide!
 // 2. Resend API -> Sends to verified domain / account email.
@@ -36,16 +36,16 @@ function createSmtpTransporter() {
 function getResendFromAddress() {
   const envFrom = process.env.EMAIL_FROM;
   if (!envFrom) {
-    return 'NeuraMinds <onboarding@resend.dev>';
+    return 'NeuraMindss <onboarding@resend.dev>';
   }
   if (!envFrom.includes('<') && !envFrom.includes('>')) {
     const parts = envFrom.trim().split(/\s+/);
     if (parts.length === 1 && parts[0].includes('@')) {
-      return `NeuraMinds <${parts[0]}>`;
+      return `NeuraMindss <${parts[0]}>`;
     }
     const emailMatch = envFrom.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
     if (emailMatch) {
-      const name = envFrom.replace(emailMatch[0], '').trim() || 'NeuraMinds';
+      const name = envFrom.replace(emailMatch[0], '').trim() || 'NeuraMindss';
       return `${name} <${emailMatch[0]}>`;
     }
   }
@@ -65,14 +65,14 @@ async function sendOtpEmail(email, otp) {
   const transporter = createSmtpTransporter();
   if (transporter) {
     try {
-      const fromAddr = process.env.EMAIL_FROM || `NeuraMinds <${process.env.SMTP_USER}>`;
+      const fromAddr = process.env.EMAIL_FROM || `NeuraMindss <${process.env.SMTP_USER}>`;
       const mailOptions = {
         from: fromAddr,
         to: email,
-        subject: `${otp} is your NeuraMinds verification code`,
+        subject: `${otp} is your NeuraMindss verification code`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; background: #0f172a; color: #f8fafc; border-radius: 12px; border: 1px solid #1e293b;">
-            <h2 style="color: #6366f1; margin-top: 0; margin-bottom: 8px;">NeuraMinds</h2>
+            <h2 style="color: #6366f1; margin-top: 0; margin-bottom: 8px;">NeuraMindss</h2>
             <p style="color: #94a3b8; font-size: 14px;">Use the verification code below to complete your login or registration:</p>
             <div style="background: #1e293b; padding: 20px; border-radius: 8px; text-align: center; margin: 24px 0; border: 1px solid #334155;">
               <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #818cf8; font-family: monospace;">${otp}</span>
@@ -109,10 +109,10 @@ async function sendOtpEmail(email, otp) {
         body: JSON.stringify({
           from: fromAddress,
           to: [email],
-          subject: `${otp} is your NeuraMinds verification code`,
+          subject: `${otp} is your NeuraMindss verification code`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; background: #0f172a; color: #f8fafc; border-radius: 12px; border: 1px solid #1e293b;">
-              <h2 style="color: #6366f1; margin-top: 0; margin-bottom: 8px;">NeuraMinds</h2>
+              <h2 style="color: #6366f1; margin-top: 0; margin-bottom: 8px;">NeuraMindss</h2>
               <p style="color: #94a3b8; font-size: 14px;">Use the verification code below to complete your login or registration:</p>
               <div style="background: #1e293b; padding: 20px; border-radius: 8px; text-align: center; margin: 24px 0; border: 1px solid #334155;">
                 <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #818cf8; font-family: monospace;">${otp}</span>

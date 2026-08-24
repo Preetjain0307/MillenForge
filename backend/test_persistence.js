@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Backend Data Persistence & History API Test Suite
+ * NeuraMindss — Backend Data Persistence & History API Test Suite
  *
  * Verifies:
  * 1. Mongoose History model schema & validation
@@ -51,7 +51,7 @@ function httpRequest(options, postData = null) {
 
 async function runPersistenceTests() {
   console.log('\n===============================================================');
-  console.log('   NEURAMINDS — PERSISTENCE & HISTORY API VERIFICATION SUITE   ');
+  console.log('   NEURAMINDSS — PERSISTENCE & HISTORY API VERIFICATION SUITE   ');
   console.log('===============================================================\n');
 
   // ── 1. Model Schema Integrity ─────────────────────────────────────────────

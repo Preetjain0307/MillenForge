@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Image Resolution Service
+ * NeuraMindss — Image Resolution Service
  *
  * Resolves contextual image queries into legitimate, high-quality,
  * responsive image URLs with appropriate aspect ratios and alt text.

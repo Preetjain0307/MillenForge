@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Master AI Website Engineering Orchestrator
+ * NeuraMindss — Master AI Website Engineering Orchestrator
  *
  * Central Gemini-powered reasoning & orchestration engine for:
  *  - MODE A: Prompt to Website

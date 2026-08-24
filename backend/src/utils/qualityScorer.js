@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — UI Quality Scorer & Design-to-Code Validator
+ * NeuraMindss — UI Quality Scorer & Design-to-Code Validator
  *
  * Deterministic scoring engine for generated UIPage structures.
  * Measures 10 quality categories and semantic design intent matching.

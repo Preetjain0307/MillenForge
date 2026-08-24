@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Generation Quality Gate Test Suite
+ * NeuraMindss — Generation Quality Gate Test Suite
  *
  * Tests:
  *  1–6:   Domain detection (food, travel, fashion, saas, realestate, auth)
@@ -38,7 +38,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMinds Generation Quality Gate Tests ===\n');
+console.log('\n=== NeuraMindss Generation Quality Gate Tests ===\n');
 
 // ── Shared fixtures ───────────────────────────────────────────────────────────
 

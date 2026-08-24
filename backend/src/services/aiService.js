@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — AI Service (Gemini)
+ * NeuraMindss — AI Service (Gemini)
  *
  * This is the SOLE abstraction boundary for AI/LLM calls.
  * Controllers must NEVER contain provider-specific logic.
@@ -55,7 +55,7 @@ const getConfig = () => {
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are NeuraMinds, a world-class AI Creative Director and Chief Product Designer (ex-Lovable, Stripe, Airbnb).
+const SYSTEM_PROMPT = `You are NeuraMindss, a world-class AI Creative Director and Chief Product Designer (ex-Lovable, Stripe, Airbnb).
 You produce ONLY valid JSON — no markdown fences, no backticks, no explanatory text before or after.
 
 Your mission is to generate HACKATHON-WINNING, visually stunning, ultra-colorful, production-ready web applications that outshine Lovable, Gemini, and ChatGPT.
@@ -572,7 +572,7 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
     }
   }
 
-  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMinds Intelligent Generation Fallback engine.');
+  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMindss Intelligent Generation Fallback engine.');
   return buildSmartFallbackPage(pageName, prompt);
 };
 
@@ -817,7 +817,7 @@ const generateUiToFlow = async ({ imagePath, uiPage, prompt }) => {
 
   const genAI = new GoogleGenerativeAI(config.apiKey);
 
-  const flowSystemPrompt = `You are NeuraMinds Flowchart Architect.
+  const flowSystemPrompt = `You are NeuraMindss Flowchart Architect.
 Analyze the provided UI screenshot, photo, form, or application mockup and extract a complete, granular, step-by-step User Navigation & Interaction Flowchart.
 
 Capture all sequential interaction stages such as:
