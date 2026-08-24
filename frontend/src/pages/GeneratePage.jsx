@@ -271,8 +271,8 @@ const GeneratePage = () => {
       {/* ── Main 3-Panel Studio Layout ──────────────────────────────────── */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
         
-        {/* ── PANEL 1: INPUT WORKSPACE (Left 4 cols) ───────────────────── */}
-        <div className="lg:col-span-4 border-r border-[#2A2A30] bg-[#111113] flex flex-col h-full overflow-hidden">
+        {/* ── PANEL 1: INPUT WORKSPACE (Left 3 cols) ───────────────────── */}
+        <div className="lg:col-span-3 border-r border-[#2A2A30] bg-[#111113] flex flex-col h-full overflow-hidden">
           {/* Input Mode Selector Tabs */}
           <div className="flex items-center border-b border-[#2A2A30] bg-[#18181B] px-2 py-1.5 gap-1">
             <button
@@ -454,8 +454,8 @@ const GeneratePage = () => {
           )}
         </div>
 
-        {/* ── PANEL 2: LIVE PREVIEW CANVAS (Center 5 cols) ────────────── */}
-        <div className="lg:col-span-5 border-r border-[#2A2A30] bg-[#09090B] flex flex-col h-full overflow-hidden p-3">
+        {/* ── PANEL 2: LIVE PREVIEW CANVAS (Center 6 cols) ────────────── */}
+        <div className="lg:col-span-6 border-r border-[#2A2A30] bg-[#09090B] flex flex-col h-full overflow-hidden p-3">
           <PreviewContainer
             pageName={generation.pageName || 'Home'}
             isEmpty={!pageResult && !isGenerating}
