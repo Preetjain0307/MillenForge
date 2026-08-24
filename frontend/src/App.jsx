@@ -56,7 +56,14 @@ function App() {
           <Route path="/" element={<WorkspacePage />} />
           <Route path="/workspace" element={<WorkspacePage />} />
           <Route path="/home" element={<WorkspacePage />} />
-          <Route path="/generate" element={<GeneratePage />} />
+          <Route
+            path="/generate"
+            element={
+              <ProtectedRoute>
+                <GeneratePage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/diagrams" element={<DiagramsPage />} />
           <Route path="/preview/:pageName" element={<PreviewPage />} />
           <Route path="/intelligence" element={<IntelligencePage />} />

@@ -128,9 +128,17 @@ const GeneratePage = () => {
     dispatch(clearUpload());
   }, [dispatch]);
 
+  const { isAuthenticated } = useSelector((state) => state.auth || {});
+
   // Generation handler
   const handleGenerate = async (e) => {
     e.preventDefault();
+
+    if (!isAuthenticated) {
+      navigate('/login?redirect=/generate');
+      return;
+    }
+
     const prompt   = generation.prompt?.trim();
     const pageName = generation.pageName?.trim() || 'Home';
 
