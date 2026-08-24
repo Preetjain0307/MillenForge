@@ -1,7 +1,7 @@
 {
-  "name": "neuramind",
+  "name": "neuraminds",
   "version": "1.0.0",
-  "description": "NeuraMind – AI-Assisted UI Generation from Wireframe, Code & Prompt",
+  "description": "NeuraMinds – AI-Assisted UI Generation from Wireframe, Code & Prompt",
   "private": true,
   "scripts": {
     "dev": "npm run dev:backend & npm run dev:frontend",

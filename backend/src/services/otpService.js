@@ -1,4 +1,4 @@
-// NeuraMind — OTP Service
+// NeuraMinds — OTP Service
 // Cryptographically secure OTP generation, hashing, rate-limiting, and verification.
 // Dual storage engine: Mongoose Otp model (primary) with In-Memory fallback if DB is disconnected.
 

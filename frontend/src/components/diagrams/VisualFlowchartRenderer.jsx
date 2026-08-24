@@ -2,7 +2,7 @@
  * VisualFlowchartRenderer — Live SVG & Mermaid Flowchart Diagram Canvas
  *
  * Renders high-fidelity visual flowchart graphs with:
- * - Live Mermaid SVG rendering with NeuraMind dark mode theme
+ * - Live Mermaid SVG rendering with NeuraMinds dark mode theme
  * - Error suppression & automatic DOM cleanup (never shows Mermaid raw bomb error divs)
  * - Deterministic Mermaid sanitizer with quoted bracket labels and edge actions
  * - Interactive node-to-node connected diagram with SVG arrows & decision branches

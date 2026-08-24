@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Critical Renderer Fix & Realistic Visual Generation Regression Tests
+ * NeuraMinds — Critical Renderer Fix & Realistic Visual Generation Regression Tests
  *
  * Verifies:
  * 1. Safe Value Normalization (String, Number, Null, Undefined, Objects, Arrays, Malformed)
@@ -27,7 +27,7 @@ function assert(condition, message) {
   }
 }
 
-console.log('\n--- Running NeuraMind Critical Renderer Fix & Normalization Tests ---\n');
+console.log('\n--- Running NeuraMinds Critical Renderer Fix & Normalization Tests ---\n');
 
 // ── 1. Safe Value Normalization Tests ─────────────────────────────────────────
 

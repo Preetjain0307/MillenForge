@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Safe Value Normalizer & Display Resolver
+ * NeuraMinds — Safe Value Normalizer & Display Resolver
  *
  * Prevents "Objects are not valid as a React child" errors by safely
  * extracting displayable primitive values (strings, numbers) from any

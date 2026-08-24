@@ -1,5 +1,5 @@
 /**
- * NeuraMind - UIPage Validation Utility
+ * NeuraMinds - UIPage Validation Utility
  *
  * Validates an AI-generated UIPage before it reaches the renderer.
  * Does NOT call Gemini, modify Redux, or touch backend.

@@ -1,5 +1,5 @@
 /**
- * WorkspacePage — Unified NeuraMind Product Workbench & Dashboard
+ * WorkspacePage — Unified NeuraMinds Product Workbench & Dashboard
  *
  * Unites:
  * 1. Generate UI (/generate)
@@ -79,7 +79,7 @@ const WorkspacePage = () => {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--nm-text-primary)] tracking-tight">
-            NeuraMind <span className="nm-gradient-text">Product Workspace</span>
+            NeuraMinds <span className="nm-gradient-text">Product Workspace</span>
           </h1>
         </div>
 
@@ -229,7 +229,7 @@ const WorkspacePage = () => {
             <div className="max-w-sm">
               <h4 className="text-sm font-bold text-[var(--nm-text-primary)] mb-1">No Active Pages in Session</h4>
               <p className="text-xs text-[var(--nm-text-muted)]">
-                Generate a new layout or click "Load Demo UI" to explore NeuraMind workspace tools.
+                Generate a new layout or click "Load Demo UI" to explore NeuraMinds workspace tools.
               </p>
             </div>
             <div className="flex gap-2">

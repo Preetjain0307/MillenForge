@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Website Quality & Responsive QA Test Suite
+ * NeuraMinds — Website Quality & Responsive QA Test Suite
  *
  * Exercises representative UIPage structures for:
  * 1. Food Ordering Website
@@ -38,7 +38,7 @@ function runTest(name, fn) {
   }
 }
 
-console.log('\n--- Running NeuraMind Website Quality & Responsive QA Tests ---\n');
+console.log('\n--- Running NeuraMinds Website Quality & Responsive QA Tests ---\n');
 
 // ─── 1. Food Ordering Website Quality ───────────────────────────────────────
 runTest('1. Food Ordering Website: Valid structure, menu cards, prices, & CTAs', () => {
@@ -262,7 +262,7 @@ runTest('5. Developer Documentation Website: Sidebar, search, docs sections, & w
         id: 'docs-hero',
         type: SECTION_TYPES.HERO,
         elements: [
-          { id: 'docs-title', type: ELEMENT_TYPES.TEXT, content: 'NeuraMind API Documentation v2.4', fallback: 'API Docs' },
+          { id: 'docs-title', type: ELEMENT_TYPES.TEXT, content: 'NeuraMinds API Documentation v2.4', fallback: 'API Docs' },
           { id: 'docs-search', type: ELEMENT_TYPES.TEXTFIELD, content: 'Search endpoints or guides...', fallback: 'Search Docs' },
         ],
       },
@@ -279,7 +279,7 @@ runTest('5. Developer Documentation Website: Sidebar, search, docs sections, & w
               activeStep: 1,
               steps: [
                 { id: 's1', label: 'API Key Generation', description: 'Create secret key in dashboard' },
-                { id: 's2', label: 'SDK Installation', description: 'npm install @neuramind/sdk' },
+                { id: 's2', label: 'SDK Installation', description: 'npm install @neuraminds/sdk' },
                 { id: 's3', label: 'Execute First Request', description: 'Send wireframe payload to /generate' },
               ],
             },

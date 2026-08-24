@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Redux Store
+ * NeuraMinds — Redux Store
  *
  * Combines all feature slices into the root store.
  * Add new slices here as the application grows.

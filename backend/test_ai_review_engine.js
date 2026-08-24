@@ -1,5 +1,5 @@
 /**
- * NeuraMind — AI Review & Self-Improvement Engine Test Suite
+ * NeuraMinds — AI Review & Self-Improvement Engine Test Suite
  *
  * Verifies:
  * 1. Multi-Agent Reviewers (UX, Visual, Accessibility, Engineering, Product)
@@ -37,7 +37,7 @@ function assert(condition, message) {
   }
 }
 
-console.log('\n--- Running NeuraMind AI Review & Self-Improvement Engine Tests ---\n');
+console.log('\n--- Running NeuraMinds AI Review & Self-Improvement Engine Tests ---\n');
 
 // Mock sample UIPage for review
 const validMockPage = {

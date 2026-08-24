@@ -1,5 +1,5 @@
 /**
- * NeuraMind — CMS Editor UI Barrel Export
+ * NeuraMinds — CMS Editor UI Barrel Export
  *
  * Exposes all CMS content editing UI components for easy consumption by Preet and the app.
  */

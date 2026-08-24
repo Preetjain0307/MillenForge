@@ -11,7 +11,7 @@ const health = (_req, res) => {
   res.status(200).json({
     success: true,
     status: 'ok',
-    message: 'NeuraMind API is running',
+    message: 'NeuraMinds API is running',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',

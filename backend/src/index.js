@@ -1,4 +1,4 @@
-// NeuraMind Backend — Entry Point
+// NeuraMinds Backend — Entry Point
 require('dotenv').config();
 
 const express = require('express');

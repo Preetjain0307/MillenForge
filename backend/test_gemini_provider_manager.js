@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Gemini Multi-Provider Manager Test Suite
+ * NeuraMinds — Gemini Multi-Provider Manager Test Suite
  *
  * Runs deterministic unit and failover tests using mocked provider responses.
  */
