@@ -173,5 +173,5 @@ export const EXAMPLE_UI_PAGE = {
       props: { layout: 'center', background: 'gradient' },
     },
   ],
-  meta: { title: 'Home — NeuraMindss', description: 'AI-powered UI generator.' },
+  meta: { title: 'Home — NeuraMind', description: 'AI-powered UI generator.' },
 };

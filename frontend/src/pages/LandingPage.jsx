@@ -1,4 +1,4 @@
-﻿/**
+/**
  * LandingPage — NeuraMindss Product Showcase & Entry Page
  *
  * Demonstrates:
@@ -90,7 +90,7 @@ const LandingPage = () => {
         </h1>
 
         <p className="text-base sm:text-lg text-[var(--nm-text-secondary)] max-w-2xl leading-relaxed">
-          Upload hand-drawn wireframes or describe your vision. NeuraMindss compiles structured, responsive web components coupled with a real-time visual CMS editor.
+          Upload hand-drawn wireframes or describe your vision. NeuraMind compiles structured, responsive web components coupled with a real-time visual CMS editor.
         </p>
 
         <div className="flex items-center justify-center flex-wrap gap-4 pt-2">
@@ -117,7 +117,7 @@ const LandingPage = () => {
       <section className="flex flex-col gap-8">
         <div className="text-center max-w-xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-[var(--nm-text-primary)] mb-2">
-            How NeuraMindss Works
+            How NeuraMind Works
           </h2>
           <p className="text-sm text-[var(--nm-text-secondary)]">
             A seamless bridge between visual wireframes, AI code generation, and live content management.
