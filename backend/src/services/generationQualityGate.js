@@ -449,6 +449,88 @@ const healMissingPromptRequirements = (uiPage, userPrompt = '') => {
     }
   }
 
+  // Check 5: Explicit Brand Name Enforced on Page & Navbar
+  if (reqSpec.explicitBrand) {
+    uiPage.page = reqSpec.explicitBrand;
+    uiPage.meta = uiPage.meta || {};
+    uiPage.meta.title = reqSpec.explicitBrand;
+
+    const navSec = sections.find((s) => s.type === 'navbar');
+    if (navSec && Array.isArray(navSec.elements)) {
+      const logoEl = navSec.elements.find((el) => (el.id || '').includes('logo') || (el.props?.tag || '').toLowerCase().startsWith('h'));
+      if (logoEl) {
+        logoEl.content = reqSpec.explicitBrand;
+        logoEl.fallback = reqSpec.explicitBrand;
+      }
+    }
+  }
+
+  // Check 6: Explicit Hero Headline Enforced
+  if (reqSpec.explicitHeadline) {
+    const heroSec = sections.find((s) => s.type === 'hero');
+    if (heroSec && Array.isArray(heroSec.elements)) {
+      const titleEl = heroSec.elements.find((el) => (el.id || '').includes('title') || (el.props?.tag || '').toLowerCase() === 'h1');
+      if (titleEl) {
+        titleEl.content = reqSpec.explicitHeadline;
+        titleEl.fallback = reqSpec.explicitHeadline;
+      }
+    }
+  }
+
+  // Check 7: Interactive FAQ Section Requirement
+  if (reqSpec.requiredSections.includes('faq')) {
+    const hasFaq = sections.some((s) => s.type === 'faq' || (s.id || '').includes('faq'));
+    if (!hasFaq) {
+      missing.push('Interactive FAQ accordion section');
+      const faqSection = {
+        id: 'sec-faq-accordion',
+        type: 'features',
+        elements: [
+          { id: 'faq-title', type: 'text', content: 'Frequently Asked Questions', props: { tag: 'h2' }, fallback: 'Frequently Asked Questions' },
+          {
+            id: 'faq-cards',
+            type: 'cards',
+            props: {
+              columns: 2,
+              items: [
+                { id: 'faq-1', title: 'How does this service work?', description: 'Our platform provides automated, streamlined workflows designed to deliver instant results with 24/7 reliability.', badge: 'General', icon: 'pi pi-question-circle' },
+                { id: 'faq-2', title: 'What are the pricing and billing options?', description: 'We offer flexible month-to-month subscriptions as well as discounted annual plans with no hidden fees.', badge: 'Billing', icon: 'pi pi-credit-card' },
+                { id: 'faq-3', title: 'Is customer support available?', description: 'Yes, our dedicated support team is available 24/7 via live chat, email, and scheduled onboarding calls.', badge: 'Support', icon: 'pi pi-phone' },
+                { id: 'faq-4', title: 'Can I cancel or upgrade anytime?', description: 'You can upgrade, downgrade, or cancel your subscription at any time directly from your account settings.', badge: 'Policy', icon: 'pi pi-shield' },
+              ],
+            },
+            fallback: 'FAQ Items',
+          },
+        ],
+      };
+      const footerIdx = sections.findIndex((s) => s.type === 'footer');
+      if (footerIdx !== -1) sections.splice(footerIdx, 0, faqSection);
+      else sections.push(faqSection);
+    }
+  }
+
+  // Check 8: Contact / Inquiry Form Requirement
+  if (reqSpec.requiredSections.includes('contact')) {
+    const hasContact = sections.some((s) => s.type === 'contact' || (s.id || '').includes('contact'));
+    if (!hasContact) {
+      missing.push('Interactive contact & inquiry form');
+      const contactSection = {
+        id: 'sec-contact-form',
+        type: 'cta',
+        elements: [
+          { id: 'contact-heading', type: 'text', content: 'Get in Touch with Us', props: { tag: 'h2' }, fallback: 'Get in Touch' },
+          { id: 'contact-desc', type: 'text', content: 'Have a question or looking to start a new project? Send us a message and our team will get back to you within 24 hours.', props: { tag: 'p' }, fallback: 'Send us a message' },
+          { id: 'input-name', type: 'input', content: 'Full Name', props: { label: 'Full Name', placeholder: 'Enter your full name' }, fallback: 'Full Name' },
+          { id: 'input-email', type: 'input', content: 'Email Address', props: { label: 'Email Address', placeholder: 'name@example.com', inputType: 'email' }, fallback: 'Email Address' },
+          { id: 'btn-contact-submit', type: 'button', content: 'Send Message', props: { variant: 'primary', label: 'Send Message', icon: 'pi pi-send' }, fallback: 'Send Message' },
+        ],
+      };
+      const footerIdx = sections.findIndex((s) => s.type === 'footer');
+      if (footerIdx !== -1) sections.splice(footerIdx, 0, contactSection);
+      else sections.push(contactSection);
+    }
+  }
+
   return {
     page: { ...uiPage, sections },
     reqSpec,

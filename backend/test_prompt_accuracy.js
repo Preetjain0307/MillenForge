@@ -546,6 +546,36 @@ runTest('52. Multi-role authentication extraction (Admin Portal and Partner Logi
   assert(req.loginTypes.includes('Partner Login'));
 });
 
+runTest('53. Explicit brand name and headline instruction grasping', () => {
+  const req = extractPromptRequirements('create a website for "Apex Fitness" with title "Sculpt Your Dream Body in 90 Days"');
+  assert.strictEqual(req.explicitBrand, 'Apex Fitness');
+  assert.strictEqual(req.explicitHeadline, 'Sculpt Your Dream Body in 90 Days');
+});
+
+runTest('54. Explicit FAQ accordion and contact inquiry form sections', () => {
+  const req = extractPromptRequirements('make a saas landing page with pricing, faq accordion, and contact form');
+  assert(req.requiredSections.includes('faq'));
+  assert(req.requiredSections.includes('contact'));
+  assert(req.requiredSections.includes('pricing'));
+  assert(req.interactiveFeatures.includes('accordion'));
+  assert(req.interactiveFeatures.includes('contactForm'));
+});
+
+runTest('55. Quality Gate enforces explicit brand and headline on generated page', () => {
+  const { runGenerationQualityGate } = require('./src/services/generationQualityGate');
+  const dummyPage = {
+    page: 'Home',
+    sections: [
+      { id: 'sec-nav', type: 'navbar', elements: [{ id: 'logo', type: 'text', content: 'Generic Logo', props: { tag: 'h2' } }] },
+      { id: 'sec-hero', type: 'hero', elements: [{ id: 'hero-title', type: 'text', content: 'Welcome', props: { tag: 'h1' } }] },
+    ],
+  };
+  const result = runGenerationQualityGate(dummyPage, 'build website for "Nova Health" with headline "World-Class Personalized Medicine"');
+  assert.strictEqual(result.page.page, 'Nova Health');
+  assert.strictEqual(result.page.sections[0].elements[0].content, 'Nova Health');
+  assert.strictEqual(result.page.sections[1].elements[0].content, 'World-Class Personalized Medicine');
+});
+
 console.log('\n========================================');
 console.log(`PROMPT ACCURACY TEST SUMMARY: ${passedTests} passed, ${failedTests} failed`);
 console.log('========================================\n');

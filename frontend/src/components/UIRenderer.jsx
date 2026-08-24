@@ -188,7 +188,7 @@ const ELEMENT_REGISTRY = {
 
   // ── Button ────────────────────────────────────────────────────────────────
   button: (element) => {
-    const { showToast, setActiveRoleTab, setIsCartOpen } = useInteractiveUI();
+    const { showToast, setActiveRoleTab, setIsCartOpen, setAuthModal, setBookingModal } = useInteractiveUI();
     const display = resolveDisplayString(element.content || element.fallback, 'Button', 'label');
     const props = safeProps(element);
     const label = resolveDisplayString(props.label || display, 'Button', 'label');
@@ -198,18 +198,32 @@ const ELEMENT_REGISTRY = {
       const lower = label.toLowerCase();
       if (lower.includes('student')) {
         if (setActiveRoleTab) setActiveRoleTab('student');
-        if (showToast) showToast('Portal Initialized', 'Student authentication portal active.', 'info');
+        if (setAuthModal) setAuthModal({ role: 'Student', title: 'Student Portal Login' });
+        else if (showToast) showToast('Portal Initialized', 'Student authentication portal active.', 'info');
       } else if (lower.includes('teacher') || lower.includes('faculty')) {
         if (setActiveRoleTab) setActiveRoleTab('teacher');
-        if (showToast) showToast('Portal Initialized', 'Faculty portal active.', 'info');
+        if (setAuthModal) setAuthModal({ role: 'Faculty', title: 'Faculty / Teacher Login' });
+        else if (showToast) showToast('Portal Initialized', 'Faculty portal active.', 'info');
+      } else if (lower.includes('doctor')) {
+        if (setAuthModal) setAuthModal({ role: 'Doctor', title: 'Doctor Clinical Portal' });
+        else if (showToast) showToast('Portal Initialized', 'Doctor portal active.', 'info');
+      } else if (lower.includes('admin')) {
+        if (setAuthModal) setAuthModal({ role: 'Administrator', title: 'Admin Console Access' });
+        else if (showToast) showToast('Portal Initialized', 'Admin portal active.', 'info');
+      } else if (lower.includes('login') || lower.includes('sign in') || lower.includes('portal')) {
+        if (setAuthModal) setAuthModal({ role: 'User', title: 'Account Sign In' });
+        else if (showToast) showToast('Authentication Opened', 'Sign in to access your account.', 'info');
       } else if (lower.includes('cart') || lower.includes('checkout') || lower.includes('bag')) {
         if (setIsCartOpen) setIsCartOpen(true);
-      } else if (lower.includes('book') || lower.includes('appointment')) {
-        if (showToast) showToast('Appointment Requested', 'Service request submitted successfully.', 'success');
+      } else if (lower.includes('book') || lower.includes('appointment') || lower.includes('reserve') || lower.includes('schedule')) {
+        if (setBookingModal) setBookingModal({ title: label, service: 'General Consultation / Booking' });
+        else if (showToast) showToast('Booking Modal Opened', 'Complete your booking details.', 'success');
       } else if (lower.includes('apply')) {
         if (showToast) showToast('Application Opened', 'Admissions application form loaded.', 'success');
+      } else if (lower.includes('send') || lower.includes('submit') || lower.includes('contact')) {
+        if (showToast) showToast('Message Sent', 'Thank you! We have received your message and will respond shortly.', 'success');
       } else {
-        if (showToast) showToast('Action Triggered', `Clicked "${label}"`, 'info');
+        if (showToast) showToast('Action Triggered', `Triggered "${label}"`, 'info');
       }
     };
 
@@ -1306,6 +1320,154 @@ const SlideOutCartDrawer = ({ isOpen, onClose, cart, onUpdateQty }) => {
   );
 };
 
+const AuthModal = ({ authModal, onClose, onSuccess }) => {
+  if (!authModal) return null;
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSuccess && onSuccess(`Welcome back! Logged into ${authModal.role || 'User'} Portal.`);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md nm-animate-in" onClick={onClose}>
+      <div className="relative w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-2xl flex flex-col gap-4 text-[var(--text)]" onClick={(e) => e.stopPropagation()}>
+        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-[var(--muted-text)] hover:text-[var(--text)] p-1">
+          <i className="pi pi-times text-lg" />
+        </button>
+
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[var(--primary)] text-[var(--primary-text)] flex items-center justify-center font-bold">
+            <i className="pi pi-lock text-lg" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-[var(--heading-color)]">{authModal.title || 'Role Authentication'}</h3>
+            <span className="text-xs text-[var(--muted-text)] font-mono">{authModal.role || 'User'} Portal Access</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--muted-text)]">Email or ID</label>
+            <input
+              type="text"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="e.g. user@institution.edu"
+              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--muted-text)]">Password</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full mt-2 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-bold text-xs shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-1.5"
+          >
+            <i className="pi pi-sign-in text-xs" />
+            <span>Sign In to {authModal.role || 'Portal'}</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const BookingModal = ({ bookingModal, onClose, onSuccess }) => {
+  if (!bookingModal) return null;
+  const [name, setName] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('10:00 AM');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSuccess && onSuccess(`Confirmed! Booking scheduled for ${date || 'upcoming date'} at ${time}.`);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md nm-animate-in" onClick={onClose}>
+      <div className="relative w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-2xl flex flex-col gap-4 text-[var(--text)]" onClick={(e) => e.stopPropagation()}>
+        <button type="button" onClick={onClose} className="absolute top-4 right-4 text-[var(--muted-text)] hover:text-[var(--text)] p-1">
+          <i className="pi pi-times text-lg" />
+        </button>
+
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[var(--primary)] text-[var(--primary-text)] flex items-center justify-center font-bold">
+            <i className="pi pi-calendar text-lg" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-[var(--heading-color)]">{bookingModal.title || 'Schedule & Book'}</h3>
+            <span className="text-xs text-[var(--muted-text)]">{bookingModal.service || 'Instant Confirmation'}</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3 mt-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-[var(--muted-text)]">Your Name</label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Alex Smith"
+              className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-[var(--muted-text)]">Preferred Date</label>
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-[var(--muted-text)]">Time Slot</label>
+              <select
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-[var(--border)] text-xs text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+              >
+                <option>09:00 AM</option>
+                <option>10:30 AM</option>
+                <option>01:00 PM</option>
+                <option>03:30 PM</option>
+                <option>05:00 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full mt-2 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--primary-text)] font-bold text-xs shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-1.5"
+          >
+            <i className="pi pi-check text-xs" />
+            <span>Confirm & Reserve Slot</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // ─── Page Renderer (exported) ─────────────────────────────────────────────────
 
 /**
@@ -1321,6 +1483,8 @@ const UIRenderer = ({ pageData }) => {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeModal, setActiveModal] = useState(null);
+  const [authModal, setAuthModal] = useState(null);
+  const [bookingModal, setBookingModal] = useState(null);
   const [activeRoleTab, setActiveRoleTab] = useState('student');
   const [toast, setToast] = useState(null);
 
@@ -1374,6 +1538,10 @@ const UIRenderer = ({ pageData }) => {
     activeModal,
     openModal: setActiveModal,
     closeModal: () => setActiveModal(null),
+    authModal,
+    setAuthModal,
+    bookingModal,
+    setBookingModal,
     activeRoleTab,
     setActiveRoleTab,
     toast,
@@ -1508,6 +1676,8 @@ const UIRenderer = ({ pageData }) => {
       >
         <ToastOverlay toast={toast} />
         <QuickViewModal activeModal={activeModal} onClose={() => setActiveModal(null)} onAddToCart={addToCart} />
+        <AuthModal authModal={authModal} onClose={() => setAuthModal(null)} onSuccess={(msg) => showToast('Authenticated', msg, 'success')} />
+        <BookingModal bookingModal={bookingModal} onClose={() => setBookingModal(null)} onSuccess={(msg) => showToast('Reservation Confirmed', msg, 'success')} />
         <SlideOutCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} onUpdateQty={updateCartQty} />
 
         {sections.map((section) => (
