@@ -587,33 +587,13 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
  * @returns {Promise<object>} parsed UIPage JSON
  */
 const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
-  const reqSpec = extractPromptRequirements(prompt);
-  const reqSpecPrompt = formatRequirementSpecPrompt(reqSpec);
-
-  console.log(`\n================ GENERATION REQUEST ================`);
+  console.log(`\n================ GEMINI API GENERATION REQUEST ================`);
   console.log(`prompt: "${prompt}"`);
   console.log(`pageName: "${pageName || 'Home'}"`);
   console.log(`wireframe: none`);
-  console.log(`detected requirements:`, JSON.stringify({
-    domain: reqSpec.domain,
-    pageType: reqSpec.pageType,
-    theme: reqSpec.theme,
-    users: reqSpec.users,
-    loginTypes: reqSpec.loginTypes,
-    requiresImage: reqSpec.requiresImage,
-    imageDensity: reqSpec.imageDensity,
-    requiredSections: reqSpec.requiredSections,
-    requiredActions: reqSpec.requiredActions,
-  }, null, 2));
-  console.log(`====================================================\n`);
+  console.log(`===============================================================\n`);
 
-  const { analyzeAndPlanWebsite } = require('./websiteArchitectService');
-  const websitePlan = await analyzeAndPlanWebsite(prompt);
-
-  let userMessage = `Generate a complete UI page named "${pageName || 'Home'}".\n\nUser prompt:\n${prompt}${reqSpecPrompt}`;
-  if (websitePlan) {
-    userMessage += `\n\nWEBSITE ARCHITECT PLAN (COMPLY 100% WITH THIS SPECIFICATION):\n${JSON.stringify(websitePlan, null, 2)}`;
-  }
+  let userMessage = `Generate a complete UI page named "${pageName || 'Home'}".\n\nUser prompt:\n${prompt}`;
   if (existingCode) userMessage += `\n\nExisting code context (use as reference for styling/structure):\n${existingCode}`;
   if (architectureFlow) userMessage += `\n\nArchitecture / user flow:\n${architectureFlow}`;
 
@@ -636,7 +616,7 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
 };
 
 /**
- * Generate a UIPage from a wireframe image (with optional prompt).
+ * Generate a UIPage from a wireframe image (with optional prompt) directly via Gemini Vision API.
  *
  * @param {object} params
  * @param {string} params.imagePath - filename or absolute path to the wireframe
@@ -645,48 +625,20 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
  * @returns {Promise<object>} parsed UIPage JSON
  */
 const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
-  const { extractPromptRequirements, formatRequirementSpecPrompt } = require('./promptRequirementExtractor');
-  const reqSpec = extractPromptRequirements(prompt || 'wireframe layout');
-  console.log(`\n================ GENERATION REQUEST ================`);
+  console.log(`\n================ GEMINI VISION API GENERATION REQUEST ================`);
   console.log(`prompt: "${prompt || ''}"`);
   console.log(`pageName: "${pageName || 'Home'}"`);
   console.log(`wireframe: "${imagePath}"`);
-  console.log(`detected requirements:`, JSON.stringify({
-    domain: reqSpec.domain,
-    pageType: reqSpec.pageType,
-    theme: reqSpec.theme,
-    users: reqSpec.users,
-    loginTypes: reqSpec.loginTypes,
-    requiresImage: reqSpec.requiresImage,
-  }, null, 2));
-  console.log(`====================================================\n`);
+  console.log(`======================================================================\n`);
 
   const imagePart = imageFileToPart(imagePath);
-  const { analyzeAndPlanWebsite } = require('./websiteArchitectService');
-  const websitePlan = await analyzeAndPlanWebsite(prompt || 'wireframe architectural layout');
 
-  let userMessage = `CRITICAL INSTRUCTION: You are analyzing an uploaded wireframe image.
-The wireframe image is the PRIMARY STRUCTURAL BLUEPRINT for page layout, section sequence, and component hierarchy.
-
-BEFORE GENERATING THE FINAL UI JSON, DEEPLY ANALYZE THE WIREFRAME IMAGE:
-1. Identify major section boundaries (Navbar, Hero, Feature Grid, Sidebar, Card Collections, Forms, Search Bars, Footer).
-2. Identify column relationships (e.g. Left Text + Right Image hero, 3-column cards grid, Sidebar + Main Content).
-3. Identify card counts, repeated component patterns, and image placeholders (rectangular, wide banner, circular avatar).
-4. Identify placement of primary buttons, search inputs, filters, and forms.
-
-STRUCTURAL FIDELITY REQUIREMENTS (COMPLY 100%):
-- Preserve the exact section order and major column count shown in the wireframe image.
-- If wireframe has a Split Hero (Text Left + Image Right), output a split hero — do NOT replace with text-only or centered.
-- If wireframe has a Sidebar + Main Content, retain the sidebar layout structure.
-- If wireframe shows 3 food/product cards, generate 3 detailed domain cards.
-- Upgrade visual fidelity: apply professional domain color palettes, typography scale, responsive breakpoints, and domain photography for image placeholders.
+  let userMessage = `Analyze this wireframe/sketch image directly with your multimodal vision intelligence and generate a complete UI page named "${pageName || 'Home'}".
+Faithfully reproduce its layout, section hierarchy, component placement, columns, search areas, card collections, and form inputs.
+Apply modern design aesthetics, rich domain colors, responsive layouts, and photography matching the intent.
 
 User Prompt & Domain Context:
 "${prompt || 'wireframe layout'}"
-${formatRequirementSpecPrompt(reqSpec)}
-
-WEBSITE ARCHITECT PLAN:
-${JSON.stringify(websitePlan, null, 2)}
 
 OUTPUT ONLY THE VALID UIPAGE JSON OBJECT.`;
 

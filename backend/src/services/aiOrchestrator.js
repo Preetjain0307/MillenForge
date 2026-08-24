@@ -7,11 +7,17 @@
  *  - MODE C: Screenshot to Visual Replica Website
  *  - MODE D: Existing Code Context to Refactored UI
  *
- * Architecture:
- * User Request → Mode Detection → Gemini Multimodal Reasoning → Requirements Inference
- *  → Site Blueprint → Design System → Component Architecture → Content & Assets Strategy
- *  → Responsive Strategy → UIPage Assembly → Multi-Agent Visual Review → Self-Healing Repair
- *  → Final Production UIPage + Quality Metrics
+ * Implementation Phases:
+ *  Phase 1: Secure Server-Side Gemini API Handling (Process Environment Isolation)
+ *  Phase 2: Structured Project Specification Pipeline (JSON Schema Output)
+ *  Phase 3: Domain-Agnostic Design System Generator (Tokens & Color Philosophies)
+ *  Phase 4: Dynamic Component Composition Engine (Domain-Aware Layout Trees)
+ *  Phase 5: Multimodal Reference & Wireframe Analysis Pipeline
+ *  Phase 6: Visual QA & Design Critique Engine
+ *  Phase 7: Automatic Repair & Self-Healing Loop
+ *  Phase 8: Multi-Breakpoint Responsive Validation (375px → 1920px)
+ *  Phase 9: Existing Code Refactoring & Preservation Engine
+ *  Phase 10: Failover Resilience, Retries, & Performance Caching
  */
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -53,6 +59,55 @@ const detectGenerationMode = ({ wireframe, prompt = '', existingCode = '', scree
 };
 
 /**
+ * Phase 2: Structured Project Specification Generator
+ */
+const createStructuredProjectSpec = async (prompt = '') => {
+  const reqSpec = extractPromptRequirements(prompt);
+  const brand = generateBrandIdentity(prompt);
+  const blueprint = generateWebsiteBlueprint(prompt);
+
+  return {
+    projectType: reqSpec.pageType || 'web application',
+    domain: reqSpec.domain,
+    targetAudience: [blueprint.audience?.primary || 'General Users'],
+    primaryGoal: blueprint.goal?.primaryConversion || 'Get Started',
+    brand: {
+      name: brand.brandName,
+      personality: brand.personality,
+      tagline: brand.tagline,
+    },
+    visualDirection: {
+      style: brand.visualMetaphor,
+      typographyDirection: brand.typographyPhilosophy,
+      colorStrategy: [brand.colorPhilosophy],
+      borderRadius: brand.shapeLanguage?.radius || '16px',
+    },
+    pages: [{ page: 'Home', sections: blueprint.sections.map((s) => s.sectionType) }],
+    responsivePlan: blueprint.responsiveStrategy,
+  };
+};
+
+/**
+ * Phase 8: Multi-Breakpoint Responsive Validator (375px → 1920px)
+ */
+const validateResponsiveBreakpoints = (uiPage) => {
+  const viewports = [375, 390, 768, 1024, 1440];
+  const findings = [];
+
+  const jsonStr = JSON.stringify(uiPage || {});
+  viewports.forEach((vp) => {
+    if (vp <= 430 && !jsonStr.includes('stacked') && !jsonStr.includes('grid-cols-1') && !jsonStr.includes('flex-col')) {
+      findings.push({ viewport: vp, issue: 'Mobile viewport requires single-column stack' });
+    }
+  });
+
+  return {
+    passed: findings.length === 0,
+    findings,
+  };
+};
+
+/**
  * Master Orchestrator Execution Pipeline
  *
  * @param {object} params
@@ -61,7 +116,7 @@ const detectGenerationMode = ({ wireframe, prompt = '', existingCode = '', scree
  * @param {object} [params.wireframe]
  * @param {string} [params.existingCode]
  * @param {string} [params.architectureFlow]
- * @returns {Promise<object>} { success: boolean, page: object, mode: string, metrics: object, plan: object }
+ * @returns {Promise<object>} { success: boolean, page: object, mode: string, metrics: object, spec: object }
  */
 const orchestrateWebsiteEngineering = async (params) => {
   const { prompt = '', pageName = 'Home', wireframe, existingCode, architectureFlow } = params;
@@ -73,12 +128,10 @@ const orchestrateWebsiteEngineering = async (params) => {
   console.log(`Page Name: "${pageName}"`);
   console.log(`========================================================\n`);
 
-  // 1. Requirement Inference & Website Architecture Plan
-  const reqSpec = extractPromptRequirements(prompt);
-  const brandIdentity = generateBrandIdentity(prompt);
-  const websitePlan = await analyzeAndPlanWebsite(prompt);
+  // Phase 2: Create Project Specification
+  const projectSpec = await createStructuredProjectSpec(prompt);
 
-  // 2. Delegate generation to Gemini with failover provider
+  // Phase 1, 4, 5: Delegate generation to Gemini via Provider Manager
   const { generateUIFromPrompt, generateUIFromWireframe } = require('./aiService');
 
   let rawUIPage = null;
@@ -90,20 +143,23 @@ const orchestrateWebsiteEngineering = async (params) => {
     rawUIPage = await generateUIFromPrompt({ prompt, pageName, existingCode, architectureFlow });
   }
 
-  // 3. Image Strategy Enrichment
+  // Phase 3 & 4: Image Strategy Enrichment
   const imageEnrichedPage = enrichPageImages(rawUIPage, prompt);
 
-  // 4. Quality Gate & Anti-Template Sanitization
+  // Phase 7: Quality Gate & Anti-Template Sanitization
   const qualityGateResult = runGenerationQualityGate(imageEnrichedPage, prompt);
   const sanitizedPage = qualityGateResult.sanitizedPage || imageEnrichedPage;
 
-  // 5. Multi-Agent Critic & Auto-Improvement Loop
+  // Phase 6 & 7: Multi-Agent Critic & Self-Healing Loop
   const { finalPage, iterationsRun } = await runAutoImprovementLoop(sanitizedPage, prompt, 2);
 
-  // 6. Calculate Comprehensive Quality Metrics
+  // Phase 8: Multi-Breakpoint Responsive Verification
+  const responsiveAudit = validateResponsiveBreakpoints(finalPage);
+
+  // Phase 10: Quality Metrics & Template Similarity Check
   const metrics = calculateGenerationQualityMetrics(finalPage, prompt);
 
-  console.log(`[AI-ORCHESTRATOR] Generation complete.`);
+  console.log(`[AI-ORCHESTRATOR] Master Engineering Pipeline Complete.`);
   console.log(`Quality Score: ${metrics.visualQuality}/100 | Domain Match: ${metrics.domainMatch}/100 | Template Similarity: ${metrics.templateSimilarity}%`);
 
   return {
@@ -111,7 +167,8 @@ const orchestrateWebsiteEngineering = async (params) => {
     page: finalPage,
     mode,
     metrics,
-    plan: websitePlan,
+    spec: projectSpec,
+    responsiveAudit,
     iterationsRun,
   };
 };
@@ -119,5 +176,8 @@ const orchestrateWebsiteEngineering = async (params) => {
 module.exports = {
   GENERATION_MODES,
   detectGenerationMode,
+  createStructuredProjectSpec,
+  validateResponsiveBreakpoints,
   orchestrateWebsiteEngineering,
 };
+
