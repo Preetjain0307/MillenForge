@@ -1,5 +1,5 @@
-﻿/**
- * DrawModifyPanel ΓÇö Draw-to-Modify Visual & Targeted Modification Workflow Panel
+/**
+ * DrawModifyPanel — Draw-to-Modify Visual & Targeted Modification Workflow Panel
  * Owner: Preet Jain
  *
  * Communicates: "Edit with instructions instead of rebuilding."
@@ -145,7 +145,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
   return (
     <div className="flex flex-col gap-6 w-full nm-animate-in">
 
-      {/* ΓöÇΓöÇ 1. Hero Description & Purpose Banner ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* ── 1. Hero Description & Purpose Banner ─────────────────────────────── */}
       <div className="nm-card p-6 border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-card)] rounded-xl flex flex-col gap-3 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -161,7 +161,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-[var(--nm-text-primary)] flex items-center gap-2">
             <i className="pi pi-pencil text-[var(--nm-accent-light)]" />
-            <span>Draw-to-Modify ΓÇö Targeted Element Editor</span>
+            <span>Draw-to-Modify — Targeted Element Editor</span>
           </h2>
           <p className="text-xs sm:text-sm text-[var(--nm-text-secondary)] mt-1 leading-relaxed max-w-3xl">
             Update individual sections of your generated website using natural-language instructions. Modify only what you select without regenerating the complete UI.
@@ -187,7 +187,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
         </div>
       </div>
 
-      {/* ΓöÇΓöÇ 2. How It Works (4 Numbered Cards) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* ── 2. How It Works (4 Numbered Cards) ──────────────────────────────── */}
       <div className="flex flex-col gap-2.5">
         <h3 className="text-xs uppercase tracking-widest font-bold text-[var(--nm-text-muted)] flex items-center gap-1.5">
           <i className="pi pi-info-circle text-[var(--nm-accent-light)]" />
@@ -220,7 +220,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
         </div>
       </div>
 
-      {/* ΓöÇΓöÇ 3. Compact Before / After Visual Example ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* ── 3. Compact Before / After Visual Example ────────────────────────── */}
       <div className="nm-card p-4 rounded-xl border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-surface)] flex flex-col gap-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[var(--nm-accent-light)] flex items-center gap-1.5">
@@ -228,7 +228,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
             Visual Example (Illustration)
           </span>
           <span className="text-[10px] text-[var(--nm-text-muted)]">
-            Only the selected part changes ┬╖ All other components remain identical
+            Only the selected part changes · All other components remain identical
           </span>
         </div>
 
@@ -268,7 +268,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
         </div>
       </div>
 
-      {/* ΓöÇΓöÇ 4. Main Interactive Modification Workbench Form ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* ── 4. Main Interactive Modification Workbench Form ─────────────────── */}
       <div className="nm-card p-6 border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-card)] rounded-xl flex flex-col gap-5">
         <div>
           <h3 className="text-sm font-bold text-[var(--nm-text-primary)] flex items-center gap-2">
@@ -280,7 +280,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
           </p>
         </div>
 
-        {/* ΓöÇΓöÇ Clickable Example Chips ΓöÇΓöÇ */}
+        {/* ── Clickable Example Chips ── */}
         <div className="flex flex-col gap-2 p-3.5 rounded-lg bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)]">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[var(--nm-text-primary)] flex items-center gap-1.5">
@@ -305,7 +305,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
           </div>
         </div>
 
-        {/* ΓöÇΓöÇ Main Form ΓöÇΓöÇ */}
+        {/* ── Main Form ── */}
         <form onSubmit={handleSubmitMod} className="flex flex-col gap-5">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             
@@ -354,10 +354,10 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
                 onChange={(e) => setOperation(e.target.value)}
                 className="w-full px-3 py-2.5 text-xs rounded-lg bg-[var(--nm-bg-primary)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-primary)] focus:outline-none focus:border-[var(--nm-accent)] transition-all"
               >
-                <option value="update">UPDATE ΓÇö Edit existing content or properties</option>
-                <option value="insert">INSERT ΓÇö Add a new section or component</option>
-                <option value="delete">DELETE ΓÇö Remove the selected component</option>
-                <option value="move">MOVE ΓÇö Change the position of the selected component</option>
+                <option value="update">UPDATE — Edit existing content or properties</option>
+                <option value="insert">INSERT — Add a new section or component</option>
+                <option value="delete">DELETE — Remove the selected component</option>
+                <option value="move">MOVE — Change the position of the selected component</option>
               </select>
 
               <p className="text-[11px] text-[var(--nm-text-muted)]">
@@ -366,7 +366,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
             </div>
           </div>
 
-          {/* ΓöÇΓöÇ Operation Explanation Banner Beside/Under Selector ΓöÇΓöÇ */}
+          {/* ── Operation Explanation Banner Beside/Under Selector ── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
             {Object.entries(OPERATION_EXPLANATIONS).map(([key, op]) => {
               const isCurrent = operation === key;
@@ -448,7 +448,7 @@ const DrawModifyPanel = ({ uiPage, onApplyModification, selectedElementId }) => 
           {/* Action Row */}
           <div className="flex items-center justify-between flex-wrap gap-3 pt-2 border-t border-[var(--nm-border-subtle)]">
             <span className="text-[11px] text-[var(--nm-text-muted)]">
-              Selected: <strong className="text-[var(--nm-text-primary)] font-mono">{targetId || 'None'}</strong> ┬╖ Operation: <strong className="text-[var(--nm-accent-light)] font-mono">{operation.toUpperCase()}</strong>
+              Selected: <strong className="text-[var(--nm-text-primary)] font-mono">{targetId || 'None'}</strong> · Operation: <strong className="text-[var(--nm-accent-light)] font-mono">{operation.toUpperCase()}</strong>
             </span>
 
             <NmButton

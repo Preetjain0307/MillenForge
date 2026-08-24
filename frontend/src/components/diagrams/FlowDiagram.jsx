@@ -1,5 +1,5 @@
-﻿/**
- * FlowDiagram ΓÇö AI-Powered UI Photo & Design to Flowchart Diagram Workbench
+/**
+ * FlowDiagram — AI-Powered UI Photo & Design to Flowchart Diagram Workbench
  *
  * Supports:
  *  - Upload or Paste (Ctrl+V) any UI photo, screenshot, form mockup, or system design (Student Admission, Library, Hospital, Banking, Hotel, E-Commerce, etc.)
@@ -23,7 +23,7 @@ export const WORKFLOW_PRESET_BLUEPRINTS = [
     category: 'Education Portal',
     icon: 'pi pi-id-card',
     badge: 'Student Admission',
-    summary: 'Applicant Login Γ₧ö Enter Student Details Γ₧ö Upload Passport Photo & Docs Γ₧ö Course Selection Γ₧ö Eligibility Check Γ₧ö Fee Payment Γ₧ö Application Reference Issued',
+    summary: 'Applicant Login ➔ Enter Student Details ➔ Upload Passport Photo & Docs ➔ Course Selection ➔ Eligibility Check ➔ Fee Payment ➔ Application Reference Issued',
     flowchart: {
       title: 'Student Admission & Enrollment Application Flowchart',
       summary: 'End-to-end multi-step workflow detailing applicant registration, personal details entry, passport photo and document uploads, program selection, eligibility screening, fee transaction, and final application submission.',
@@ -113,7 +113,7 @@ export const WORKFLOW_PRESET_BLUEPRINTS = [
     category: 'Library & Education',
     icon: 'pi pi-book',
     badge: 'Library System',
-    summary: 'Member Login Γ₧ö Search Catalog Γ₧ö Check Shelf Availability Γ₧ö Scan Barcode / RFID Γ₧ö Due Date Stamp Γ₧ö Slip Issued',
+    summary: 'Member Login ➔ Search Catalog ➔ Check Shelf Availability ➔ Scan Barcode / RFID ➔ Due Date Stamp ➔ Slip Issued',
     flowchart: {
       title: 'Library Management & Book Circulation Flowchart',
       summary: 'Complete member journey covering catalog search, book reservation, barcode checkout verification, due date scheduling, and return fine reconciliation.',
@@ -151,7 +151,7 @@ export const WORKFLOW_PRESET_BLUEPRINTS = [
     category: 'Healthcare',
     icon: 'pi pi-heart',
     badge: 'Hospital / Clinic',
-    summary: 'Patient Registration (UHID) Γ₧ö Select Specialty Γ₧ö Upload Medical Reports Γ₧ö Doctor Consultation Γ₧ö Lab Orders Γ₧ö E-Prescription',
+    summary: 'Patient Registration (UHID) ➔ Select Specialty ➔ Upload Medical Reports ➔ Doctor Consultation ➔ Lab Orders ➔ E-Prescription',
     flowchart: {
       title: 'Hospital Patient Intake & Clinical Care Flowchart',
       summary: 'Clinical workflow guiding patient registration, doctor appointment booking, diagnostic report uploads, clinical consultation, lab orders, and pharmacy discharge.',
@@ -190,7 +190,7 @@ export const WORKFLOW_PRESET_BLUEPRINTS = [
     category: 'Finance & Banking',
     icon: 'pi pi-lock',
     badge: 'Banking / KYC',
-    summary: 'Customer Authentication Γ₧ö Loan Amount Γ₧ö Upload Salary Slips & Bank Statements Γ₧ö Credit Score Verification Γ₧ö E-Sign Γ₧ö Fund Disbursement',
+    summary: 'Customer Authentication ➔ Loan Amount ➔ Upload Salary Slips & Bank Statements ➔ Credit Score Verification ➔ E-Sign ➔ Fund Disbursement',
     flowchart: {
       title: 'Banking Loan Application & KYC Verification Flowchart',
       summary: 'Financial customer journey covering credit request, personal income inputs, salary slip uploads, automated bureau score check, and fund disbursement.',
@@ -227,7 +227,7 @@ export const WORKFLOW_PRESET_BLUEPRINTS = [
     category: 'Travel & Hospitality',
     icon: 'pi pi-compass',
     badge: 'Hotel / Travel',
-    summary: 'Search Destination Γ₧ö Select Room & Amenities Γ₧ö Upload Guest ID Γ₧ö Payment Transaction Γ₧ö Booking Voucher QR & Mobile Key',
+    summary: 'Search Destination ➔ Select Room & Amenities ➔ Upload Guest ID ➔ Payment Transaction ➔ Booking Voucher QR & Mobile Key',
     flowchart: {
       title: 'Hotel & Travel Reservation Workflow Flowchart',
       summary: 'Hospitality guest journey covering destination search, room selection, guest ID proof uploads, payment confirmation, and digital keycard generation.',
@@ -260,7 +260,7 @@ export const WORKFLOW_PRESET_BLUEPRINTS = [
     category: 'Retail & Commerce',
     icon: 'pi pi-shopping-bag',
     badge: 'E-Commerce',
-    summary: 'View Cart Γ₧ö Shipping Address Γ₧ö Courier Choice Γ₧ö Card/UPI Payment Γ₧ö Order Tracking',
+    summary: 'View Cart ➔ Shipping Address ➔ Courier Choice ➔ Card/UPI Payment ➔ Order Tracking',
     flowchart: {
       title: 'E-Commerce Multi-Step Checkout Flowchart',
       summary: 'Sequential checkout pipeline guiding user from cart inspection through delivery address, courier selection, payment authorization, and order confirmation.',
@@ -290,11 +290,11 @@ export const WORKFLOW_PRESET_BLUEPRINTS = [
 ];
 
 const FLOW_STAGES = [
-  { label: 'Uploading UI screenshot / photoΓÇª', icon: 'pi pi-upload' },
-  { label: 'Vision analyzing UI screens, forms & buttonsΓÇª', icon: 'pi pi-eye' },
-  { label: 'Extracting sequential application workflowΓÇª', icon: 'pi pi-bolt' },
-  { label: 'Mapping login, detail inputs, photo uploads & decision gatesΓÇª', icon: 'pi pi-sitemap' },
-  { label: 'Rendering visual SVG flowchartΓÇª', icon: 'pi pi-check-circle' },
+  { label: 'Uploading UI screenshot / photo…', icon: 'pi pi-upload' },
+  { label: 'Vision analyzing UI screens, forms & buttons…', icon: 'pi pi-eye' },
+  { label: 'Extracting sequential application workflow…', icon: 'pi pi-bolt' },
+  { label: 'Mapping login, detail inputs, photo uploads & decision gates…', icon: 'pi pi-sitemap' },
+  { label: 'Rendering visual SVG flowchart…', icon: 'pi pi-check-circle' },
 ];
 
 const NODE_TYPE_CONFIG = {
@@ -370,7 +370,7 @@ const FlowDiagram = ({ uiPage }) => {
   const [activeViewTab, setActiveViewTab] = useState('canvas'); // 'canvas' | 'timeline' | 'mermaid'
   const [copiedMermaid, setCopiedMermaid] = useState(false);
 
-  // ΓöÇΓöÇ Load Preset Blueprint ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  // ── Load Preset Blueprint ──────────────────────────────────────────────────
   const handleSelectBlueprint = (bp) => {
     setFlowchart(bp.flowchart);
     setSelectedNode(bp.flowchart.nodes[0]);
@@ -378,7 +378,7 @@ const FlowDiagram = ({ uiPage }) => {
     setActiveViewTab('canvas');
   };
 
-  // ΓöÇΓöÇ Handle File Select & Upload ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  // ── Handle File Select & Upload ────────────────────────────────────────────
   const handleFileSelect = useCallback(async (file) => {
     setUiFile(file);
     setUploadStatus('uploading');
@@ -401,7 +401,7 @@ const FlowDiagram = ({ uiPage }) => {
     setUploadError(null);
   }, []);
 
-  // ΓöÇΓöÇ Run AI UI-to-Flowchart Extraction ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+  // ── Run AI UI-to-Flowchart Extraction ──────────────────────────────────────
   const handleExtractFlow = async (e) => {
     e?.preventDefault();
     setExtractError(null);
@@ -453,7 +453,7 @@ const FlowDiagram = ({ uiPage }) => {
   return (
     <div className="flex flex-col gap-6 w-full nm-animate-in">
 
-      {/* ΓöÇΓöÇ 1. Preset Workflow Blueprints (Multi-Industry Showcase) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* ── 1. Preset Workflow Blueprints (Multi-Industry Showcase) ─────────── */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs uppercase tracking-widest font-bold text-[var(--nm-text-muted)] flex items-center gap-1.5">
@@ -494,13 +494,13 @@ const FlowDiagram = ({ uiPage }) => {
         </div>
       </div>
 
-      {/* ΓöÇΓöÇ 2. Input Box (Upload / Paste UI Photos & Screenshots) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* ── 2. Input Box (Upload / Paste UI Photos & Screenshots) ─────────────── */}
       <div className="nm-card p-5 border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-card)] rounded-xl flex flex-col gap-4">
         <div className="flex items-center justify-between flex-wrap gap-3 border-b border-[var(--nm-border-subtle)] pb-3">
           <div>
             <h3 className="text-base font-bold text-[var(--nm-text-primary)] flex items-center gap-2">
               <i className="pi pi-share-alt text-[var(--nm-accent-light)]" />
-              <span>UI Photos, Screenshots &amp; Files Γ₧ö Flowchart Generator</span>
+              <span>UI Photos, Screenshots &amp; Files ➔ Flowchart Generator</span>
             </h3>
             <p className="text-xs text-[var(--nm-text-muted)] mt-0.5">
               Paste or upload photos/screenshots of forms (e.g. Student Admission, Library, Hospital, KYC, Banking, etc.) to extract the step-by-step flowchart.
@@ -599,12 +599,12 @@ const FlowDiagram = ({ uiPage }) => {
                 {isExtracting ? (
                   <>
                     <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    <span>Extracting FlowchartΓÇª</span>
+                    <span>Extracting Flowchart…</span>
                   </>
                 ) : (
                   <>
                     <i className="pi pi-sparkles" />
-                    <span>ΓÜí Analyze UI &amp; Generate Flowchart</span>
+                    <span>⚡ Analyze UI &amp; Generate Flowchart</span>
                   </>
                 )}
               </button>
@@ -624,7 +624,7 @@ const FlowDiagram = ({ uiPage }) => {
                   Active Page: {uiPage?.page || 'Home'}
                 </h4>
                 <p className="text-[11px] text-[var(--nm-text-muted)]">
-                  {uiPage?.sections?.length || 4} sections ┬╖ In-memory project state
+                  {uiPage?.sections?.length || 4} sections · In-memory project state
                 </p>
               </div>
             </div>
@@ -642,7 +642,7 @@ const FlowDiagram = ({ uiPage }) => {
         )}
       </div>
 
-      {/* ΓöÇΓöÇ 3. Flowchart Presentation Canvas ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+      {/* ── 3. Flowchart Presentation Canvas ─────────────────────────────────── */}
       {flowchart && (
         <div className="nm-card p-5 border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-card)] rounded-xl flex flex-col gap-5">
           
@@ -654,7 +654,7 @@ const FlowDiagram = ({ uiPage }) => {
                   FLOWCHART GENERATED
                 </span>
                 <span className="text-xs text-[var(--nm-text-muted)]">
-                  {flowchart.nodes?.length || 0} Stages ┬╖ {flowchart.edges?.length || 0} Directed Action Steps
+                  {flowchart.nodes?.length || 0} Stages · {flowchart.edges?.length || 0} Directed Action Steps
                 </span>
               </div>
               <h3 className="text-lg font-bold text-[var(--nm-text-primary)]">
@@ -706,7 +706,7 @@ const FlowDiagram = ({ uiPage }) => {
             </div>
           </div>
 
-          {/* ΓöÇΓöÇ View 1: Flowchart Visual Graph Canvas ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+          {/* ── View 1: Flowchart Visual Graph Canvas ───────────────────────── */}
           {activeViewTab === 'canvas' && (
             <div className="flex flex-col gap-6">
               
@@ -771,7 +771,7 @@ const FlowDiagram = ({ uiPage }) => {
                               >
                                 <i className="pi pi-arrow-right text-[8px] flex-shrink-0" />
                                 <span className="font-semibold">{edge.label}</span>
-                                <span className="text-[var(--nm-text-muted)]">Γ₧ö {targetNode?.label || edge.target}</span>
+                                <span className="text-[var(--nm-text-muted)]">➔ {targetNode?.label || edge.target}</span>
                               </div>
                             );
                           })}
@@ -833,7 +833,7 @@ const FlowDiagram = ({ uiPage }) => {
             </div>
           )}
 
-          {/* ΓöÇΓöÇ View 2: Step-by-Step User Journey Timeline ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+          {/* ── View 2: Step-by-Step User Journey Timeline ───────────────────── */}
           {activeViewTab === 'timeline' && (
             <div className="flex flex-col gap-4">
               <div className="relative pl-6 border-l-2 border-[var(--nm-accent)] space-y-6 my-2">
@@ -882,7 +882,7 @@ const FlowDiagram = ({ uiPage }) => {
             </div>
           )}
 
-          {/* ΓöÇΓöÇ View 3: Mermaid Flowchart Code ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+          {/* ── View 3: Mermaid Flowchart Code ──────────────────────────────── */}
           {activeViewTab === 'mermaid' && (
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
@@ -905,7 +905,7 @@ const FlowDiagram = ({ uiPage }) => {
             </div>
           )}
 
-          {/* ΓöÇΓöÇ AI Insights Box ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ */}
+          {/* ── AI Insights Box ─────────────────────────────────────────────── */}
           {flowchart.insights?.length > 0 && (
             <div className="p-4 rounded-xl bg-[rgba(34,197,94,0.06)] border border-[rgba(34,197,94,0.25)] flex flex-col gap-2">
               <span className="text-xs font-bold text-[var(--nm-success)] flex items-center gap-1.5">
