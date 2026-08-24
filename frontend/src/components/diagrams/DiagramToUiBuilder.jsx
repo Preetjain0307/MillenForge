@@ -406,15 +406,35 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
                       Code Specification
                     </span>
                   </label>
-                  {diagramCode && (
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setDiagramCode('')}
-                      className="text-[10px] text-[var(--nm-text-muted)] hover:text-[var(--nm-error)] bg-transparent border-0 cursor-pointer"
+                      onClick={async () => {
+                        try {
+                          if (navigator.clipboard && navigator.clipboard.readText) {
+                            const text = await navigator.clipboard.readText();
+                            if (text) setDiagramCode(text);
+                          }
+                        } catch (err) {
+                          console.warn('Clipboard read error:', err);
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded bg-[var(--nm-accent)] text-white text-[11px] font-semibold hover:brightness-110 transition-all flex items-center gap-1 cursor-pointer border-0 shadow-sm"
+                      title="Paste Mermaid or text from clipboard"
                     >
-                      Clear Code
+                      <i className="pi pi-clipboard text-[10px]" />
+                      <span>Paste Code</span>
                     </button>
-                  )}
+                    {diagramCode && (
+                      <button
+                        type="button"
+                        onClick={() => setDiagramCode('')}
+                        className="text-[10px] text-[var(--nm-text-muted)] hover:text-[var(--nm-error)] bg-transparent border-0 cursor-pointer"
+                      >
+                        Clear Code
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <textarea

@@ -62,7 +62,7 @@ const NmUploadArea = ({
   }, [onFileSelect]);
 
   // ── Clipboard Paste Handler ────────────────────────────────────────────────
-  const extractImageFromClipboard = useCallback((clipboardData) => {
+  const extractImageFromClipboard = useCallback(async (clipboardData) => {
     if (!clipboardData) return null;
 
     if (clipboardData.items) {
@@ -82,11 +82,62 @@ const NmUploadArea = ({
       }
     }
 
+    // Try parsing base64 data URI if text was pasted
+    try {
+      const text = clipboardData.getData ? clipboardData.getData('text/plain') : '';
+      if (text && text.trim().startsWith('data:image/')) {
+        const res = await fetch(text.trim());
+        const blob = await res.blob();
+        const ext = blob.type.split('/')[1] || 'png';
+        return new File([blob], `pasted-diagram-${Date.now()}.${ext}`, { type: blob.type });
+      }
+    } catch (_) {
+      /* ignore text parse errors */
+    }
+
     return null;
   }, []);
 
+  const handlePasteFromClipboardApi = useCallback(async () => {
+    setTypeError(null);
+    try {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        const clipboardItems = await navigator.clipboard.read();
+        for (const item of clipboardItems) {
+          const imageType = item.types.find((t) => t.startsWith('image/'));
+          if (imageType) {
+            const blob = await item.getType(imageType);
+            const ext = imageType.split('/')[1] || 'png';
+            const file = new File([blob], `pasted-diagram-${Date.now()}.${ext}`, { type: imageType });
+            validateAndSelect(file);
+            return true;
+          }
+        }
+      }
+
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim().startsWith('data:image/')) {
+          const res = await fetch(text.trim());
+          const blob = await res.blob();
+          const ext = blob.type.split('/')[1] || 'png';
+          const file = new File([blob], `pasted-diagram-${Date.now()}.${ext}`, { type: blob.type });
+          validateAndSelect(file);
+          return true;
+        }
+      }
+
+      setTypeError('No image found in clipboard. Please copy an image or screenshot first (Ctrl+C), then click Paste.');
+      return false;
+    } catch (err) {
+      console.warn('[NmUploadArea] Clipboard read exception:', err);
+      setTypeError('To paste, please click the dropzone and press Ctrl+V on your keyboard.');
+      return false;
+    }
+  }, [validateAndSelect]);
+
   useEffect(() => {
-    const handlePaste = (e) => {
+    const handlePaste = async (e) => {
       const activeEl = document.activeElement;
       const isTypingInField =
         activeEl &&
@@ -95,7 +146,7 @@ const NmUploadArea = ({
          activeEl.isContentEditable);
 
       if (isTypingInField && activeEl.type !== 'file') {
-        const fileFromPaste = extractImageFromClipboard(e.clipboardData);
+        const fileFromPaste = await extractImageFromClipboard(e.clipboardData);
         if (fileFromPaste) {
           e.preventDefault();
           validateAndSelect(fileFromPaste);
@@ -103,7 +154,7 @@ const NmUploadArea = ({
         return;
       }
 
-      const fileFromPaste = extractImageFromClipboard(e.clipboardData);
+      const fileFromPaste = await extractImageFromClipboard(e.clipboardData);
       if (fileFromPaste) {
         e.preventDefault();
         validateAndSelect(fileFromPaste);
@@ -246,18 +297,31 @@ const NmUploadArea = ({
           </div>
         ) : (
           /* Idle / Empty state */
-          <div className="flex flex-col items-center gap-2 py-4 text-center">
-            <div className="w-12 h-12 rounded-full bg-[var(--nm-accent-glow)] flex items-center justify-center mb-1">
+          <div className="flex flex-col items-center gap-2.5 py-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-[var(--nm-accent-glow)] flex items-center justify-center mb-0.5">
               <i className="pi pi-cloud-upload text-[var(--nm-accent-light)] text-xl" />
             </div>
             <div>
               <p className="text-xs font-semibold text-[var(--nm-text-primary)] mb-0.5">
-                Drop your wireframe image here, or{' '}
+                Drop your diagram or wireframe image here, or{' '}
                 <span className="text-[var(--nm-accent-light)] underline">browse</span>
               </p>
               <p className="text-[11px] text-[var(--nm-text-muted)]">
                 {ACCEPTED_LABEL} · or press <kbd className="px-1 py-0.5 rounded bg-[var(--nm-bg-card)] border border-[var(--nm-border-subtle)] text-[10px] font-mono">Ctrl+V</kbd> to paste
               </p>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePasteFromClipboardApi();
+                }}
+                className="px-3 py-1.5 rounded-md bg-[var(--nm-accent)] text-white text-xs font-semibold hover:brightness-110 transition-all flex items-center gap-1.5 shadow-md cursor-pointer border-0"
+              >
+                <i className="pi pi-clipboard text-xs" />
+                <span>Paste from Clipboard</span>
+              </button>
             </div>
           </div>
         )}
