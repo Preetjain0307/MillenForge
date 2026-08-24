@@ -510,6 +510,72 @@ runTest('45. USER SPECIFIC PROMPT 2: create a college website background color i
 });
 
 // ── Summary ──────────────────────────────────────────────────────────────────
+runTest('46. Compound color parsing: background in cream and button in navy', () => {
+  const req = extractPromptRequirements('create a portfolio website background in cream and button in navy');
+  assert.strictEqual(req.colorSpec.background, 'cream');
+  assert.strictEqual(req.colorSpec.buttonBackground, 'navy');
+});
+
+runTest('47. Direct hex code parsing: background #0f172a and button #10b981', () => {
+  const req = extractPromptRequirements('make an analytics page with background #0f172a and button #10b981');
+  assert.strictEqual(req.colorSpec.background, '#0f172a');
+  assert.strictEqual(req.colorSpec.buttonBackground, '#10b981');
+});
+
+runTest('49. Negative constraint: text only website without images', () => {
+  const req = extractPromptRequirements('create a minimalist technical documentation website text only without images');
+  assert.strictEqual(req.requiresImage, false);
+});
+
+runTest('50. European currency and price extraction (€49 per ticket)', () => {
+  const req = extractPromptRequirements('create an event booking page priced at €49 with 18% GST');
+  assert.strictEqual(req.financials.currency, '€');
+  assert.strictEqual(req.financials.basePrice, 49);
+  assert.strictEqual(req.financials.gstPercentage, 18);
+});
+
+runTest('51. Salon & Spa domain detection with booking actions', () => {
+  const req = extractPromptRequirements('build a luxury beauty spa and haircut salon booking page with massage packages');
+  assert.strictEqual(req.domain, 'salon');
+  assert(req.requiredActions.includes('Book Appointment'));
+});
+
+runTest('52. Multi-role authentication extraction (Admin Portal and Partner Login)', () => {
+  const req = extractPromptRequirements('b2b marketplace platform with admin portal and vendor partner login');
+  assert(req.loginTypes.includes('Admin Portal'));
+  assert(req.loginTypes.includes('Partner Login'));
+});
+
+runTest('53. Explicit brand name and headline instruction grasping', () => {
+  const req = extractPromptRequirements('create a website for "Apex Fitness" with title "Sculpt Your Dream Body in 90 Days"');
+  assert.strictEqual(req.explicitBrand, 'Apex Fitness');
+  assert.strictEqual(req.explicitHeadline, 'Sculpt Your Dream Body in 90 Days');
+});
+
+runTest('54. Explicit FAQ accordion and contact inquiry form sections', () => {
+  const req = extractPromptRequirements('make a saas landing page with pricing, faq accordion, and contact form');
+  assert(req.requiredSections.includes('faq'));
+  assert(req.requiredSections.includes('contact'));
+  assert(req.requiredSections.includes('pricing'));
+  assert(req.interactiveFeatures.includes('accordion'));
+  assert(req.interactiveFeatures.includes('contactForm'));
+});
+
+runTest('55. Quality Gate enforces explicit brand and headline on generated page', () => {
+  const { runGenerationQualityGate } = require('./src/services/generationQualityGate');
+  const dummyPage = {
+    page: 'Home',
+    sections: [
+      { id: 'sec-nav', type: 'navbar', elements: [{ id: 'logo', type: 'text', content: 'Generic Logo', props: { tag: 'h2' } }] },
+      { id: 'sec-hero', type: 'hero', elements: [{ id: 'hero-title', type: 'text', content: 'Welcome', props: { tag: 'h1' } }] },
+    ],
+  };
+  const result = runGenerationQualityGate(dummyPage, 'build website for "Nova Health" with headline "World-Class Personalized Medicine"');
+  assert.strictEqual(result.page.page, 'Nova Health');
+  assert.strictEqual(result.page.sections[0].elements[0].content, 'Nova Health');
+  assert.strictEqual(result.page.sections[1].elements[0].content, 'World-Class Personalized Medicine');
+});
+
 console.log('\n========================================');
 console.log(`PROMPT ACCURACY TEST SUMMARY: ${passedTests} passed, ${failedTests} failed`);
 console.log('========================================\n');

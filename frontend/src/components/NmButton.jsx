@@ -26,6 +26,8 @@ const NmButton = ({
   onClick,
   className = '',
   children,
+  buttonColor,
+  color,
   ...rest
 }) => {
   // Map variants to PrimeReact severity / custom styles
@@ -38,7 +40,7 @@ const NmButton = ({
 
   // Determine dynamic custom button color overrides (red, gold, blue, green, etc.)
   let customColorClass = '';
-  const btnColor = (rest.buttonColor || rest.color || '').toString().toLowerCase();
+  const btnColor = (buttonColor || color || '').toString().toLowerCase();
 
   if (btnColor === 'red') {
     customColorClass = '!bg-red-600 hover:!bg-red-700 !text-white !border-red-600 shadow-red-500/30';

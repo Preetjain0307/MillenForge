@@ -92,4 +92,16 @@ export const listPages = () => client.get('/pages');
  */
 export const getPage = (pageName) => client.get(`/pages/${encodeURIComponent(pageName)}`);
 
+// ─── Platform & Diagrams ──────────────────────────────────────────────────────
+
+/**
+ * Extract a user navigation & interaction flowchart from UI photo, screenshot, or page schema.
+ * @param {object} payload
+ * @param {string} [payload.imagePath]
+ * @param {object} [payload.uiPage]
+ * @param {string} [payload.prompt]
+ * @returns {Promise<{success: boolean, flowchart: object}>}
+ */
+export const generateUiToFlow = (payload) => client.post('/platform/ui-to-flow', payload);
+
 export default client;

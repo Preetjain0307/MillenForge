@@ -1,17 +1,22 @@
-﻿/**
+/**
  * DiagramsPage — Visual Design Intelligence & Diagram Tools Workbench
  *
  * Combines:
- * 1. Pattern Diagram → UIPage Compilation (PatternToUiPanel)
- * 2. UIPage → Component & Navigation Flow Visualization (FlowDiagram)
- * 3. Draw-to-Modify Targeted Element Editing (DrawModifyPanel)
+ * 1. Any Software Diagram → Live UI Builder (DiagramToUiBuilder)
+ * 2. Pattern Diagram → UIPage Compilation (PatternToUiPanel)
+ * 3. UIPage → Component & Navigation Flow Visualization (FlowDiagram)
+ * 4. Draw-to-Modify Targeted Element Editing (DrawModifyPanel)
  */
 
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setPage, setActivePage } from '../features/pages/pagesSlice';
-import { PatternToUiPanel, FlowDiagram, DrawModifyPanel } from '../components/diagrams/index.js';
+import {
+  DiagramToUiBuilder,
+  FlowDiagram,
+  DrawModifyPanel,
+} from '../components/diagrams/index.js';
 import { EXAMPLE_CMS_BOUND_PAGE } from '../types/cmsExamples.js';
 import NmButton from '../components/NmButton';
 
@@ -22,14 +27,11 @@ const DiagramsPage = () => {
   const activePageName = useSelector((state) => state.pages.activePage) || 'Home';
   const currentPageData = useSelector((state) => state.pages.pages[activePageName]) || EXAMPLE_CMS_BOUND_PAGE;
 
-  const [activeTab, setActiveTab] = useState('pattern'); // 'pattern' | 'flow' | 'modify'
+  const [activeTab, setActiveTab] = useState('builder'); // 'builder' | 'flow' | 'modify'
   const [latestCompiledPage, setLatestCompiledPage] = useState(currentPageData);
 
-  const handleCompileUipage = (compiledPage) => {
-    setLatestCompiledPage(compiledPage);
-    const pageName = compiledPage.page || 'Pattern Page';
-    dispatch(setPage({ pageName, data: compiledPage }));
-    dispatch(setActivePage(pageName));
+  const handleUiGenerated = (newPage) => {
+    setLatestCompiledPage(newPage);
   };
 
   const handleApplyModification = (updatedPage) => {
@@ -53,8 +55,11 @@ const DiagramsPage = () => {
           </p>
           <h1 className="text-2xl sm:text-3xl font-bold text-[var(--nm-text-primary)] flex items-center gap-2">
             <i className="pi pi-sitemap text-[var(--nm-accent-light)]" />
-            <span>Pattern & Flow Diagram Workbench</span>
+            <span>Software Diagram &amp; Flow Workbench</span>
           </h1>
+          <p className="text-xs sm:text-sm text-[var(--nm-text-secondary)] mt-1.5 max-w-3xl leading-relaxed">
+            Update individual sections of your generated website using natural-language instructions. Modify only what you select without regenerating the complete UI.
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -66,7 +71,7 @@ const DiagramsPage = () => {
           />
           <NmButton
             variant="primary"
-            label="AI Generator"
+            label="AI Wireframe Generator"
             icon="pi pi-sparkles"
             onClick={() => navigate('/generate')}
           />
@@ -77,37 +82,37 @@ const DiagramsPage = () => {
       <div className="flex items-center gap-2 border-b border-[var(--nm-border-subtle)] pb-2 overflow-x-auto">
         <button
           type="button"
-          onClick={() => setActiveTab('pattern')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 ${
-            activeTab === 'pattern'
+          onClick={() => setActiveTab('builder')}
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer border-0 ${
+            activeTab === 'builder'
               ? 'bg-[var(--nm-accent)] text-white shadow-sm'
-              : 'text-[var(--nm-text-secondary)] hover:text-white hover:bg-[var(--nm-bg-surface)]'
+              : 'bg-transparent text-[var(--nm-text-secondary)] hover:text-white hover:bg-[var(--nm-bg-surface)]'
           }`}
         >
-          <i className="pi pi-th-large text-xs" />
-          <span>1. Pattern Diagram → UI</span>
+          <i className="pi pi-bolt text-xs" />
+          <span>1. Software Diagram → Live UI (Upload &amp; Build)</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('flow')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 ${
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer border-0 ${
             activeTab === 'flow'
               ? 'bg-[var(--nm-accent)] text-white shadow-sm'
-              : 'text-[var(--nm-text-secondary)] hover:text-white hover:bg-[var(--nm-bg-surface)]'
+              : 'bg-transparent text-[var(--nm-text-secondary)] hover:text-white hover:bg-[var(--nm-bg-surface)]'
           }`}
         >
           <i className="pi pi-share-alt text-xs" />
-          <span>2. UI → Basic Flow Diagram</span>
+          <span>2. UI → Flow Diagram</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('modify')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 ${
+          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-2 cursor-pointer border-0 ${
             activeTab === 'modify'
               ? 'bg-[var(--nm-accent)] text-white shadow-sm'
-              : 'text-[var(--nm-text-secondary)] hover:text-white hover:bg-[var(--nm-bg-surface)]'
+              : 'bg-transparent text-[var(--nm-text-secondary)] hover:text-white hover:bg-[var(--nm-bg-surface)]'
           }`}
         >
           <i className="pi pi-pencil text-xs" />
@@ -116,8 +121,8 @@ const DiagramsPage = () => {
       </div>
 
       {/* Active Tab Panel */}
-      {activeTab === 'pattern' && (
-        <PatternToUiPanel onCompileUipage={handleCompileUipage} />
+      {activeTab === 'builder' && (
+        <DiagramToUiBuilder onUiGenerated={handleUiGenerated} />
       )}
 
       {activeTab === 'flow' && (
