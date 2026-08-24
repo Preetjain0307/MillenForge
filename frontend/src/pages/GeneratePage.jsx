@@ -1,7 +1,7 @@
 /**
  * GeneratePage — /generate
  *
- * NeuroMinds 3-Panel AI UI Engineering Studio
+ * Neuramind 3-Panel AI UI Engineering Studio
  */
 
 import { useState, useCallback, useEffect } from 'react';
