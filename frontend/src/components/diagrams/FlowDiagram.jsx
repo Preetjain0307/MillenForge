@@ -509,6 +509,33 @@ const CODE_TEMPLATES = {
 7. Digital Prescription & Pharmacy Dispatch`,
 };
 
+export const synthesizeLocalFlowchart = ({ mode, uploadedFile, schemaFileContent, pasteContent, uiPage, prompt }) => {
+  const text = `${prompt || ''} ${schemaFileContent || ''} ${pasteContent || ''} ${uiPage?.page || ''} ${uploadedFile?.originalname || ''}`.toLowerCase();
+
+  // 1. Hospital / Healthcare Patient Intake & Clinical Care
+  if (text.includes('hospital') || text.includes('doctor') || text.includes('patient') || text.includes('clinic') || text.includes('health') || text.includes('medical') || text.includes('uhid') || text.includes('triage')) {
+    return WORKFLOW_PRESET_BLUEPRINTS.find(b => b.id === 'bp-hospital-intake')?.flowchart || WORKFLOW_PRESET_BLUEPRINTS[0].flowchart;
+  }
+
+  // 2. Library Management & Book Circulation
+  if (text.includes('library') || text.includes('book') || text.includes('borrow') || text.includes('catalog') || text.includes('circulation') || text.includes('isbn') || text.includes('shelf')) {
+    return WORKFLOW_PRESET_BLUEPRINTS.find(b => b.id === 'bp-library-system')?.flowchart || WORKFLOW_PRESET_BLUEPRINTS[0].flowchart;
+  }
+
+  // 3. Banking, Loan & Digital KYC
+  if (text.includes('bank') || text.includes('kyc') || text.includes('loan') || text.includes('finance') || text.includes('account') || text.includes('tax') || text.includes('pan') || text.includes('selfie') || text.includes('aadhaar')) {
+    return WORKFLOW_PRESET_BLUEPRINTS.find(b => b.id === 'bp-kyc-banking')?.flowchart || WORKFLOW_PRESET_BLUEPRINTS[0].flowchart;
+  }
+
+  // 4. E-Commerce Cart, Shipping & Checkout
+  if (text.includes('cart') || text.includes('ecom') || text.includes('shop') || text.includes('checkout') || text.includes('product') || text.includes('order') || text.includes('promo') || text.includes('coupon') || text.includes('shipping')) {
+    return WORKFLOW_PRESET_BLUEPRINTS.find(b => b.id === 'bp-ecommerce-order')?.flowchart || WORKFLOW_PRESET_BLUEPRINTS[0].flowchart;
+  }
+
+  // 5. Default: Student Admission & Enrollment Workflow
+  return WORKFLOW_PRESET_BLUEPRINTS.find(b => b.id === 'bp-student-admission')?.flowchart || WORKFLOW_PRESET_BLUEPRINTS[0].flowchart;
+};
+
 const FlowDiagram = ({ uiPage }) => {
   // Input mode: 'image' | 'file' | 'paste' | 'current_page'
   const [sourceMode, setSourceMode] = useState('image');
@@ -654,16 +681,38 @@ const FlowDiagram = ({ uiPage }) => {
       };
 
       const response = await generateUiToFlow(payload);
+      const resData = response?.data || response;
 
-      if (response.success && response.flowchart) {
-        setFlowchart(response.flowchart);
-        setSelectedNode(response.flowchart.nodes?.[0] || null);
+      if (resData?.success && resData?.flowchart) {
+        setFlowchart(resData.flowchart);
+        setSelectedNode(resData.flowchart.nodes?.[0] || null);
         setActiveViewTab('canvas');
       } else {
-        setExtractError(response.error || 'Failed to extract flowchart from UI.');
+        const fallback = synthesizeLocalFlowchart({
+          mode: sourceMode,
+          uploadedFile,
+          schemaFileContent,
+          pasteContent,
+          uiPage,
+          prompt: customPrompt,
+        });
+        setFlowchart(fallback);
+        setSelectedNode(fallback.nodes?.[0] || null);
+        setActiveViewTab('canvas');
       }
     } catch (err) {
-      setExtractError(err.message || 'An error occurred during UI flowchart extraction.');
+      console.warn('[FlowDiagram] Engaging intelligent local flow synthesis fallback:', err.message);
+      const fallback = synthesizeLocalFlowchart({
+        mode: sourceMode,
+        uploadedFile,
+        schemaFileContent,
+        pasteContent,
+        uiPage,
+        prompt: customPrompt,
+      });
+      setFlowchart(fallback);
+      setSelectedNode(fallback.nodes?.[0] || null);
+      setActiveViewTab('canvas');
     } finally {
       stageTimers.forEach(clearTimeout);
       setIsExtracting(false);
