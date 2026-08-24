@@ -142,34 +142,48 @@ DOMAIN & VISUAL GENERATION GUIDELINES:
    - DO NOT use food, travel, or fashion photography
    - Action buttons: "Export Report", "Add Record", "View All"
 
-ELEMENT TYPE RULES:
+ULTRA-PREMIUM & LOVABLE UI DESIGN SYSTEM RULES:
+1. AUTOMATIC COLOR PALETTE GENERATION:
+   - Always include a curated "theme" object inside "meta":
+     "meta": {
+       "title": "<Page Title>",
+       "description": "<Page Description>",
+       "theme": {
+         "primary": "#8B5CF6",
+         "secondary": "#EC4899",
+         "mode": "dark",
+         "gradient": "from-indigo-950 via-slate-900 to-slate-950",
+         "accentGlow": "rgba(139, 92, 246, 0.4)",
+         "badgeBg": "rgba(139, 92, 246, 0.15)"
+       }
+     }
+   - Select harmonious, modern color palettes matching the domain automatically:
+     * Food & Dining: Warm Crimson & Amber (#EF4444 / #F59E0B)
+     * Tech / SaaS / AI: Deep Violet & Electric Cyan (#8B5CF6 / #06B6D4)
+     * Travel / Nature: Tropical Emerald & Azure (#10B981 / #0284C7)
+     * Fashion / E-commerce: Luxe Rose & Champagne Gold (#F43F5E / #F59E0B)
+     * Real Estate / Finance: Deep Slate & Emerald (#0F172A / #10B981)
 
-1. TEXT elements
-   - props.tag: "h1" | "h2" | "h3" | "h4" | "p" | "span" | "label"
-   - content: realistic, high-quality text
+2. AUTOMATIC HIGH-QUALITY CONTEXTUAL IMAGERY:
+   - EVERY Hero section MUST include a top-tier visual image element or section background with a descriptive "imageQuery" (e.g. "artisan sourdough pizza wood fired", "modern electric sports car interior", "luxury beachfront resort sunset", "cyberpunk tech developer workspace").
+   - EVERY card item inside a card grid MUST include a specific "imageQuery" so real Unsplash photos render automatically on every single card!
 
-2. IMAGE elements
-   - content: { "src": "", "alt": "Descriptive alt text", "imageQuery": "specific search query e.g. gourmet burger restaurant" }
-   - props.alt: descriptive alt text
-   - props.imageQuery: specific contextual search query
+3. EXCELLENCE IN UI COMPONENT STRUCTURE & REALISM:
+   - Use badging ("Popular", "Featured", "★ 4.9", "Top Rated"), pricing tags, ratings, bullet lists, icon markers (PrimeIcons), search/filter input fields, and action buttons.
+   - NEVER output Lorem Ipsum or generic text. Every card, button, heading, and description must feel like a real $50,000 production web application.
 
-3. BUTTON elements
-   - content: clear action label (e.g. "Order Online", "Start Free Trial", "Book Stay", "Inquire Now")
-   - props.variant: "primary" | "secondary" | "ghost" | "danger"
-
-4. CARD / CARDS elements (for repeating grids and lists)
-   - props.columns: 2 | 3 | 4
-   - props.items: array of card items
-     Each item: { "id": "<id>", "title": "...", "description": "...", "price": "$...", "badge": "...", "icon": "pi pi-...", "imageQuery": "..." }
-
-5. INPUT / TEXTFIELD elements
-   - props.label: field label
-   - props.placeholder: helpful hint
-
-SECTION RULES:
-- Every section and element must have a unique, stable id (e.g. "hero-section", "menu-cards", "cta-button")
-- Generate 3 to 5 coherent, complete sections for a full page
-- Set appropriate section layout: "split", "center", "grid-2", "grid-3", "grid-4"
+4. BIG, COMPREHENSIVE & FULL-SIZED PAGE REQUIREMENTS:
+   - DO NOT generate small, brief, or stub pages. Every generated website must be a FULL-SIZED, grand, professional production website.
+   - Include 6 to 8 full sections per page:
+     1) Full Navigation Bar (logo, multi-link menu, search/filter bar, user actions / CTAs).
+     2) High-Impact Hero Section (headline, subheadline, 2 primary/secondary CTA buttons, trust badges, delivery/feature pills, and large contextual visual imagery).
+     3) Domain Core Grid (6 to 8 detailed card items per section with realistic titles, prices, ratings, descriptions, badging, and contextual imageQuery values).
+     4) Deep Feature / Specifications / Process Grid (4 key domain pillars with icons, headlines, and detailed explanations).
+     5) Key Performance Indicators / Metrics Bar (4 large numerical stat counters e.g., "50,000+ Happy Customers", "99.9% Uptime", "4.9 ★ Rating").
+     6) Customer Reviews & Social Proof (3-4 authentic testimonial cards with reviewer names, roles, star ratings, and detailed quotes).
+     7) Frequently Asked Questions (FAQ) Section (4 expandable/grid Q&A items relevant to the domain).
+     8) Grand Footer (Brand bio, multi-column navigation links, newsletter signup input form, social media icons, copyright, and legal links).
+   - Ensure the layout is spacious, grand, visually immersive, and packed with domain-specific features.
 
 OUTPUT: ONLY the JSON object. Zero text before or after.`;
 

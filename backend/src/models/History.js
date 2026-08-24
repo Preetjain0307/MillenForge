@@ -36,6 +36,10 @@ const historySchema = new mongoose.Schema(
     meta: {
       executionTimeMs: { type: Number },
     },
+    userId: {
+      type: String,
+      index: true,
+    },
     createdAt: {
       type: Date,
       default: Date.now,

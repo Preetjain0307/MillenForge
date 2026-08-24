@@ -1,8 +1,8 @@
-// Database connection service
-// Uses Mongoose to connect to MongoDB.
-// The app continues to run even if MongoDB is unavailable (warns instead of crashes).
+const dns = require("node:dns");
 
-const mongoose = require('mongoose');
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
+const mongoose = require("mongoose");
 
 let isConnected = false;
 

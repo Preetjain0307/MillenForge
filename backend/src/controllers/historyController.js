@@ -57,6 +57,7 @@ const createHistory = async (req, res, next) => {
       meta: meta && typeof meta === 'object' ? {
         executionTimeMs: typeof meta.executionTimeMs === 'number' ? meta.executionTimeMs : undefined,
       } : undefined,
+      userId: req.user ? (req.user.id || req.user._id) : undefined,
       createdAt: new Date(),
     };
 
@@ -99,7 +100,8 @@ const getHistoryList = async (req, res, next) => {
     }
 
     const limit = Math.min(parseInt(req.query.limit, 10) || 50, 100);
-    const records = await History.find()
+    const filter = req.user ? { $or: [{ userId: req.user.id || req.user._id }, { userId: { $exists: false } }, { userId: null }] } : {};
+    const records = await History.find(filter)
       .select('-__v')
       .sort({ createdAt: -1 })
       .limit(limit)
