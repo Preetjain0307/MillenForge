@@ -14,6 +14,7 @@ import { useState } from 'react';
 const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => {
   const [viewportMode, setViewportMode] = useState('desktop'); // 'desktop' | 'tablet' | 'mobile'
   const [zoomLevel, setZoomLevel] = useState(100); // 50 | 75 | 100
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const getViewportWidthClass = () => {
     switch (viewportMode) {
@@ -28,15 +29,17 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
   };
 
   return (
-    <div className="flex-1 flex flex-col rounded-xl overflow-hidden border border-[#2A2A30] bg-[#111113] shadow-2xl">
+    <div className={`flex-1 flex flex-col overflow-hidden border border-[#2A2A30] bg-[#111113] shadow-2xl transition-all ${
+      isFullscreen ? 'fixed inset-0 z-50 rounded-none bg-[#09090B]' : 'rounded-xl'
+    }`}>
       {/* Browser Toolbar Frame Header */}
       <div className="flex items-center justify-between flex-wrap gap-2 px-4 py-2.5 border-b border-[#2A2A30] bg-[#18181B]">
         {/* Left: Window Traffic Lights & Address Pill */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#FB7185]/80 hover:bg-[#FB7185] transition-colors" title="Close" />
-            <span className="w-3 h-3 rounded-full bg-[#FBBF24]/80 hover:bg-[#FBBF24] transition-colors" title="Minimize" />
-            <span className="w-3 h-3 rounded-full bg-[#34D399]/80 hover:bg-[#34D399] transition-colors" title="Expand" />
+            <span className="w-3 h-3 rounded-full bg-[#FB7185]/80 hover:bg-[#FB7185] transition-colors cursor-pointer" title="Close" onClick={() => setIsFullscreen(false)} />
+            <span className="w-3 h-3 rounded-full bg-[#FBBF24]/80 hover:bg-[#FBBF24] transition-colors cursor-pointer" title="Minimize" onClick={() => setIsFullscreen(false)} />
+            <span className="w-3 h-3 rounded-full bg-[#34D399]/80 hover:bg-[#34D399] transition-colors cursor-pointer" title="Fullscreen" onClick={() => setIsFullscreen(!isFullscreen)} />
           </div>
 
           <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-[#09090B] border border-[#2A2A30] text-xs font-mono text-[#CBD5E1]">
@@ -110,6 +113,20 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
               +
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className={`px-2.5 py-1 rounded-md border text-xs font-medium flex items-center gap-1.5 transition-colors ${
+              isFullscreen
+                ? 'bg-[#8B5CF6] text-white border-[#8B5CF6]'
+                : 'bg-[#09090B] text-[#CBD5E1] border-[#2A2A30] hover:text-[#F8FAFC] hover:border-[#8B5CF6]'
+            }`}
+            title={isFullscreen ? "Exit Fullscreen (Esc)" : "Fullscreen Preview"}
+          >
+            <i className={`pi ${isFullscreen ? 'pi-window-minimize' : 'pi-window-maximize'} text-xs`} />
+            <span className="hidden sm:inline">{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+          </button>
 
           {onRefresh && (
             <button
