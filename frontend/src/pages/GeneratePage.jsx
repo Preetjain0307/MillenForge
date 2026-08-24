@@ -1,7 +1,7 @@
 /**
  * GeneratePage — /generate
  *
- * NeuroMinds 3-Panel AI UI Engineering Studio (Sneha Frontend Redesign)
+ * NeuroMinds 3-Panel AI UI Engineering Studio
  */
 
 import { useState, useCallback, useEffect } from 'react';
@@ -129,14 +129,12 @@ const GeneratePage = () => {
 
   // Generation handler
   const handleGenerate = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
+    e.preventDefault();
     const prompt   = generation.prompt?.trim();
     const pageName = generation.pageName?.trim() || 'Home';
 
-    const hasUploadedWireframe = uploadStatus === 'success' && Boolean(uploadedFile);
-
-    if (!prompt && !hasUploadedWireframe) {
-      setPromptError('Please enter a natural language prompt or upload a wireframe.');
+    if (!prompt) {
+      setPromptError('Please enter a natural language prompt for UI generation.');
       setInputTab('prompt');
       return;
     }
@@ -149,13 +147,13 @@ const GeneratePage = () => {
 
     try {
       const payload = {
-        prompt: prompt || undefined,
+        prompt,
         pageName,
         existingCode:      generation.existingCode || undefined,
         architectureFlow:  generation.architectureFlow || undefined,
       };
 
-      if (hasUploadedWireframe) {
+      if (uploadStatus === 'success' && uploadedFile) {
         payload.wireframe = {
           filename:     uploadedFile.filename,
           originalName: uploadedFile.originalName,
@@ -165,10 +163,9 @@ const GeneratePage = () => {
       const response = await generateUI(payload);
 
       if (response.success && response.page) {
-        const finalName = response.page.page || pageName;
         dispatch(setResult(response.page));
-        dispatch(setPage({ pageName: finalName, data: response.page }));
-        dispatch(setActivePage(finalName));
+        dispatch(setPage({ pageName, data: response.page }));
+        dispatch(setActivePage(pageName));
         dispatch(setStatus('succeeded'));
       } else {
         dispatch(setError(friendlyError(response.message || 'Generation failed.')));
@@ -257,7 +254,7 @@ const GeneratePage = () => {
           >
             {isGenerating ? (
               <>
-                <i className="pi pi-spin pi-spinner text-xs" />
+                <i className="pi pi-[#8B5CF6] pi-spin pi-spinner text-xs" />
                 Generating…
               </>
             ) : (
@@ -513,7 +510,7 @@ const GeneratePage = () => {
               }`}
             >
               <i className="pi pi-code text-xs" />
-              JSON
+              Code
             </button>
 
             <button
@@ -539,7 +536,7 @@ const GeneratePage = () => {
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between border-b border-[#2A2A30] pb-2">
                       <span className="text-xs font-bold text-[#F8FAFC] font-mono flex items-center gap-1.5">
-                        <i className="pi pi-tag text-[#8B5CF6]" />
+                        <i className="pi pi-[#8B5CF6] pi-tag text-[#8B5CF6]" />
                         ELEMENT INSPECTOR
                       </span>
                       <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#8B5CF6]/20 text-[#A78BFA] border border-[#8B5CF6]/30">

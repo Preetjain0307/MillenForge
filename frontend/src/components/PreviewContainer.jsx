@@ -1,9 +1,8 @@
 /**
  * PreviewContainer — Reusable browser-like preview wrapper component for NeuroMinds
- * Includes Viewport Switcher, Zoom Controls, and Fullscreen Mode.
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 /**
  * @param {object} props
@@ -15,18 +14,6 @@ import { useState, useEffect } from 'react';
 const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => {
   const [viewportMode, setViewportMode] = useState('desktop'); // 'desktop' | 'tablet' | 'mobile'
   const [zoomLevel, setZoomLevel] = useState(100); // 50 | 75 | 100
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  // Keyboard shortcut: Press ESC to exit full screen
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isFullscreen) {
-        setIsFullscreen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen]);
 
   const getViewportWidthClass = () => {
     switch (viewportMode) {
@@ -36,32 +23,20 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
         return 'max-w-[768px] mx-auto border-x border-[#2A2A30] shadow-2xl rounded-b-xl overflow-hidden';
       case 'desktop':
       default:
-        return 'w-full max-w-7xl mx-auto';
+        return 'w-full';
     }
   };
 
-  const containerClasses = isFullscreen
-    ? 'fixed inset-0 z-[9999] bg-[#09090B] flex flex-col w-screen h-screen overflow-hidden'
-    : 'flex-1 flex flex-col rounded-xl overflow-hidden border border-[#2A2A30] bg-[#111113] shadow-2xl min-h-[600px]';
-
   return (
-    <div className={containerClasses}>
+    <div className="flex-1 flex flex-col rounded-xl overflow-hidden border border-[#2A2A30] bg-[#111113] shadow-2xl">
       {/* Browser Toolbar Frame Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2 px-4 py-2.5 border-b border-[#2A2A30] bg-[#18181B] shrink-0">
+      <div className="flex items-center justify-between flex-wrap gap-2 px-4 py-2.5 border-b border-[#2A2A30] bg-[#18181B]">
         {/* Left: Window Traffic Lights & Address Pill */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <span
-              onClick={() => isFullscreen && setIsFullscreen(false)}
-              className="w-3 h-3 rounded-full bg-[#FB7185]/80 hover:bg-[#FB7185] transition-colors cursor-pointer"
-              title={isFullscreen ? 'Exit Fullscreen' : 'Close'}
-            />
+            <span className="w-3 h-3 rounded-full bg-[#FB7185]/80 hover:bg-[#FB7185] transition-colors" title="Close" />
             <span className="w-3 h-3 rounded-full bg-[#FBBF24]/80 hover:bg-[#FBBF24] transition-colors" title="Minimize" />
-            <span
-              onClick={() => setIsFullscreen(prev => !prev)}
-              className="w-3 h-3 rounded-full bg-[#34D399]/80 hover:bg-[#34D399] transition-colors cursor-pointer"
-              title="Toggle Fullscreen"
-            />
+            <span className="w-3 h-3 rounded-full bg-[#34D399]/80 hover:bg-[#34D399] transition-colors" title="Expand" />
           </div>
 
           <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-[#09090B] border border-[#2A2A30] text-xs font-mono text-[#CBD5E1]">
@@ -116,9 +91,8 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
           </button>
         </div>
 
-        {/* Right: Zoom, Fullscreen & Refresh Actions */}
+        {/* Right: Zoom & Canvas Actions */}
         <div className="flex items-center gap-2">
-          {/* Zoom Controls */}
           <div className="hidden lg:flex items-center gap-1 text-[11px] font-mono text-[#94A3B8] bg-[#09090B] px-2 py-1 rounded border border-[#2A2A30]">
             <button
               onClick={() => setZoomLevel(prev => Math.max(50, prev - 25))}
@@ -148,22 +122,7 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
             </button>
           )}
 
-          {/* Full Screen Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(prev => !prev)}
-            className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all border ${
-              isFullscreen
-                ? 'bg-[#EF4444] text-white border-[#EF4444] hover:bg-[#DC2626]'
-                : 'bg-[#8B5CF6] text-white border-[#8B5CF6] hover:bg-[#7C3AED] shadow-[0_0_12px_rgba(139,92,246,0.4)]'
-            }`}
-            title={isFullscreen ? 'Exit Full Screen (ESC)' : 'Open Full Screen View'}
-          >
-            <i className={`pi ${isFullscreen ? 'pi-window-minimize' : 'pi-window-maximize'} text-xs`} />
-            <span>{isFullscreen ? 'Exit Fullscreen' : 'Full Screen'}</span>
-          </button>
-
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#A78BFA] bg-[#8B5CF6]/10 px-2.5 py-1 rounded border border-[#8B5CF6]/30 font-mono">
+          <div className="text-xs text-[#A78BFA] bg-[#8B5CF6]/10 px-2.5 py-1 rounded border border-[#8B5CF6]/30 flex items-center gap-1.5 font-mono">
             <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse" />
             <span>Live Canvas</span>
           </div>
@@ -172,12 +131,12 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
 
       {/* Canvas Viewport Workspace */}
       <div className="flex-1 overflow-auto p-4 sm:p-6 bg-[#09090B]">
-        <div
-          className={`${getViewportWidthClass()} nm-viewport-${viewportMode} transition-all duration-300 min-h-[600px]`}
+        <div 
+          className={`${getViewportWidthClass()} transition-all duration-300 min-h-[400px]`}
           style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
         >
           {isEmpty ? (
-            <div className="h-full flex flex-col items-center justify-center gap-4 py-24 bg-[#111113] rounded-xl border border-[#2A2A30]">
+            <div className="h-full flex flex-col items-center justify-center gap-4 py-20 bg-[#111113] rounded-xl border border-[#2A2A30]">
               <div className="w-16 h-16 rounded-2xl bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 flex items-center justify-center shadow-[0_0_24px_rgba(139,92,246,0.2)]">
                 <i className="pi pi-sparkles text-[#8B5CF6] text-2xl" />
               </div>
@@ -186,7 +145,7 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
                   Ready to Render AI Generated UI
                 </p>
                 <p className="text-xs text-[#94A3B8] max-w-sm">
-                  Enter a prompt or upload a wireframe to generate a full-sized, professional, lovable website layout.
+                  Upload a wireframe, enter a prompt, or paste existing code to generate live preview components.
                 </p>
               </div>
             </div>

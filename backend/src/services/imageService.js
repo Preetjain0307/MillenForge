@@ -11,6 +11,7 @@
  * - Real Estate & Architecture (luxury villa, living room, modern apartment, exterior)
  * - Technology & SaaS (modern workspace, coding setup, servers, analytics)
  * - Education & Medical (healthcare, classroom, laboratory, books)
+ * - Car Rental (sports sedan, SUV rental vehicle)
  *
  * Uses legitimate Unsplash assets with responsive crop/format query parameters.
  */
@@ -256,20 +257,11 @@ const CURATED_IMAGE_CATALOG = {
     src: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200&q=80',
     alt: 'Professional music production mixing console and monitors',
   },
-
-  // Events & Conferences
-  conference_stage: {
-    src: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
-    alt: 'Global tech keynote conference stage and audience',
-  },
-  concert_festival: {
-    src: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80',
-    alt: 'Live music festival concert light show and crowd',
-  },
 };
 
 /**
  * Resolves a contextual query or keyword into a high-quality Unsplash image asset.
+ * Guarantees zero cross-domain mismatch (e.g. never returns cars for food/college/hospital sites).
  *
  * @param {string} query - Keyword, category, or contextual query string
  * @param {string} [defaultAlt='Contextual image']
@@ -278,7 +270,9 @@ const CURATED_IMAGE_CATALOG = {
 const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => {
   const q = String(query).toLowerCase().trim();
 
-  // 1. Domain-Specific Intent Mapping (High Priority — prevents off-domain cross-matching)
+  // 1. Domain-Specific Intent Mapping (High Priority — strict word boundary matching)
+
+  // College & Education
   if (q.includes('college') || q.includes('university') || q.includes('campus') || q.includes('student') || q.includes('teacher') || q.includes('faculty') || q.includes('academic') || q.includes('degree') || q.includes('education') || q.includes('school') || q.includes('library')) {
     if (q.includes('student') || q.includes('group')) return CURATED_IMAGE_CATALOG.students_campus;
     if (q.includes('library') || q.includes('book')) return CURATED_IMAGE_CATALOG.college_library;
@@ -287,12 +281,14 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
     return CURATED_IMAGE_CATALOG.college_campus;
   }
 
+  // Hospital & Healthcare
   if (q.includes('hospital') || q.includes('health') || q.includes('med') || q.includes('doctor') || q.includes('clinic') || q.includes('patient') || q.includes('surgery') || q.includes('emergency')) {
     if (q.includes('clinic') || q.includes('reception')) return CURATED_IMAGE_CATALOG.clinic;
     return CURATED_IMAGE_CATALOG.doctor_consultation;
   }
 
-  if (q.includes('food') || q.includes('pizza') || q.includes('burger') || q.includes('restaurant') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal') || q.includes('sushi') || q.includes('pasta')) {
+  // Food & Dining
+  if (q.includes('food') || q.includes('pizza') || q.includes('burger') || q.includes('restaurant') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal') || q.includes('sushi') || q.includes('pasta') || q.includes('salad') || q.includes('dessert') || q.includes('bakery') || q.includes('cafe')) {
     if (q.includes('pizza')) return CURATED_IMAGE_CATALOG.pizza;
     if (q.includes('burger')) return CURATED_IMAGE_CATALOG.burger;
     if (q.includes('sushi')) return CURATED_IMAGE_CATALOG.sushi;
@@ -303,6 +299,7 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
     return CURATED_IMAGE_CATALOG.restaurant_hero;
   }
 
+  // Travel & Destinations
   if (q.includes('travel') || q.includes('destination') || q.includes('vacation') || q.includes('trip') || q.includes('flight') || q.includes('tour') || q.includes('resort')) {
     if (q.includes('paris')) return CURATED_IMAGE_CATALOG.paris;
     if (q.includes('tokyo')) return CURATED_IMAGE_CATALOG.tokyo;
@@ -312,7 +309,8 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
     return CURATED_IMAGE_CATALOG.beach;
   }
 
-  if (q.includes('fashion') || q.includes('cloth') || q.includes('wear') || q.includes('apparel') || q.includes('store') || q.includes('shop') || q.includes('boutique')) {
+  // Fashion & Apparel
+  if (q.includes('fashion') || q.includes('cloth') || q.includes('wear') || q.includes('apparel') || q.includes('boutique')) {
     if (q.includes('sneaker') || q.includes('shoe')) return CURATED_IMAGE_CATALOG.sneakers;
     if (q.includes('watch')) return CURATED_IMAGE_CATALOG.watch;
     if (q.includes('bag') || q.includes('handbag')) return CURATED_IMAGE_CATALOG.handbag;
@@ -320,60 +318,75 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
     return CURATED_IMAGE_CATALOG.fashion_hero;
   }
 
+  // Real Estate & Architecture
   if (q.includes('estate') || q.includes('property') || q.includes('house') || q.includes('villa') || q.includes('apartment') || q.includes('realty')) {
     if (q.includes('living')) return CURATED_IMAGE_CATALOG.living_room;
     if (q.includes('kitchen')) return CURATED_IMAGE_CATALOG.kitchen;
     return CURATED_IMAGE_CATALOG.villa;
   }
 
+  // Banking & Fintech
   if (q.includes('bank') || q.includes('banking') || q.includes('finance') || q.includes('fintech') || q.includes('money') || q.includes('wallet')) {
     if (q.includes('crypto') || q.includes('wallet')) return CURATED_IMAGE_CATALOG.crypto_wallet;
     return CURATED_IMAGE_CATALOG.financial_analytics;
   }
 
+  // Grocery & Produce
   if (q.includes('grocery') || q.includes('supermarket') || q.includes('produce') || q.includes('vegetable')) {
     if (q.includes('dairy') || q.includes('milk')) return CURATED_IMAGE_CATALOG.grocery_dairy;
     return CURATED_IMAGE_CATALOG.grocery_produce;
   }
 
+  // Movie & Entertainment
   if (q.includes('movie') || q.includes('cinema') || q.includes('film') || q.includes('popcorn') || q.includes('theater')) {
     if (q.includes('popcorn')) return CURATED_IMAGE_CATALOG.popcorn_movie;
     return CURATED_IMAGE_CATALOG.cinema_hall;
   }
 
-  if (q.includes('car') || q.includes('rental') || q.includes('drive') || q.includes('vehicle')) {
+  // Car Rental ONLY (Strict Word Boundary Regex to PREVENT "card"/"care" substring false matches!)
+  const isExplicitCarQuery = /\b(car|cars|car rental|automobile|auto hire|rent a car|vehicle rental|suv|sedan)\b/i.test(q) &&
+                              !q.includes('card') &&
+                              !q.includes('care') &&
+                              !q.includes('career');
+
+  if (isExplicitCarQuery) {
     if (q.includes('suv')) return CURATED_IMAGE_CATALOG.suv_rental;
     return CURATED_IMAGE_CATALOG.rental_car;
   }
 
+  // Legal & Law Firm
   if (q.includes('law') || q.includes('legal') || q.includes('attorney') || q.includes('lawyer')) {
     return CURATED_IMAGE_CATALOG.law_library;
   }
 
+  // Gaming & Esports
   if (q.includes('gaming') || q.includes('esport') || q.includes('gamer')) {
     return CURATED_IMAGE_CATALOG.gaming_setup;
   }
 
+  // Music & Audio
   if (q.includes('music') || q.includes('song') || q.includes('audio') || q.includes('track')) {
     return CURATED_IMAGE_CATALOG.music_studio;
   }
 
-  if (q.includes('portfolio') || q.includes('creative') || q.includes('designer') || q.includes('project')) {
+  // Portfolio & Creative
+  if (q.includes('portfolio') || q.includes('creative') || q.includes('designer')) {
     if (q.includes('app')) return CURATED_IMAGE_CATALOG.project_app;
     if (q.includes('design')) return CURATED_IMAGE_CATALOG.project_design;
     return CURATED_IMAGE_CATALOG.portfolio_hero;
   }
 
+  // SaaS & Tech Workspaces
   if (q.includes('tech') || q.includes('saas') || q.includes('software') || q.includes('dashboard') || q.includes('analytics')) {
     if (q.includes('code') || q.includes('developer')) return CURATED_IMAGE_CATALOG.developer_code;
     if (q.includes('analytics') || q.includes('chart')) return CURATED_IMAGE_CATALOG.analytics;
     return CURATED_IMAGE_CATALOG.workspace;
   }
 
-  // 2. Exact or partial keyword match in catalog (strict q.includes(normKey))
+  // 2. Strict Exact or Partial Keyword match in catalog
   for (const [key, asset] of Object.entries(CURATED_IMAGE_CATALOG)) {
     const normKey = key.replace('_', ' ');
-    if (q === normKey || q.includes(normKey)) {
+    if (q === normKey || (q.includes(normKey) && !q.includes('card'))) {
       return {
         src: asset.src,
         alt: asset.alt,
@@ -405,21 +418,19 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
   const promptLower = String(userPrompt).toLowerCase();
   const usedImageUrls = new Set();
 
-  // Helper to deduplicate image URLs on a single page
   const dedupeSrc = (src) => {
     if (!src) return src;
     if (!usedImageUrls.has(src)) {
       usedImageUrls.add(src);
       return src;
     }
-    // Append unique query param variant so URL is guaranteed unique across page elements
     const joiner = src.includes('?') ? '&' : '?';
     const uniqueSrc = `${src}${joiner}sig=${usedImageUrls.size + 1}`;
     usedImageUrls.add(uniqueSrc);
     return uniqueSrc;
   };
 
-  // Determine if domain needs visual content
+  // Determine domain context safely using word boundaries
   const isFoodSite = promptLower.includes('food') || promptLower.includes('pizza') || promptLower.includes('restaurant') || promptLower.includes('burger') || promptLower.includes('cafe') || promptLower.includes('bakery') || promptLower.includes('sushi') || promptLower.includes('meal');
   const isTravelSite = promptLower.includes('travel') || promptLower.includes('hotel') || promptLower.includes('booking') || promptLower.includes('resort') || promptLower.includes('tour') || promptLower.includes('vacation');
   const isFashionSite = promptLower.includes('fashion') || promptLower.includes('ecommerce') || promptLower.includes('store') || promptLower.includes('shop') || promptLower.includes('clothing') || promptLower.includes('wear');
@@ -430,7 +441,7 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
   const isGrocery = promptLower.includes('grocery') || promptLower.includes('supermarket') || promptLower.includes('produce') || promptLower.includes('vegetables');
   const isFitness = promptLower.includes('fitness') || promptLower.includes('gym') || promptLower.includes('workout') || promptLower.includes('trainer');
   const isEntertainment = promptLower.includes('movie') || promptLower.includes('cinema') || promptLower.includes('ticket') || promptLower.includes('event') || promptLower.includes('concert');
-  const isCarRental = promptLower.includes('car') || promptLower.includes('rental') || promptLower.includes('drive');
+  const isCarRental = /\b(car|cars|car rental|automobile|auto hire|rent a car|vehicle rental)\b/i.test(promptLower) && !promptLower.includes('card') && !promptLower.includes('care');
   const isLaw = promptLower.includes('law') || promptLower.includes('legal') || promptLower.includes('attorney');
 
   const enrichedSections = uiPage.sections.map((section) => {
@@ -448,7 +459,7 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
         const imageQuery = el.content?.imageQuery || elProps.imageQuery || el.content?.alt || elProps.alt || el.id || userPrompt;
 
         if (!existingSrc || existingSrc.includes('placehold.co') || existingSrc.includes('placeholder')) {
-          const resolved = resolveContextualImage(imageQuery, elProps.alt || 'Contextual image');
+          const resolved = resolveContextualImage(`${userPrompt} ${imageQuery}`, elProps.alt || 'Contextual image');
           const finalSrc = dedupeSrc(resolved.src);
           elProps.src = finalSrc;
           elProps.alt = elProps.alt || resolved.alt;
@@ -478,10 +489,10 @@ const enrichPageImages = (uiPage, userPrompt = '') => {
             if (!item || typeof item !== 'object') return item;
 
             const existingItemSrc = item.src || item.image || '';
-            const itemQuery = item.imageQuery || item.title || `${userPrompt} item ${idx + 1}`;
+            const itemQuery = item.imageQuery || item.title || `item ${idx + 1}`;
 
             if (isFoodSite || isTravelSite || isFashionSite || isRealEstate || isPortfolio || isEducation || isHealthcare || isGrocery || isFitness || isEntertainment || isCarRental || isLaw || existingItemSrc.includes('placehold.co')) {
-              const resolved = resolveContextualImage(itemQuery, item.title || 'Card image');
+              const resolved = resolveContextualImage(`${userPrompt} ${itemQuery}`, item.title || 'Card image');
               const finalSrc = dedupeSrc(existingItemSrc || resolved.src);
               return {
                 ...item,
