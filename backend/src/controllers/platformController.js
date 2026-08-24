@@ -179,10 +179,11 @@ const restoreVersion = async (req, res, next) => {
 
 const generateUiToFlow = async (req, res, next) => {
   try {
-    const { imagePath, uiPage, prompt } = req.body;
+    const { imagePath, uiPage, uiContent, prompt } = req.body;
     const flowchartData = await aiService.generateUiToFlow({
       imagePath,
       uiPage,
+      uiContent,
       prompt,
     });
 

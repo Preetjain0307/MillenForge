@@ -704,9 +704,9 @@ const generateUIFromDiagram = async ({ imagePath, diagramCode, diagramType = 'au
  * @param {string} [params.prompt] - optional extra instructions
  * @returns {Promise<object>} flowchart JSON with nodes, edges, mermaid, and insights
  */
-const generateUiToFlow = async ({ imagePath, uiPage, prompt }) => {
+const generateUiToFlow = async ({ imagePath, uiPage, uiContent, prompt }) => {
   const config = getConfig();
-  console.log(`[AI] generateUiToFlow — model: ${config.model}, image: "${imagePath || 'none'}"`);
+  console.log(`[AI] generateUiToFlow — model: ${config.model}, image: "${imagePath || 'none'}", hasUiContent: ${Boolean(uiContent)}`);
 
   const genAI = new GoogleGenerativeAI(config.apiKey);
 
@@ -836,7 +836,10 @@ Output ONLY a single valid JSON object matching this schema:
 }
 Output pure JSON with no markdown fences or surrounding prose.`;
 
-  let userMessage = `Analyze this UI screenshot/photo/specification and extract the complete, granular step-by-step user interaction flowchart (including authentication, filling details, document/passport photo uploads, course selections, decision checks, payments, and submission).`;
+  let userMessage = `Analyze this UI screenshot/photo/code/specification and extract the complete, granular step-by-step user interaction flowchart (including authentication, filling details, document/passport photo uploads, course selections, decision checks, payments, and submission).`;
+  if (uiContent) {
+    userMessage += `\n\nProvided UI Code / HTML Form / Schema / Specification:\n\`\`\`\n${uiContent.slice(0, 4000)}\n\`\`\``;
+  }
   if (uiPage) {
     userMessage += `\n\nExisting UI Page Structure:\n\`\`\`json\n${JSON.stringify(uiPage, null, 2).slice(0, 3000)}\n\`\`\``;
   }
@@ -846,7 +849,7 @@ Output pure JSON with no markdown fences or surrounding prose.`;
 
   // Smart domain-aware Fallback builder
   const buildFallbackFlow = () => {
-    const rawText = `${prompt || ''} ${uiPage?.page || ''}`.toLowerCase();
+    const rawText = `${prompt || ''} ${uiContent || ''} ${uiPage?.page || ''}`.toLowerCase();
     
     // 1. Hospital & Healthcare Patient Workflow
     if (/\bhospital\b|\bclinic\b|\bpatient\b|\bdoctor\b|\bmedical\b|\bhealth\b|\bopd\b|\btelehealth\b/i.test(rawText)) {
