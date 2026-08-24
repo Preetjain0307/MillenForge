@@ -323,10 +323,11 @@ export const parseMermaidToFlowchart = (code, title = 'Software Diagram') => {
     }
 
     // Node definitions: NodeId["Label"] or NodeId[Label] or NodeId[("Label")] or NodeId(("Label"))
-    const nodeMatches = line.matchAll(/([a-zA-Z0-9_-]+)(?:\[\(|\(\[|\(\(|\[|\(|\{)(["']?)(.*?)\2(?:\]\)|\)\]|\)\)|\]|\)|\})/g);
+    const nodeMatches = line.matchAll(/([a-zA-Z0-9_-]+)(\[\(|\(\[|\(\(|\[|\(|\{)(["']?)(.*?)\3(?:\]\)|\)\]|\)\)|\]|\)|\})/g);
     for (const match of nodeMatches) {
       const id = match[1];
-      const label = match[3].replace(/["']/g, '').trim();
+      const shapeOpen = match[2];
+      const label = match[4].replace(/["']/g, '').trim();
       let type = 'step';
       let icon = 'pi pi-box';
 
