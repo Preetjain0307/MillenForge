@@ -292,25 +292,63 @@ html, body {
 }
 
 /* ── Viewport Mode Grid & Responsive Overrides for Preview Container ───────── */
-.nm-viewport-mobile .grid {
+.nm-viewport-mobile {
+  container-type: inline-size;
+}
+
+.nm-viewport-mobile .grid,
+.nm-viewport-mobile [class*="grid"],
+.nm-viewport-mobile [class*="grid-cols-"],
+.nm-viewport-mobile [class*="lg:grid-cols-"],
+.nm-viewport-mobile [class*="md:grid-cols-"],
+.nm-viewport-mobile [class*="sm:grid-cols-"] {
   grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
 }
 
 .nm-viewport-mobile section {
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  padding-top: 1.25rem !important;
+  padding-bottom: 1.25rem !important;
+}
+
+.nm-viewport-mobile .nm-card,
+.nm-viewport-mobile article,
+.nm-viewport-mobile [class*="card"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.nm-viewport-mobile h1,
+.nm-viewport-mobile h2,
+.nm-viewport-mobile h3,
+.nm-viewport-mobile h4,
+.nm-viewport-mobile p,
+.nm-viewport-mobile span {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+}
+
+.nm-viewport-tablet {
+  container-type: inline-size;
 }
 
 .nm-viewport-tablet .grid,
-.nm-viewport-tablet .grid-cols-3,
-.nm-viewport-tablet .grid-cols-4,
-.nm-viewport-tablet .lg\:grid-cols-3,
-.nm-viewport-tablet .lg\:grid-cols-4 {
+.nm-viewport-tablet [class*="grid-cols-3"],
+.nm-viewport-tablet [class*="grid-cols-4"],
+.nm-viewport-tablet [class*="lg:grid-cols-3"],
+.nm-viewport-tablet [class*="lg:grid-cols-4"] {
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 1rem !important;
 }
 
-/* Natural Word Wrapping for Card Titles & Descriptions */
-.break-words {
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
+/* Clean Word Wrapping for Card Titles & Descriptions — never split individual letters */
+.break-words,
+.break-normal {
+  overflow-wrap: break-word !important;
+  word-break: normal !important;
+  white-space: normal !important;
 }

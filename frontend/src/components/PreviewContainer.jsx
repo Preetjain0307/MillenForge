@@ -132,7 +132,7 @@ const PreviewContainer = ({ pageName, children, isEmpty = true, onRefresh }) => 
       {/* Canvas Viewport Workspace */}
       <div className="flex-1 overflow-auto p-4 sm:p-6 bg-[#09090B]">
         <div
-          className={`${getViewportWidthClass()} transition-all duration-300 min-h-[400px]`}
+          className={`${getViewportWidthClass()} nm-viewport-${viewportMode} transition-all duration-300 min-h-[400px]`}
           style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: 'top center' }}
         >
           {isEmpty ? (
