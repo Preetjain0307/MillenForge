@@ -629,6 +629,9 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
       prompt,
       pageName
     );
+  }).catch((err) => {
+    console.warn(`[AI-SERVICE] Offline/Fallback generation engaged: ${err.message}`);
+    return buildSmartFallbackPage(pageName || 'Home', prompt);
   });
 };
 
@@ -704,6 +707,9 @@ OUTPUT ONLY THE VALID UIPAGE JSON OBJECT.`;
       prompt,
       pageName
     );
+  }).catch((err) => {
+    console.warn(`[AI-SERVICE] Wireframe fallback engaged: ${err.message}`);
+    return buildSmartFallbackPage(pageName || 'Home', prompt || 'Wireframe Layout');
   });
 };
 
