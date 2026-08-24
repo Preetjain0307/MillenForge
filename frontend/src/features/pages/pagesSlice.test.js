@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Task E1: CMS Element Editing & Redux Integration Test Suite
+ * NeuraMinds — Task E1: CMS Element Editing & Redux Integration Test Suite
  *
  * Verifies:
  * 1. Element selection by ID via Redux actions
@@ -55,7 +55,7 @@ function runTest(name, fn) {
   }
 }
 
-console.log('\n--- Running NeuraMind Task E1: CMS Element Editing + Redux Tests ---\n');
+console.log('\n--- Running NeuraMinds Task E1: CMS Element Editing + Redux Tests ---\n');
 
 // ─── Setup Store Helper ──────────────────────────────────────────────────────
 const createTestStore = (initialPage = EXAMPLE_CMS_BOUND_PAGE) => {

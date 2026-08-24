@@ -1,5 +1,5 @@
 /**
- * NeuraMind — AI Service (Gemini)
+ * NeuraMinds — AI Service (Gemini)
  *
  * This is the SOLE abstraction boundary for AI/LLM calls.
  * Controllers must NEVER contain provider-specific logic.
@@ -55,7 +55,7 @@ const getConfig = () => {
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are NeuraMind, a world-class AI Creative Director and Chief Product Designer (ex-Lovable, Stripe, Airbnb).
+const SYSTEM_PROMPT = `You are NeuraMinds, a world-class AI Creative Director and Chief Product Designer (ex-Lovable, Stripe, Airbnb).
 You produce ONLY valid JSON — no markdown fences, no backticks, no explanatory text before or after.
 
 Your mission is to generate HACKATHON-WINNING, visually stunning, ultra-colorful, production-ready web applications that outshine Lovable, Gemini, and ChatGPT.
@@ -572,7 +572,7 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
     }
   }
 
-  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMind Intelligent Generation Fallback engine.');
+  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMinds Intelligent Generation Fallback engine.');
   return buildSmartFallbackPage(pageName, prompt);
 };
 
@@ -730,6 +730,12 @@ const generateUIFromDiagram = async ({ imagePath, diagramCode, diagramType = 'au
     case 'architecture':
       typeGuidance = 'This is a SOFTWARE / SYSTEM ARCHITECTURE diagram (e.g. Microservices, Cloud Infrastructure, Multi-Tier App). Synthesize a production-ready system console / architectural interface displaying service health, active microservices, API Gateway endpoints, real-time message bus metrics, and operational control actions.';
       break;
+    case 'mvc':
+      typeGuidance = 'This is an MVC (MODEL-VIEW-CONTROLLER) ARCHITECTURE diagram. Synthesize a complete 3-tier application structure clearly presenting: (1) View Layer UI (User/Student portals, interactive forms, action buttons, and live dashboards), (2) Controller Layer (API routes, event handlers, workflow controllers, and request status indicators), and (3) Model Layer (Database entity cards, table schemas, records count, and data persistence controls).';
+      break;
+    case 'mvvm':
+      typeGuidance = 'This is an MVVM (MODEL-VIEW-VIEWMODEL) ARCHITECTURE diagram. Synthesize a reactive modern application clearly presenting: (1) Declarative View UI (interactive screens, forms, click handlers, and visual metric displays), (2) ViewModel State Layer (Reactive StateFlow/LiveData status badges, event dispatchers, and state store monitors), and (3) Model Layer (Repository sync cards, remote REST API endpoints, and local cache controls).';
+      break;
     case 'dataflow':
       typeGuidance = 'This is a DATA FLOW DIAGRAM (DFD) / ETL PIPELINE diagram. Synthesize a modern data pipeline dashboard showing data ingestion sources, transformation stages, stream latency/throughput KPI cards, processed record tables, and pipeline execution controls.';
       break;
@@ -805,7 +811,7 @@ const generateUiToFlow = async ({ imagePath, uiPage, prompt }) => {
 
   const genAI = new GoogleGenerativeAI(config.apiKey);
 
-  const flowSystemPrompt = `You are NeuraMind Flowchart Architect.
+  const flowSystemPrompt = `You are NeuraMinds Flowchart Architect.
 Analyze the provided UI screenshot, photo, form, or application mockup and extract a complete, granular, step-by-step User Navigation & Interaction Flowchart.
 
 Capture all sequential interaction stages such as:

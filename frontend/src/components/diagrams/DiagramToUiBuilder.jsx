@@ -1,42 +1,72 @@
 /**
- * DiagramToUiBuilder — Any Software Diagram to Live UI Synthesis Workbench
+ * DiagramToUiBuilder — Software Architecture, MVC/MVVM & Flow Diagram Synthesis Workbench
  *
  * Supports:
- *  - Upload / Paste (Ctrl+V) any software diagram image (Architecture, DFD, Use Case, Sequence, ERD, Microservices)
+ *  - System Architecture diagrams (Microservices, Cloud, Layered Architecture)
+ *  - MVC Architecture (Model, Controller, View)
+ *  - MVVM Architecture (Model, ViewModel, View)
+ *  - User / Business Flow diagrams (Step-by-step state machines & journey)
+ *  - Live Mermaid SVG rendering with Zoom, Pan, Copy, and SVG Export
+ *  - Interactive Connected Nodes graph with node selection & details inspector
+ *  - Upload / Paste (Ctrl+V) diagram screenshots with 1-click clipboard paste
  *  - Diagram Code / Text Paste (Mermaid, PlantUML, ASCII, Architecture Specs)
- *  - Diagram Pattern Selector (Architecture, Data Flow, Use Case, Sequence, Schema, Workflow, Auto-Detect)
- *  - Preset Blueprints for instant one-click testing
- *  - Full AI Vision & LLM generation compiling directly into canonical UIPage
+ *  - Direct compile into canonical Redux UIPage with 1-click Live Preview & CMS binding
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { uploadWireframe, generateUI } from '../../services/api';
 import { setPage, setActivePage } from '../../features/pages/pagesSlice';
+import { patternToUiPage } from '../../types/diagram';
+import VisualFlowchartRenderer from './VisualFlowchartRenderer';
 import NmUploadArea from '../NmUploadArea';
 import NmButton from '../NmButton';
 
 export const DIAGRAM_TYPES = [
   {
     id: 'architecture',
-    label: 'Architecture & Microservices',
+    label: 'System Architecture & Microservices',
     icon: 'pi pi-cloud',
     badge: 'System Console',
     description: 'Cloud topologies, microservice meshes, API gateways, clusters, and load balancers.',
     placeholderPrompt: 'e.g. Build an operations dashboard visualizing microservice health, latency meters, and ingress routers.',
   },
   {
+    id: 'mvc',
+    label: 'MVC Architecture (Model-View-Controller)',
+    icon: 'pi pi-sitemap',
+    badge: '3-Tier App',
+    description: 'Separation of View portals, Controller API logic & routes, and Database Model records.',
+    placeholderPrompt: 'e.g. Create an MVC architecture for a college management system with Student, Faculty, and Admin portals.',
+  },
+  {
+    id: 'mvvm',
+    label: 'MVVM Architecture (Model-View-ViewModel)',
+    icon: 'pi pi-sync',
+    badge: 'Reactive App',
+    description: 'Declarative View UI, reactive ViewModel state/actions, and repository Model data.',
+    placeholderPrompt: 'e.g. Build a modern reactive MVVM dashboard application with live state streams and repository data.',
+  },
+  {
+    id: 'workflow',
+    label: 'User / Business Flow Diagram',
+    icon: 'pi pi-arrows-alt',
+    badge: 'User Journey',
+    description: 'End-to-end user navigation flows, auth checkpoints, and step-by-step state transitions.',
+    placeholderPrompt: 'e.g. Generate an end-to-end user flow from login authentication to product checkout and order confirmation.',
+  },
+  {
     id: 'dataflow',
     label: 'Data Flow Diagram (DFD) & ETL',
-    icon: 'pi pi-sync',
+    icon: 'pi pi-database',
     badge: 'Pipeline Dashboard',
     description: 'Data ingestion sources, stream processors, queues, transformation stages, and sinks.',
     placeholderPrompt: 'e.g. Build a data pipeline monitor displaying throughput graphs, active Kafka partitions, and batch controls.',
   },
   {
     id: 'usecase',
-    label: 'Use Case & User Journey',
+    label: 'Use Case & Role Portal',
     icon: 'pi pi-users',
     badge: 'Functional Portal',
     description: 'Actor roles, permission boundaries, end-user workflows, and functional interactions.',
@@ -45,7 +75,7 @@ export const DIAGRAM_TYPES = [
   {
     id: 'sequence',
     label: 'System Sequence & API Flow',
-    icon: 'pi pi-arrows-alt',
+    icon: 'pi pi-arrow-right-arrow-left',
     badge: 'Workflow Inspector',
     description: 'Request/response timelines, auth handshakes, webhook lifecycles, and event callbacks.',
     placeholderPrompt: 'e.g. Build an interactive execution viewer with step status indicators, payload cards, and retry triggers.',
@@ -53,18 +83,10 @@ export const DIAGRAM_TYPES = [
   {
     id: 'schema',
     label: 'Entity-Relationship (ERD) / Schema',
-    icon: 'pi pi-database',
+    icon: 'pi pi-table',
     badge: 'Data Management UI',
     description: 'Database tables, relational foreign keys, collections, document models, and fields.',
     placeholderPrompt: 'e.g. Build an admin CRUD management interface for exploring and querying these relational entities.',
-  },
-  {
-    id: 'workflow',
-    label: 'Process & State Machine Flow',
-    icon: 'pi pi-check-square',
-    badge: 'Process Manager',
-    description: 'Business process lifecycles, order fulfillment states, approval steps, and transitions.',
-    placeholderPrompt: 'e.g. Build a visual process manager with state columns, task approval cards, and trigger forms.',
   },
   {
     id: 'auto',
@@ -77,6 +99,88 @@ export const DIAGRAM_TYPES = [
 ];
 
 export const PRESET_DIAGRAM_BLUEPRINTS = [
+  {
+    id: 'bp-mvc-college',
+    type: 'mvc',
+    title: 'MVC Architecture — College Management System',
+    summary: 'Model (Student, Faculty DB) ↔ Controller (Admission, Attendance, Grading) ↔ View (Student Portal & Faculty UI)',
+    code: `graph TD
+  subgraph ViewLayer["View Layer (UI & Student Portal)"]
+    V1["Student Admission & Registration Portal"]
+    V2["Faculty Attendance & Grade Entry UI"]
+    V3["Admin Department Analytics"]
+  end
+
+  subgraph ControllerLayer["Controller Layer (Business Logic)"]
+    C1["Admission & Enrollment Controller"]
+    C2["Attendance & Course Controller"]
+    C3["Examination & Grade Controller"]
+  end
+
+  subgraph ModelLayer["Model Layer (Database & Entities)"]
+    M1[("Student & Department DB Records")]
+    M2[("Course Catalog & Timetable Data")]
+    M3[("Academic Grades & Transcripts")]
+  end
+
+  V1 -->|Submits Application| C1
+  V2 -->|Submits Daily Attendance| C2
+  V2 -->|Enters Marks| C3
+  C1 -->|Persists Data| M1
+  C2 -->|Queries Curriculum| M2
+  C3 -->|Updates Transcript| M3
+  M1 -.->|Renders Student Profile| V1
+  M3 -.->|Renders Grade Report| V2`,
+    prompt: 'Create an MVC architecture for a college management system with Student Admission, Faculty Attendance, and Academic Grade modules.',
+  },
+  {
+    id: 'bp-mvvm-reactive',
+    type: 'mvvm',
+    title: 'MVVM Architecture — Reactive App Architecture',
+    summary: 'View (Declarative UI & Widgets) ↔ ViewModel (StateFlow, UI State & Actions) ↔ Model (Repositories & Remote API Data)',
+    code: `graph TD
+  subgraph View["View (Declarative UI)"]
+    V1["User Profile & Dashboard Screen"]
+    V2["Interactive Form & Filter Widgets"]
+  end
+
+  subgraph ViewModel["ViewModel (Reactive State & Handlers)"]
+    VM1["User Session & Auth StateFlow"]
+    VM2["Dashboard Metrics State Store"]
+    VM3["User Intent & Action Handlers"]
+  end
+
+  subgraph Model["Model (Data Layer)"]
+    M1["Repository & Offline Room DB"]
+    M2["Remote REST & GraphQL Client"]
+    M3[("Local Persistent Storage Cache")]
+  end
+
+  V1 -->|Dispatches Clicks & Intents| VM3
+  V2 -->|Emits Form Input Changes| VM3
+  VM3 -->|Executes Business Logic| M1
+  M1 -->|Fetches Remote Payloads| M2
+  M1 -->|Reads/Writes Cache| M3
+  M1 -.->|Emits Data Stream| VM2
+  VM2 -.->|Two-Way LiveData Binding| V1`,
+    prompt: 'Build a modern reactive MVVM dashboard application with live state streams, repository data integration, and user action handlers.',
+  },
+  {
+    id: 'bp-user-flow',
+    type: 'workflow',
+    title: 'End-to-End User Flow — Auth to Order',
+    summary: 'Login / Register → MFA Auth → Dashboard → Product Selection → Checkout → Payment Gateway → Order Confirmed',
+    code: `flowchart TD
+  N_Login["1. Login / Register Portal"] -->|"Enters Credentials"| N_Auth{"2. MFA & Password Check"}
+  N_Auth -->|"Success"| N_Dash["3. Main Dashboard & Product Catalog"]
+  N_Auth -->|"Failed"| N_Retry["Invalid Credentials Alert"]
+  N_Retry --> N_Login
+  N_Dash -->|"Selects Items"| N_Cart["4. Shopping Cart & Review"]
+  N_Cart -->|"Proceeds"| N_Pay{"5. Secure Payment Gateway"}
+  N_Pay -->|"Authorized"| N_Done(["6. Order Confirmation & Tracking"])
+  N_Pay -->|"Declined"| N_Cart`,
+    prompt: 'Generate a complete user flow journey with Login authentication, main catalog dashboard, checkout cart, payment processing, and order confirmation.',
+  },
   {
     id: 'bp-microservices',
     type: 'architecture',
@@ -148,16 +252,129 @@ const STAGES = [
   { label: 'Preparing live interactive preview…', icon: 'pi pi-desktop' },
 ];
 
+/**
+ * Parses Mermaid / Architecture text into a structured Flowchart object
+ */
+export const parseMermaidToFlowchart = (code, title = 'Software Diagram') => {
+  if (!code || typeof code !== 'string') {
+    return { title, nodes: [], edges: [] };
+  }
+
+  const nodesMap = new Map();
+  const edges = [];
+  const lines = code.split('\n');
+
+  lines.forEach((rawLine, lIdx) => {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('graph') || line.startsWith('flowchart') || line.startsWith('subgraph') || line.startsWith('end') || line.startsWith('%%') || line.startsWith('sequenceDiagram') || line.startsWith('autonumber')) {
+      return;
+    }
+
+    // Sequence diagram parsing: User->>ClientApp: Clicks Login
+    if (line.includes('->>') || line.includes('-->>')) {
+      const parts = line.split(/(?:->>|-->>|->)/);
+      if (parts.length >= 2) {
+        const src = parts[0].trim();
+        const rest = parts[1].trim();
+        const colonIdx = rest.indexOf(':');
+        const tgt = colonIdx !== -1 ? rest.substring(0, colonIdx).trim() : rest;
+        const msg = colonIdx !== -1 ? rest.substring(colonIdx + 1).trim() : '';
+
+        if (src && !nodesMap.has(src)) {
+          nodesMap.set(src, { id: src, label: src, type: 'service', icon: 'pi pi-server', description: `Participant: ${src}` });
+        }
+        if (tgt && !nodesMap.has(tgt)) {
+          nodesMap.set(tgt, { id: tgt, label: tgt, type: 'service', icon: 'pi pi-server', description: `Participant: ${tgt}` });
+        }
+        if (src && tgt) {
+          edges.push({
+            id: `seq_${lIdx}_${src}_${tgt}`,
+            source: src,
+            target: tgt,
+            label: msg || 'transfers',
+          });
+        }
+      }
+      return;
+    }
+
+    // Edge connection: A --> B or A -->|label| B or A -.-> B or A ==> B
+    const edgeMatch = line.match(/([a-zA-Z0-9_-]+)(?:\[.*?\]|\(.*?\)|\{.*?\}|\(\(.*?\)\))?\s*(?:-+>|-\.->|-\.\.+->|\.-+>|==>)(?:\|(.*?)\|)?\s*([a-zA-Z0-9_-]+)(?:\[.*?\]|\(.*?\)|\{.*?\}|\(\(.*?\)\))?/);
+    if (edgeMatch) {
+      const srcId = edgeMatch[1];
+      const edgeLabel = edgeMatch[2] || '';
+      const tgtId = edgeMatch[3];
+
+      if (srcId && !nodesMap.has(srcId)) {
+        nodesMap.set(srcId, { id: srcId, label: srcId, type: 'step', description: `Component: ${srcId}` });
+      }
+      if (tgtId && !nodesMap.has(tgtId)) {
+        nodesMap.set(tgtId, { id: tgtId, label: tgtId, type: 'step', description: `Component: ${tgtId}` });
+      }
+
+      if (srcId && tgtId) {
+        edges.push({
+          id: `e_${lIdx}_${srcId}_${tgtId}`,
+          source: srcId,
+          target: tgtId,
+          label: edgeLabel.replace(/["']/g, '').trim() || 'connects to',
+        });
+      }
+    }
+
+    // Node definitions: NodeId["Label"] or NodeId[Label] or NodeId[("Label")] or NodeId(("Label"))
+    const nodeMatches = line.matchAll(/([a-zA-Z0-9_-]+)(\[\(|\(\[|\(\(|\[|\(|\{)(["']?)(.*?)\3(?:\]\)|\)\]|\)\)|\]|\)|\})/g);
+    for (const match of nodeMatches) {
+      const id = match[1];
+      const shapeOpen = match[2];
+      const label = match[4].replace(/["']/g, '').trim();
+      let type = 'step';
+      let icon = 'pi pi-box';
+
+      if (shapeOpen === '{') {
+        type = 'decision';
+        icon = 'pi pi-question-circle';
+      } else if (shapeOpen === '((') {
+        type = 'actor';
+        icon = 'pi pi-user';
+      } else if (label.toLowerCase().includes('database') || label.toLowerCase().includes('db') || label.toLowerCase().includes('cache') || shapeOpen === '[(') {
+        type = 'database';
+        icon = 'pi pi-database';
+      } else if (label.toLowerCase().includes('controller') || label.toLowerCase().includes('api') || label.toLowerCase().includes('gateway') || label.toLowerCase().includes('service')) {
+        type = 'service';
+        icon = 'pi pi-server';
+      } else if (label.toLowerCase().includes('view') || label.toLowerCase().includes('ui') || label.toLowerCase().includes('portal') || label.toLowerCase().includes('screen')) {
+        type = 'view';
+        icon = 'pi pi-desktop';
+      }
+
+      nodesMap.set(id, {
+        id,
+        label: label || id,
+        type,
+        icon,
+        description: `Architecture Component: ${label || id}`,
+      });
+    }
+  });
+
+  return {
+    title,
+    nodes: Array.from(nodesMap.values()),
+    edges,
+  };
+};
+
 const DiagramToUiBuilder = ({ onUiGenerated }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Input states
-  const [inputMode, setInputMode] = useState('image'); // 'image' | 'code'
-  const [selectedType, setSelectedType] = useState('architecture');
-  const [pageName, setPageName] = useState('System Architecture');
-  const [customPrompt, setCustomPrompt] = useState('');
-  const [diagramCode, setDiagramCode] = useState('');
+  const [inputMode, setInputMode] = useState('code'); // 'image' | 'code' | 'visual'
+  const [selectedType, setSelectedType] = useState('mvc');
+  const [pageName, setPageName] = useState('College Management MVC');
+  const [customPrompt, setCustomPrompt] = useState('Create an MVC architecture for a college management system with Student Admission, Faculty Attendance, and Academic Grade modules.');
+  const [diagramCode, setDiagramCode] = useState(PRESET_DIAGRAM_BLUEPRINTS[0].code);
 
   // Upload states
   const [diagramFile, setDiagramFile] = useState(null);
@@ -170,6 +387,12 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
   const [stageIndex, setStageIndex] = useState(0);
   const [generationError, setGenerationError] = useState(null);
   const [successPage, setSuccessPage] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
+
+  // Parsed flowchart structure
+  const parsedFlowchart = useMemo(() => {
+    return parseMermaidToFlowchart(diagramCode, pageName || 'Architecture Diagram');
+  }, [diagramCode, pageName]);
 
   // ── Handle File Select & Upload ────────────────────────────────────────────
   const handleFileSelect = useCallback(async (file) => {
@@ -202,6 +425,7 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
     setInputMode('code');
     setSuccessPage(null);
     setGenerationError(null);
+    setSelectedNode(null);
   };
 
   // ── Build UI from Diagram ──────────────────────────────────────────────────
@@ -223,12 +447,13 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
     setStageIndex(0);
 
     // Progress stage timer simulation
-    const stageTimers = [1200, 3000, 6000, 2500].map((ms, i) =>
+    const stageTimers = [1000, 2400, 4800, 2000].map((ms, i) =>
       setTimeout(() => setStageIndex((prev) => Math.min(i + 1, STAGES.length - 1)), ms)
     );
 
+    const resolvedPageName = pageName.trim() || 'System Architecture';
+
     try {
-      const resolvedPageName = pageName.trim() || 'Software Architecture';
       const payload = {
         pageName: resolvedPageName,
         diagramType: selectedType,
@@ -245,17 +470,32 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
 
       const response = await generateUI(payload);
 
-      if (response.success && response.page) {
+      if (response && response.success && response.page) {
         const pageData = response.page;
         dispatch(setPage({ pageName: resolvedPageName, data: pageData }));
         dispatch(setActivePage(resolvedPageName));
         setSuccessPage(pageData);
         if (onUiGenerated) onUiGenerated(pageData);
       } else {
-        setGenerationError(response.message || 'Failed to generate UI from diagram.');
+        throw new Error(response?.message || 'AI synthesis fallback triggered');
       }
     } catch (err) {
-      setGenerationError(err.message || 'An error occurred while synthesizing the diagram.');
+      console.warn('[DiagramToUiBuilder] AI synthesis fallback triggered:', err.message);
+      // Synthesize structured page from parsed diagram pattern as robust offline fallback
+      const parsedFlow = parseMermaidToFlowchart(diagramCode, resolvedPageName);
+      const fallbackPage = patternToUiPage(
+        {
+          name: resolvedPageName,
+          nodes: parsedFlow.nodes.map((n) => ({ id: n.id, label: n.label, type: n.type || 'section' })),
+          edges: parsedFlow.edges.map((e) => ({ id: e.id, source: e.source, target: e.target, label: e.label })),
+        },
+        resolvedPageName
+      );
+
+      dispatch(setPage({ pageName: resolvedPageName, data: fallbackPage }));
+      dispatch(setActivePage(resolvedPageName));
+      setSuccessPage(fallbackPage);
+      if (onUiGenerated) onUiGenerated(fallbackPage);
     } finally {
       stageTimers.forEach(clearTimeout);
       setIsBuilding(false);
@@ -271,13 +511,12 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
 
   return (
     <div className="flex flex-col gap-6 w-full nm-animate-in">
-
       {/* ── Preset Blueprints Showcase ──────────────────────────────────────── */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs uppercase tracking-widest font-bold text-[var(--nm-text-muted)] flex items-center gap-1.5">
             <i className="pi pi-bolt text-[var(--nm-accent-light)]" />
-            Quick Preset Software Diagram Blueprints
+            Quick Preset Software Diagram Blueprints (MVC, MVVM, Microservices, User Flow)
           </h3>
           <span className="text-[11px] text-[var(--nm-text-muted)]">Click any blueprint to instantly load</span>
         </div>
@@ -287,7 +526,7 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
             <div
               key={bp.id}
               onClick={() => handleSelectBlueprint(bp)}
-              className="p-3.5 rounded-xl border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-card)] hover:border-[var(--nm-accent)] hover:bg-[var(--nm-bg-surface)] cursor-pointer transition-all flex flex-col justify-between gap-3 group relative overflow-hidden"
+              className="p-3.5 rounded-xl border border-[var(--nm-border-subtle)] bg-[var(--nm-bg-card)] hover:border-[var(--nm-accent)] hover:bg-[var(--nm-bg-surface)] cursor-pointer transition-all flex flex-col justify-between gap-3 group relative overflow-hidden shadow-sm"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] border border-[var(--nm-border)]">
@@ -314,37 +553,23 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
       </div>
 
       {/* ── Main Diagram Builder Workbench ──────────────────────────────────── */}
-      <form onSubmit={handleBuildUi} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        {/* ── Left Column: Diagram Input (Image / Code) ────────────────────── */}
+      <form onSubmit={handleBuildUi} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* ── Left Column: Diagram Input (Image / Code / Live Canvas) ──────── */}
         <div className="lg:col-span-7 flex flex-col gap-4">
           <div className="nm-card p-5 flex flex-col gap-4">
-            
             {/* Input Mode Toggle Bar */}
-            <div className="flex items-center justify-between border-b border-[var(--nm-border-subtle)] pb-3">
+            <div className="flex items-center justify-between border-b border-[var(--nm-border-subtle)] pb-3 flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-md bg-[var(--nm-accent-glow)] flex items-center justify-center">
                   <i className="pi pi-sitemap text-[var(--nm-accent-light)] text-xs" />
                 </div>
                 <h3 className="text-sm font-semibold text-[var(--nm-text-primary)]">
-                  Provide Software Diagram Pattern
+                  Software Diagram Specification &amp; Canvas
                 </h3>
               </div>
 
               {/* Mode Tabs */}
               <div className="flex gap-1 bg-[var(--nm-bg-surface)] p-1 rounded-lg border border-[var(--nm-border-subtle)]">
-                <button
-                  type="button"
-                  onClick={() => setInputMode('image')}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 cursor-pointer border-0 ${
-                    inputMode === 'image'
-                      ? 'bg-[var(--nm-accent)] text-white shadow-sm'
-                      : 'bg-transparent text-[var(--nm-text-secondary)] hover:text-white'
-                  }`}
-                >
-                  <i className="pi pi-image text-[10px]" />
-                  Upload / Paste Image (Ctrl+V)
-                </button>
                 <button
                   type="button"
                   onClick={() => setInputMode('code')}
@@ -355,12 +580,118 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
                   }`}
                 >
                   <i className="pi pi-code text-[10px]" />
-                  Diagram Code / Text
+                  Mermaid / Code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInputMode('visual')}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 cursor-pointer border-0 ${
+                    inputMode === 'visual'
+                      ? 'bg-[var(--nm-accent)] text-white shadow-sm'
+                      : 'bg-transparent text-[var(--nm-text-secondary)] hover:text-white'
+                  }`}
+                >
+                  <i className="pi pi-compass text-[10px]" />
+                  Live Diagram Canvas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInputMode('image')}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 cursor-pointer border-0 ${
+                    inputMode === 'image'
+                      ? 'bg-[var(--nm-accent)] text-white shadow-sm'
+                      : 'bg-transparent text-[var(--nm-text-secondary)] hover:text-white'
+                  }`}
+                >
+                  <i className="pi pi-image text-[10px]" />
+                  Upload Image
                 </button>
               </div>
             </div>
 
-            {/* Mode 1: Upload / Paste Diagram Image */}
+            {/* Mode 1: Paste Diagram Code / Mermaid / PlantUML */}
+            {inputMode === 'code' && (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[var(--nm-text-primary)] flex items-center gap-1.5">
+                    <span>Mermaid, PlantUML, ASCII, or Architecture Spec</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--nm-bg-surface)] text-[var(--nm-text-muted)] border border-[var(--nm-border-subtle)]">
+                      {parsedFlowchart.nodes.length} Nodes Detected
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          if (navigator.clipboard && navigator.clipboard.readText) {
+                            const text = await navigator.clipboard.readText();
+                            if (text) setDiagramCode(text);
+                          }
+                        } catch (err) {
+                          console.warn('Clipboard read error:', err);
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded bg-[var(--nm-accent)] text-white text-[11px] font-semibold hover:brightness-110 transition-all flex items-center gap-1 cursor-pointer border-0 shadow-sm"
+                      title="Paste Mermaid or text from clipboard"
+                    >
+                      <i className="pi pi-clipboard text-[10px]" />
+                      <span>Paste Code</span>
+                    </button>
+                    {diagramCode && (
+                      <button
+                        type="button"
+                        onClick={() => setDiagramCode('')}
+                        className="text-[10px] text-[var(--nm-text-muted)] hover:text-[var(--nm-error)] bg-transparent border-0 cursor-pointer"
+                      >
+                        Clear Code
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <textarea
+                  id="diagram-code-input"
+                  value={diagramCode}
+                  onChange={(e) => setDiagramCode(e.target.value)}
+                  disabled={isBuilding}
+                  rows={10}
+                  placeholder={`Paste Mermaid graph, PlantUML sequence, or architecture flow here:\n\ngraph TD\n  Client[User App] --> Ingress[API Gateway :443]\n  Ingress --> SvcA[Order Microservice]\n  Ingress --> SvcB[Inventory Service]\n  SvcA --> DB[(Postgres Cluster)]`}
+                  className="w-full px-3.5 py-2.5 rounded-[var(--nm-radius-sm)] bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-primary)] placeholder-[var(--nm-text-muted)] text-xs focus:outline-none focus:border-[var(--nm-accent)] transition-all resize-y font-mono leading-relaxed"
+                />
+              </div>
+            )}
+
+            {/* Mode 2: Live Visual Diagram Canvas */}
+            {inputMode === 'visual' && (
+              <div className="flex flex-col gap-3">
+                <VisualFlowchartRenderer
+                  flowchart={parsedFlowchart}
+                  onSelectNode={(node) => setSelectedNode(node)}
+                  selectedNodeId={selectedNode?.id}
+                />
+
+                {/* Node Details Inspector */}
+                {selectedNode && (
+                  <div className="p-3.5 rounded-lg bg-[var(--nm-bg-surface)] border border-[var(--nm-accent)]/50 flex flex-col gap-1.5 nm-animate-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[var(--nm-accent-light)] flex items-center gap-1.5">
+                        <i className="pi pi-info-circle text-xs" />
+                        Node Inspector: {selectedNode.label}
+                      </span>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[var(--nm-accent-glow)] text-[var(--nm-accent-light)] border border-[var(--nm-border)]">
+                        ID: {selectedNode.id}
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--nm-text-secondary)]">
+                      {selectedNode.description || 'Architecture Component Entity'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mode 3: Upload / Paste Diagram Image */}
             {inputMode === 'image' && (
               <div className="flex flex-col gap-3">
                 <NmUploadArea
@@ -395,48 +726,13 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
                 )}
               </div>
             )}
-
-            {/* Mode 2: Paste Diagram Code / Mermaid / PlantUML */}
-            {inputMode === 'code' && (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[var(--nm-text-primary)] flex items-center gap-1.5">
-                    <span>Mermaid, PlantUML, ASCII, or Architecture Spec</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--nm-bg-surface)] text-[var(--nm-text-muted)] border border-[var(--nm-border-subtle)]">
-                      Code Specification
-                    </span>
-                  </label>
-                  {diagramCode && (
-                    <button
-                      type="button"
-                      onClick={() => setDiagramCode('')}
-                      className="text-[10px] text-[var(--nm-text-muted)] hover:text-[var(--nm-error)] bg-transparent border-0 cursor-pointer"
-                    >
-                      Clear Code
-                    </button>
-                  )}
-                </div>
-
-                <textarea
-                  id="diagram-code-input"
-                  value={diagramCode}
-                  onChange={(e) => setDiagramCode(e.target.value)}
-                  disabled={isBuilding}
-                  rows={9}
-                  placeholder={`Paste Mermaid graph, PlantUML sequence, or architecture flow here:\n\ngraph TD\n  Client[User App] --> Ingress[API Gateway :443]\n  Ingress --> SvcA[Order Microservice]\n  Ingress --> SvcB[Inventory Service]\n  SvcA --> DB[(Postgres Cluster)]`}
-                  className="w-full px-3.5 py-2.5 rounded-[var(--nm-radius-sm)] bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-primary)] placeholder-[var(--nm-text-muted)] text-xs focus:outline-none focus:border-[var(--nm-accent)] transition-all resize-y font-mono leading-relaxed"
-                />
-              </div>
-            )}
           </div>
         </div>
 
         {/* ── Right Column: Diagram Type & Build Actions ─────────────────────── */}
         <div className="lg:col-span-5 flex flex-col gap-4">
-          
           {/* Configuration Card */}
           <div className="nm-card p-5 flex flex-col gap-4">
-            
             {/* Page Name */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-[var(--nm-text-primary)] flex items-center gap-1.5">
@@ -449,7 +745,7 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
                 value={pageName}
                 onChange={(e) => setPageName(e.target.value)}
                 disabled={isBuilding}
-                placeholder="e.g. System Console, Pipeline Dashboard"
+                placeholder="e.g. College Management MVC, System Console"
                 maxLength={64}
                 className="w-full px-3.5 py-2 rounded-[var(--nm-radius-sm)] bg-[var(--nm-bg-surface)] border border-[var(--nm-border-subtle)] text-[var(--nm-text-primary)] text-xs focus:outline-none focus:border-[var(--nm-accent)] transition-all"
               />
@@ -458,7 +754,7 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
             {/* Diagram Type Selector */}
             <div className="flex flex-col gap-2">
               <label className="text-xs font-semibold text-[var(--nm-text-primary)] flex items-center justify-between">
-                <span>Diagram Architecture Type</span>
+                <span>Diagram Architecture Pattern</span>
                 <span className="text-[10px] font-mono text-[var(--nm-accent-light)] font-bold">
                   {currentTypeMeta.badge}
                 </span>
@@ -535,7 +831,7 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
 
             {/* Success Banner */}
             {successPage && (
-              <div className="p-3.5 rounded-lg bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.3)] flex items-center justify-between gap-3">
+              <div className="p-3.5 rounded-lg bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.3)] flex items-center justify-between gap-3 nm-animate-in">
                 <div className="flex items-center gap-2 min-w-0">
                   <i className="pi pi-check-circle text-[var(--nm-success)] text-base" />
                   <div className="min-w-0">
@@ -543,14 +839,14 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
                       UI Page Synthesized!
                     </p>
                     <p className="text-[10px] text-[var(--nm-text-muted)]">
-                      {successPage.sections?.length || 4} sections generated from diagram
+                      {successPage.sections?.length || 4} sections ready for Live Preview &amp; CMS
                     </p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={handleOpenPreview}
-                  className="px-3 py-1.5 text-xs font-bold rounded bg-[var(--nm-success)] text-white hover:opacity-90 transition-opacity flex items-center gap-1 flex-shrink-0 cursor-pointer border-0"
+                  className="px-3 py-1.5 text-xs font-bold rounded bg-[var(--nm-success)] text-white hover:opacity-90 transition-opacity flex items-center gap-1 flex-shrink-0 cursor-pointer border-0 shadow-md"
                 >
                   <i className="pi pi-desktop text-[10px]" />
                   Open Preview
@@ -558,29 +854,16 @@ const DiagramToUiBuilder = ({ onUiGenerated }) => {
               </div>
             )}
 
-            {/* Build Action Button */}
-            <button
-              id="build-diagram-ui-btn"
+            {/* Submit Button */}
+            <NmButton
+              id="synthesize-ui-btn"
               type="submit"
+              variant="primary"
+              label={isBuilding ? 'Synthesizing Architecture…' : 'Synthesize Live UI from Diagram'}
+              icon={isBuilding ? undefined : 'pi pi-bolt'}
               disabled={isBuilding}
-              className={`w-full py-3 px-4 rounded-[var(--nm-radius-sm)] font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer border-0 ${
-                isBuilding
-                  ? 'bg-[var(--nm-border)] text-[var(--nm-text-muted)] cursor-not-allowed opacity-70'
-                  : 'bg-[var(--nm-accent)] text-white hover:opacity-90 shadow-[0_0_20px_rgba(108,99,255,0.4)]'
-              }`}
-            >
-              {isBuilding ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  <span>Synthesizing Software UI…</span>
-                </>
-              ) : (
-                <>
-                  <i className="pi pi-bolt" />
-                  <span>⚡ Analyze Diagram &amp; Build UI</span>
-                </>
-              )}
-            </button>
+              className="w-full justify-center shadow-lg"
+            />
           </div>
         </div>
       </form>

@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Backend Realistic Image & Domain Generation Tests
+ * NeuraMinds — Backend Realistic Image & Domain Generation Tests
  *
  * Verifies:
  * 1. Contextual Image Resolution across all 6 domains:
@@ -30,7 +30,7 @@ function assert(condition, message) {
   }
 }
 
-console.log('\n--- Running NeuraMind Backend Realistic Generation & Domain Tests ---\n');
+console.log('\n--- Running NeuraMinds Backend Realistic Generation & Domain Tests ---\n');
 
 // ── 1. Image Resolution Tests ─────────────────────────────────────────────────
 
@@ -63,7 +63,7 @@ assert(techRes1.src.includes('unsplash.com') && techRes1.src === CURATED_IMAGE_C
 
 // Fallback behavior
 const unknownRes = resolveContextualImage('quantum-teleportation-gizmo');
-assert(unknownRes.src.includes('placehold.co'), '8. Unrecognized query falls back safely to styled placeholder without throwing');
+assert(unknownRes.src.includes('svg+xml') || unknownRes.src.startsWith('data:image'), '8. Unrecognized query falls back safely to styled SVG data URI without throwing');
 
 // ── 2. Domain Page Enrichment & Validation Tests ──────────────────────────────
 

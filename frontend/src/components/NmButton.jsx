@@ -28,6 +28,7 @@ const NmButton = ({
   children,
   buttonColor,
   color,
+  fullWidth = false,
   ...rest
 }) => {
   // Map variants to PrimeReact severity / custom styles
@@ -74,7 +75,7 @@ const NmButton = ({
       severity={severityMap[variant]}
       onClick={onClick}
       style={dynamicBtnStyle}
-      className={`nm-btn nm-btn--${variant} ${customColorClass} ${className}`}
+      className={`nm-btn nm-btn--${variant} ${fullWidth ? 'w-full justify-center' : ''} ${customColorClass} ${className}`}
       {...rest}
     >
       {typeof children !== 'string' ? children : null}

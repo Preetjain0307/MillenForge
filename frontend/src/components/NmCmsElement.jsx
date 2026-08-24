@@ -13,6 +13,7 @@
 
 import { ELEMENT_TYPES } from '../types/ui.js';
 import { resolveDisplayString } from '../utils/valueNormalizer.js';
+import { getSvgPlaceholder } from '../utils/svgPlaceholder.js';
 import NmButton from './NmButton.jsx';
 import NmInput from './NmInput.jsx';
 import NmCard from './NmCard.jsx';
@@ -65,7 +66,7 @@ const NmCmsElement = ({ element, cmsData, className = '' }) => {
       }
 
       if (!src) {
-        src = baseProps.src || 'https://placehold.co/600x400/1a1a2e/6c63ff?text=Image';
+        src = baseProps.src || getSvgPlaceholder(alt, 600, 400);
       }
       if (baseProps.alt) alt = resolveDisplayString(baseProps.alt, 'Image');
 
@@ -77,7 +78,8 @@ const NmCmsElement = ({ element, cmsData, className = '' }) => {
           className={`max-w-full rounded-[var(--nm-radius-sm)] object-cover ${baseProps.className || ''} ${className}`}
           loading="lazy"
           onError={(e) => {
-            e.currentTarget.src = 'https://placehold.co/600x400/1a1a2e/6c63ff?text=Image+Error';
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = getSvgPlaceholder(alt, 600, 400);
           }}
         />
       );

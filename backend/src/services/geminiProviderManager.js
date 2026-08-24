@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Gemini Multi-Provider Manager & Failover Engine
+ * NeuraMinds — Gemini Multi-Provider Manager & Failover Engine
  *
  * Purpose:
  * Provides production-safe resilience, automatic retries, exponential backoff,

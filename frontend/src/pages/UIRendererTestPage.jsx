@@ -41,7 +41,7 @@ const FIXTURE_PAGE = {
         {
           id: 'text-h1',
           type: 'text',
-          content: 'NeuraMind UI Renderer',
+          content: 'NeuraMinds UI Renderer',
           fallback: 'Heading',
           props: { tag: 'h1', className: 'text-4xl font-bold nm-gradient-text' },
         },
@@ -296,7 +296,7 @@ const FIXTURE_PAGE = {
               {
                 id: 'step-3',
                 label: 'Generate & Preview',
-                description: 'NeuraMind renders your UI live.',
+                description: 'NeuraMinds renders your UI live.',
                 icon: 'pi pi-sparkles',
               },
             ],

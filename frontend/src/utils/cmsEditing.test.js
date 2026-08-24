@@ -1,5 +1,5 @@
 ﻿/**
- * NeuraMind — Task E3: CMS Editing Validation & Regression Test Suite
+ * NeuraMinds — Task E3: CMS Editing Validation & Regression Test Suite
  *
  * Verifies:
  * 1. Stable element IDs
@@ -79,7 +79,7 @@ function findElementInPage(page, elementId) {
   return null;
 }
 
-console.log('\n--- Running NeuraMind Task E3: CMS Editing Validation & Regression Tests ---\n');
+console.log('\n--- Running NeuraMinds Task E3: CMS Editing Validation & Regression Tests ---\n');
 
 // ─── 1. Stable Element IDs ──────────────────────────────────────────────────
 runTest('1. Stable Element IDs: Preserves or generates deterministic keys', () => {

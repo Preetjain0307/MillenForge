@@ -1,5 +1,5 @@
 /**
- * NeuraMind — One-Click Deployment Preparation & Production Validation Utility
+ * NeuraMinds — One-Click Deployment Preparation & Production Validation Utility
  *
  * Performs production configuration checks, environment variable validation,
  * upload directory verification, CORS checks, and structured health auditing
@@ -131,7 +131,7 @@ const runDeploymentAudit = () => {
 const printStartupAudit = () => {
   const audit = runDeploymentAudit();
   console.log('\n===============================================================');
-  console.log(`   NEURAMIND SERVER v${audit.version} — DEPLOYMENT READINESS AUDIT   `);
+  console.log(`   NEURAMINDS SERVER v${audit.version} — DEPLOYMENT READINESS AUDIT   `);
   console.log('===============================================================');
   console.log(`  Environment    : ${audit.environment}`);
   console.log(`  Overall Status : ${audit.status.toUpperCase()}`);

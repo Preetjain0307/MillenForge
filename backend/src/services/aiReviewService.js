@@ -1,5 +1,5 @@
 /**
- * NeuraMind — AI Review & Self-Improvement Engine (Service)
+ * NeuraMinds — AI Review & Self-Improvement Engine (Service)
  *
  * Implements:
  * 1. Multi-Agent Review System (UX, Visual, Accessibility, Engineering, Product + Aggregator)

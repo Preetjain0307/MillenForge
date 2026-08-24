@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Frontend API Service Layer
+ * NeuraMinds — Frontend API Service Layer
  *
  * ALL HTTP calls to the backend must go through this module.
  * Components must NOT scatter fetch/axios calls throughout the app.
@@ -90,10 +90,7 @@ export const listPages = () => client.get('/pages');
  * @param {string} pageName
  * @returns {Promise<object>}
  */
-export const getPage = (pageName) => client.get(`/pages/${encodeURIComponent(pageName)}`);
-
 // ─── Platform & Diagrams ──────────────────────────────────────────────────────
-
 /**
  * Extract a user navigation & interaction flowchart from UI photo, screenshot, or page schema.
  * @param {object} payload
@@ -105,3 +102,4 @@ export const getPage = (pageName) => client.get(`/pages/${encodeURIComponent(pag
 export const generateUiToFlow = (payload) => client.post('/platform/ui-to-flow', payload);
 
 export default client;
+

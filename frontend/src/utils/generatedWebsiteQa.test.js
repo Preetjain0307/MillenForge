@@ -1,5 +1,5 @@
 ﻿/**
- * NeuraMind — Generated Website Quality & Domain Coverage QA Tests
+ * NeuraMinds — Generated Website Quality & Domain Coverage QA Tests
  *
  * Exercises:
  * 1. Real Estate domain UIPage structure & validation
@@ -30,7 +30,7 @@ function runTest(name, fn) {
   }
 }
 
-console.log('\n--- Running NeuraMind Final QA & Domain Coverage Tests ---\n');
+console.log('\n--- Running NeuraMinds Final QA & Domain Coverage Tests ---\n');
 
 // ─── 1. Real Estate Domain UI ──────────────────────────────────────────────
 runTest('1. Real Estate Website: Property cards, price tags, location badges, & CTAs', () => {
@@ -129,7 +129,7 @@ runTest('2. Portfolio Website: Hero header, project showcase cards, & contact CT
             id: 'project-cards',
             type: ELEMENT_TYPES.CARDS,
             items: [
-              { id: 'proj-1', title: 'NeuraMind AI Engine', description: 'Real-time wireframe-to-React UI compiler & visual CMS', icon: 'pi pi-bolt', badge: 'React / AI' },
+              { id: 'proj-1', title: 'NeuraMinds AI Engine', description: 'Real-time wireframe-to-React UI compiler & visual CMS', icon: 'pi pi-bolt', badge: 'React / AI' },
               { id: 'proj-2', title: 'Distributed Vector DB', description: 'High-throughput nearest neighbor similarity search index', icon: 'pi pi-database', badge: 'C++ / Rust' },
               { id: 'proj-3', title: 'Cloud Telemetry Engine', description: 'Zero-overhead distributed trace collection pipeline', icon: 'pi pi-server', badge: 'Go / K8s' },
             ],

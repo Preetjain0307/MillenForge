@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Prompt Requirement Extraction & Financial Calculation Engine
+ * NeuraMinds — Prompt Requirement Extraction & Financial Calculation Engine
  *
  * Converts arbitrary user prompts into an internal, structured Requirement Specification:
  *   1. Domain Detection (food, travel, fashion, saas, realestate, portfolio, education, healthcare, finance, docs, auth, generic)

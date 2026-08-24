@@ -1,4 +1,4 @@
-/* NeuraMind — Global Styles */
+/* NeuraMinds — Frontend UI/UX Premium Design System */
 @import "tailwindcss";
 
 /* PrimeReact theme */
@@ -6,42 +6,42 @@
 @import "primereact/resources/primereact.min.css";
 @import "primeicons/primeicons.css";
 
-/* Design tokens — Premium Graphite & Electric Violet Studio Theme (Sneha) */
+/* Design Tokens: Graphite + Electric Violet + Ice */
 :root {
-  --nm-bg-primary: #09090b;
+  /* Graphite Palette */
+  --nm-bg-primary: #09090B;
   --nm-bg-secondary: #111113;
-  --nm-bg-surface: #18181b;
-  --nm-bg-card: #18181b;
-  --nm-accent: #8b5cf6;
-  --nm-accent-light: #a78bfa;
+  --nm-bg-surface: #18181B;
+  --nm-bg-elevated: #202024;
+  --nm-bg-card: #18181B;
+  --nm-border: #2A2A30;
+  --nm-border-subtle: rgba(255, 255, 255, 0.07);
+
+  /* Electric Violet Palette */
+  --nm-accent: #8B5CF6;
+  --nm-accent-hover: #7C3AED;
+  --nm-accent-light: #A78BFA;
+  --nm-accent-soft: #C4B5FD;
   --nm-accent-glow: rgba(139, 92, 246, 0.25);
-  --nm-text-primary: #f8fafc;
-  --nm-text-secondary: #cbd5e1;
-  --nm-text-muted: #94a3b8;
-  --nm-border: rgba(139, 92, 246, 0.3);
-  --nm-border-subtle: #2a2a30;
-  --nm-success: #34d399;
-  --nm-error: #fb7185;
-  --nm-warning: #fbbf24;
+  --nm-accent-glow-subtle: rgba(139, 92, 246, 0.12);
+
+  /* Ice Palette (Typography) */
+  --nm-text-primary: #F8FAFC;
+  --nm-text-secondary: #CBD5E1;
+  --nm-text-muted: #94A3B8;
+
+  /* State Colors */
+  --nm-success: #34D399;
+  --nm-warning: #FBBF24;
+  --nm-error: #FB7185;
+
+  /* Radii */
   --nm-radius: 12px;
   --nm-radius-sm: 8px;
   --nm-radius-lg: 16px;
-
-  /* Dynamic Canvas Theme Tokens (Sanika's color accuracy engine) */
-  --background: #09090b;
-  --surface: #18181b;
-  --primary: #8b5cf6;
-  --primary-text: #ffffff;
-  --text: #f8fafc;
-  --muted-text: #94a3b8;
-  --border: #2a2a30;
-  --accent: #8b5cf6;
-  --heading-color: #f8fafc;
-  --header-bg: #18181b;
-  --header-text: #f8fafc;
 }
 
-/* Base */
+/* Base resets */
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -52,7 +52,7 @@ html, body {
   min-height: 100vh;
   background-color: var(--nm-bg-primary);
   color: var(--nm-text-primary);
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -61,39 +61,57 @@ html, body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--nm-bg-primary);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--nm-bg-secondary); }
-::-webkit-scrollbar-thumb { background: var(--nm-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--nm-accent); }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--nm-bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--nm-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nm-accent);
+}
 
-/* Utility classes */
+/* Typography & Utility classes */
 .nm-gradient-text {
-  background: linear-gradient(135deg, var(--nm-accent-light) 0%, #a78bfa 50%, #60a5fa 100%);
+  background: linear-gradient(135deg, #F8FAFC 0%, var(--nm-accent-light) 50%, var(--nm-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nm-gradient-violet {
+  background: linear-gradient(135deg, var(--nm-accent-light) 0%, var(--nm-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .nm-glass {
-  background: rgba(26, 26, 46, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--nm-border-subtle);
+  background: rgba(24, 24, 27, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--nm-border);
 }
 
 .nm-card {
-  background: var(--nm-bg-card);
-  border: 1px solid var(--nm-border-subtle);
+  background: var(--nm-bg-surface);
+  border: 1px solid var(--nm-border);
   border-radius: var(--nm-radius);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .nm-card:hover {
-  border-color: var(--nm-border);
-  box-shadow: 0 0 24px var(--nm-accent-glow);
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 16px var(--nm-accent-glow-subtle);
 }
 
 /* Focus ring */
@@ -102,22 +120,33 @@ html, body {
   outline-offset: 2px;
 }
 
-/* Animation utilities */
+/* Animations */
 @keyframes nm-pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px var(--nm-accent-glow); }
-  50% { box-shadow: 0 0 24px var(--nm-accent-glow), 0 0 48px var(--nm-accent-glow); }
+  0%, 100% { box-shadow: 0 0 12px var(--nm-accent-glow); }
+  50% { box-shadow: 0 0 28px var(--nm-accent-glow), 0 0 44px var(--nm-accent-glow-subtle); }
 }
 
 @keyframes nm-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .nm-animate-in {
-  animation: nm-fade-in 0.4s ease both;
+  animation: nm-fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* ── Carousel ─────────────────────────────────────────────────────────────── */
+/* Code block styles */
+.nm-code-block {
+  background: #0D0D11;
+  border: 1px solid var(--nm-border);
+  border-radius: var(--nm-radius-sm);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #E2E8F0;
+}
+
+/* Carousel */
 .nm-carousel-wrapper {
   width: 100%;
   overflow: hidden;
@@ -148,8 +177,8 @@ html, body {
   flex-direction: column;
   border-radius: var(--nm-radius);
   overflow: hidden;
-  background: var(--nm-bg-card);
-  border: 1px solid var(--nm-border-subtle);
+  background: var(--nm-bg-surface);
+  border: 1px solid var(--nm-border);
 }
 
 .nm-carousel__img {
@@ -165,7 +194,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--nm-bg-surface);
+  background: var(--nm-bg-elevated);
 }
 
 .nm-carousel__caption {
@@ -175,17 +204,13 @@ html, body {
   gap: 0.25rem;
 }
 
-/* ── Wizard ───────────────────────────────────────────────────────────────── */
+/* Wizard */
 .nm-wizard {
   display: flex;
   flex-direction: column;
   gap: 0;
   width: 100%;
   position: relative;
-}
-
-.nm-wizard__track {
-  display: none;
 }
 
 .nm-wizard__steps {
@@ -214,7 +239,7 @@ html, body {
   top: calc(0.875rem + 36px);
   width: 2px;
   height: calc(100% - 36px);
-  background: var(--nm-border-subtle);
+  background: var(--nm-border);
 }
 
 .nm-wizard__step:last-child::before {
@@ -222,12 +247,7 @@ html, body {
 }
 
 .nm-wizard__step--active {
-  background: rgba(139, 92, 246, 0.06);
-}
-
-.nm-wizard__step--done .nm-wizard__step::before,
-.nm-wizard__step--done + .nm-wizard__step::before {
-  background: var(--nm-accent);
+  background: rgba(139, 92, 246, 0.08);
 }
 
 .nm-wizard__circle {
@@ -235,8 +255,8 @@ html, body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid var(--nm-border-subtle);
-  background: var(--nm-bg-surface);
+  border: 2px solid var(--nm-border);
+  background: var(--nm-bg-elevated);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,7 +273,7 @@ html, body {
 
 .nm-wizard__circle--done {
   border-color: var(--nm-success);
-  background: rgba(34, 197, 94, 0.15);
+  background: rgba(52, 211, 153, 0.15);
   color: var(--nm-success);
 }
 
@@ -262,7 +282,7 @@ html, body {
   padding-top: 0.25rem;
 }
 
-/* ── Badge ────────────────────────────────────────────────────────────────── */
+/* Badge */
 .nm-badge {
   display: inline-flex;
   align-items: center;
@@ -272,85 +292,30 @@ html, body {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  background: var(--nm-accent-glow);
+  background: rgba(139, 92, 246, 0.15);
   color: var(--nm-accent-light);
   border: 1px solid rgba(139, 92, 246, 0.3);
   white-space: nowrap;
 }
 
-/* ── NmButton variants (supplement PrimeReact) ────────────────────────────── */
+/* NmButton */
 .nm-btn {
   border-radius: var(--nm-radius-sm) !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
-  transition: opacity 0.15s ease, box-shadow 0.15s ease !important;
+  transition: all 0.15s ease !important;
 }
 
-.nm-btn:focus-visible {
-  outline: 2px solid var(--nm-accent) !important;
-  outline-offset: 2px !important;
+.nm-btn-primary {
+  background-color: var(--nm-accent) !important;
+  border-color: var(--nm-accent) !important;
+  color: #FFFFFF !important;
 }
 
-/* ── Viewport Mode Grid & Responsive Overrides for Preview Container ───────── */
-.nm-viewport-mobile {
-  container-type: inline-size;
-}
-
-.nm-viewport-mobile .grid,
-.nm-viewport-mobile [class*="grid"],
-.nm-viewport-mobile [class*="grid-cols-"],
-.nm-viewport-mobile [class*="lg:grid-cols-"],
-.nm-viewport-mobile [class*="md:grid-cols-"],
-.nm-viewport-mobile [class*="sm:grid-cols-"] {
-  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-  gap: 1rem !important;
-}
-
-.nm-viewport-mobile section {
-  padding-left: 0.75rem !important;
-  padding-right: 0.75rem !important;
-  padding-top: 1.25rem !important;
-  padding-bottom: 1.25rem !important;
-}
-
-.nm-viewport-mobile .nm-card,
-.nm-viewport-mobile article,
-.nm-viewport-mobile [class*="card"] {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-}
-
-.nm-viewport-mobile h1,
-.nm-viewport-mobile h2,
-.nm-viewport-mobile h3,
-.nm-viewport-mobile h4,
-.nm-viewport-mobile p,
-.nm-viewport-mobile span {
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  white-space: normal !important;
-}
-
-.nm-viewport-tablet {
-  container-type: inline-size;
-}
-
-.nm-viewport-tablet .grid,
-.nm-viewport-tablet [class*="grid-cols-3"],
-.nm-viewport-tablet [class*="grid-cols-4"],
-.nm-viewport-tablet [class*="lg:grid-cols-3"],
-.nm-viewport-tablet [class*="lg:grid-cols-4"] {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 1rem !important;
-}
-
-/* Clean Word Wrapping for Card Titles & Descriptions — never split individual letters */
-.break-words,
-.break-normal {
-  overflow-wrap: break-word !important;
-  word-break: normal !important;
-  white-space: normal !important;
+.nm-btn-primary:hover {
+  background-color: var(--nm-accent-hover) !important;
+  border-color: var(--nm-accent-hover) !important;
+  box-shadow: 0 0 16px var(--nm-accent-glow) !important;
 }
 
 /* ── Fluid Responsive Typography & Stacking Rules ────────────────────────── */

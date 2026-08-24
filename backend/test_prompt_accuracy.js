@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Universal Prompt Accuracy & Requirement Verification Test Suite
+ * NeuraMinds — Universal Prompt Accuracy & Requirement Verification Test Suite
  *
  * Tests requirement extraction, GST calculations, domain-aware image selection,
  * requirement coverage checks, and post-generation validation across 12 scenarios.
@@ -25,7 +25,7 @@ function runTest(name, fn) {
   }
 }
 
-console.log('\n=== NeuraMind Universal Prompt Accuracy & Visual Fidelity Tests ===\n');
+console.log('\n=== NeuraMinds Universal Prompt Accuracy & Visual Fidelity Tests ===\n');
 
 // ── Test Group 1: Requirement Extraction & Domain Detection ─────────────────
 console.log('--- 1. Requirement Extraction & Domain Detection ---');

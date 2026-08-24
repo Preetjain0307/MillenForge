@@ -1,5 +1,5 @@
-﻿/**
- * NeuraMind — Visual Design Intelligence Data Contracts & Helpers
+/**
+ * NeuraMinds — Visual Design Intelligence Data Contracts & Helpers
  *
  * Provides:
  * 1. Pattern Diagram Schema & Validation ({ nodes: [], edges: [] })
@@ -289,6 +289,115 @@ export const patternToUiPage = (diagram, overridePageName) => {
           content: 'Submit',
           fallback: 'Submit',
           props: { variant: 'primary' },
+        })
+      );
+    } else if (nodeType === 'service' || nodeType.includes('controller') || nodeType.includes('api') || nodeType.includes('gateway')) {
+      sectionType = SECTION_TYPES.FEATURES;
+      elements.push(
+        createElement({
+          id: `ctrl-title-${index}`,
+          type: ELEMENT_TYPES.TEXT,
+          content: `${nodeLabel} (Controller & Handler)`,
+          fallback: nodeLabel,
+          props: { tag: 'h3', className: 'text-xl font-bold mb-2 text-[var(--nm-accent-light)]' },
+        }),
+        createElement({
+          id: `ctrl-cards-${index}`,
+          type: ELEMENT_TYPES.CARDS,
+          items: [
+            { id: `c-api-${index}`, title: 'Active API Endpoint', description: 'POST /api/v1/process · Status: 200 OK · Latency: 24ms', icon: 'pi pi-bolt' },
+            { id: `c-event-${index}`, title: 'Event Dispatcher', description: 'Real-time message bus & async worker subscriber', icon: 'pi pi-sync' },
+            { id: `c-auth-${index}`, title: 'Security & Auth Guard', description: 'Role-based JWT validation & token verification', icon: 'pi pi-shield' },
+          ],
+          fallback: nodeLabel,
+          props: { columns: 3 },
+        })
+      );
+    } else if (nodeType === 'database' || nodeType.includes('model') || nodeType.includes('db') || nodeType.includes('cache') || nodeType.includes('record')) {
+      sectionType = SECTION_TYPES.FEATURES;
+      elements.push(
+        createElement({
+          id: `model-title-${index}`,
+          type: ELEMENT_TYPES.TEXT,
+          content: `${nodeLabel} (Data Model & Storage)`,
+          fallback: nodeLabel,
+          props: { tag: 'h3', className: 'text-xl font-bold mb-2 text-blue-400' },
+        }),
+        createElement({
+          id: `model-cards-${index}`,
+          type: ELEMENT_TYPES.CARDS,
+          items: [
+            { id: `m-entity-${index}`, title: 'Primary Schema Entity', description: 'Indexed relational tables with ACID transactions', icon: 'pi pi-database' },
+            { id: `m-query-${index}`, title: 'Read / Write Query Pool', description: 'Connection pool active (12 connections in pool)', icon: 'pi pi-server' },
+            { id: `m-cache-${index}`, title: 'Persistence & Cache Tier', description: 'Redis memory cache + PostgreSQL persistent storage', icon: 'pi pi-box' },
+          ],
+          fallback: nodeLabel,
+          props: { columns: 3 },
+        })
+      );
+    } else if (nodeType === 'view' || nodeType.includes('portal') || nodeType.includes('dashboard') || nodeType === DIAGRAM_NODE_TYPES.DASHBOARD) {
+      sectionType = SECTION_TYPES.FEATURES;
+      elements.push(
+        createElement({
+          id: `view-title-${index}`,
+          type: ELEMENT_TYPES.TEXT,
+          content: `${nodeLabel} (Interactive View)`,
+          fallback: nodeLabel,
+          props: { tag: 'h3', className: 'text-xl font-bold mb-2 text-emerald-400' },
+        }),
+        createElement({
+          id: `view-cards-${index}`,
+          type: ELEMENT_TYPES.CARDS,
+          items: [
+            { id: `v-summary-${index}`, title: 'Live Dashboard & Overview', description: 'Real-time data visualization & status telemetry', icon: 'pi pi-chart-line' },
+            { id: `v-actions-${index}`, title: 'Interactive User Actions', description: 'Form submission, filtered search & modal triggers', icon: 'pi pi-sliders-h' },
+            { id: `v-profile-${index}`, title: 'Account & Session Info', description: 'Current authenticated session & role permissions', icon: 'pi pi-user' },
+          ],
+          fallback: nodeLabel,
+          props: { columns: 3 },
+        })
+      );
+    } else if (nodeType === 'decision' || nodeType.includes('check') || nodeType.includes('gateway')) {
+      sectionType = SECTION_TYPES.CUSTOM;
+      elements.push(
+        createElement({
+          id: `dec-title-${index}`,
+          type: ELEMENT_TYPES.TEXT,
+          content: `Validation Gateway: ${nodeLabel}`,
+          fallback: nodeLabel,
+          props: { tag: 'h3', className: 'text-lg font-bold mb-2 text-amber-400' },
+        }),
+        createElement({
+          id: `dec-desc-${index}`,
+          type: ELEMENT_TYPES.TEXT,
+          content: 'Verification check passed. Routing request to next authorized processing handler.',
+          fallback: 'Verification Gateway',
+          props: { tag: 'p', className: 'text-sm text-gray-300 mb-3' },
+        }),
+        createElement({
+          id: `dec-btn-${index}`,
+          type: ELEMENT_TYPES.BUTTON,
+          content: 'Verify & Proceed',
+          fallback: 'Proceed',
+          props: { variant: 'primary', icon: 'pi pi-check' },
+        })
+      );
+    } else if (nodeType === 'actor' || nodeType.includes('user') || nodeType.includes('role')) {
+      sectionType = SECTION_TYPES.CUSTOM;
+      elements.push(
+        createElement({
+          id: `actor-title-${index}`,
+          type: ELEMENT_TYPES.TEXT,
+          content: `Role: ${nodeLabel}`,
+          fallback: nodeLabel,
+          props: { tag: 'h3', className: 'text-xl font-bold mb-2 text-purple-400' },
+        }),
+        createElement({
+          id: `actor-btn-${index}`,
+          type: ELEMENT_TYPES.BUTTON,
+          content: `Access ${nodeLabel} Portal`,
+          fallback: 'Access Portal',
+          props: { variant: 'primary', icon: 'pi pi-user' },
         })
       );
     } else if (nodeType === DIAGRAM_NODE_TYPES.CARD || nodeType === DIAGRAM_NODE_TYPES.CONTAINER) {
