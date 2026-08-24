@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — CMS Data Foundation & Reusable Component Test Suite
+ * NeuraMindss — CMS Data Foundation & Reusable Component Test Suite
  *
  * Runs headless assertions against:
  * 1. Text element (string + object payload)
@@ -54,17 +54,17 @@ function runTest(name, fn) {
   }
 }
 
-console.log('\n--- Running NeuraMinds Task D: CMS Data Foundation Tests ---\n');
+console.log('\n--- Running NeuraMindss Task D: CMS Data Foundation Tests ---\n');
 
 // ─── TEST 1: Text Element ───────────────────────────────────────────────────
 runTest('1. Text Element: Resolves structured { text } and primitive strings', () => {
   const resolvedObj = resolveCmsContent(EXAMPLE_TEXT_ELEMENT.content, EXAMPLE_TEXT_ELEMENT.fallback);
-  assert.equal(resolvedObj, 'Build faster with NeuraMinds');
+  assert.equal(resolvedObj, 'Build faster with NeuraMindss');
 
   const normalized = normalizeToUiElement(EXAMPLE_TEXT_ELEMENT);
   assert.equal(normalized.id, 'hero-title');
   assert.equal(normalized.type, ELEMENT_TYPES.TEXT);
-  assert.equal(normalized.content, 'Build faster with NeuraMinds');
+  assert.equal(normalized.content, 'Build faster with NeuraMindss');
   assert.equal(normalized.fallback, 'Build faster with AI');
 
   // Direct string test
@@ -78,7 +78,7 @@ runTest('2. Image Element: Preserves src, alt, and fallback metadata', () => {
   assert.equal(normalized.id, 'hero-banner-image');
   assert.equal(normalized.type, ELEMENT_TYPES.IMAGE);
   assert.equal(normalized.props.src, 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80');
-  assert.equal(normalized.props.alt, 'NeuraMinds AI Generator Workspace Preview');
+  assert.equal(normalized.props.alt, 'NeuraMindss AI Generator Workspace Preview');
   assert.equal(normalized.fallback, 'AI Dashboard Preview');
 });
 

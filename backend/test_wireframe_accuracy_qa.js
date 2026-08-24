@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Wireframe-to-Production UI Accuracy QA Test Suite
+ * NeuraMinds — Wireframe-to-Production UI Accuracy QA Test Suite
  *
  * Verifies that wireframe upload pipeline & layout analysis preserves:
  * 1. Food Landing Wireframe (Split Hero, 3 food cards, category bar, promotional banner)
@@ -25,7 +25,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind Wireframe-to-Production Accuracy QA ===\n');
+console.log('\n=== NeuraMinds Wireframe-to-Production Accuracy QA ===\n');
 
 // ── TEST 1: Food Landing Wireframe Fidelity ─────────────────────────────────
 console.log('--- TEST 1: Food Landing Wireframe (FlavorRush) ---');

@@ -1,5 +1,5 @@
 /**
- * NeuraMind — AI Website Architect Agent Verification Test Suite
+ * NeuraMinds — AI Website Architect Agent Verification Test Suite
  *
  * Verifies that:
  * 1. websiteArchitectService generates complete WebsitePlan JSON objects for vague prompts
@@ -22,7 +22,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind AI Website Architect Agent Test Suite ===\n');
+console.log('\n=== NeuraMinds AI Website Architect Agent Test Suite ===\n');
 
 async function runTests() {
   // ── TEST 1: Vague Prompt Reasoned Plan ──────────────────────────────────────

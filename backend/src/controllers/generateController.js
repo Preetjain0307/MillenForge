@@ -244,7 +244,7 @@ const generate = async (req, res) => {
 
       return res.status(200).json({
         success: true,
-        message: 'UI generated using NeuraMinds Intelligent Fallback engine.',
+        message: 'UI generated using NeuraMindss Intelligent Fallback engine.',
         page: fallbackPage,
         qualityScore: 90,
         qualityGrade: 'A',

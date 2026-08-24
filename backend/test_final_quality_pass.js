@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Final Quality Pass (5 Quality Test Prompts Audit)
+ * NeuraMinds — Final Quality Pass (5 Quality Test Prompts Audit)
  *
  * Tests the full generation pipeline across 5 distinct domains:
  *  A. FlavorRush Food Delivery
@@ -26,7 +26,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind Final Quality Pass — 5 Test Prompts Audit ===\n');
+console.log('\n=== NeuraMinds Final Quality Pass — 5 Test Prompts Audit ===\n');
 
 const testCases = [
   {

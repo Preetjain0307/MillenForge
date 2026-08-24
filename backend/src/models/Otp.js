@@ -1,4 +1,4 @@
-// NeuraMinds — OTP Storage Mongoose Model
+// NeuraMindss — OTP Storage Mongoose Model
 const mongoose = require('mongoose');
 
 const otpSchema = new mongoose.Schema(

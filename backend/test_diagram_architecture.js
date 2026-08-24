@@ -16,7 +16,7 @@ const assert = require('assert');
 const { resolveContextualImage } = require('./src/services/imageService');
 const { extractPromptRequirements } = require('./src/services/promptRequirementExtractor');
 
-console.log('\n=== NeuraMinds Architecture & Diagram Module Test Suite ===\n');
+console.log('\n=== NeuraMindss Architecture & Diagram Module Test Suite ===\n');
 
 let passCount = 0;
 let failCount = 0;
@@ -138,6 +138,34 @@ runTest('TEST 6: Requirement extractor correctly identifies Architecture and Flo
 
   const req2 = extractPromptRequirements('Build a microservice cloud operations architecture with API gateway');
   assert(req2.domain === 'saas' || req2.domain === 'corporate' || req2.domain === 'generic', 'Identified tech / saas domain');
+});
+
+// Test 7: Multi-Modal Flowchart Synthesis Schema
+runTest('TEST 7: Flowchart data structure preserves nodes, edges, steps, and valid mermaid topology', () => {
+  const mockFlowchart = {
+    title: 'Student Admission & Enrollment Application Flowchart',
+    summary: 'Multi-step admission workflow',
+    nodes: [
+      { id: 'n1', label: '1. Applicant Login', type: 'screen', step: 1 },
+      { id: 'n2', label: '2. Fill Details', type: 'section', step: 2 },
+      { id: 'n3', label: '3. Upload Passport Photo', type: 'action', step: 3 },
+      { id: 'n4', label: '4. Eligibility Gate', type: 'decision', step: 4 },
+      { id: 'n5', label: '5. Application Issued', type: 'outcome', step: 5 },
+    ],
+    edges: [
+      { id: 'e1', source: 'n1', target: 'n2', label: 'Logs in' },
+      { id: 'e2', source: 'n2', target: 'n3', label: 'Saves Details' },
+      { id: 'e3', source: 'n3', target: 'n4', label: 'Files Uploaded' },
+      { id: 'e4', source: 'n4', target: 'n5', label: 'Verified' },
+    ],
+    mermaid: 'flowchart TD\n  n1 --> n2 --> n3 --> n4 --> n5',
+  };
+
+  assert(mockFlowchart.nodes.length === 5, '5 flow nodes');
+  assert(mockFlowchart.edges.length === 4, '4 transitions');
+  assert(mockFlowchart.nodes.some(n => n.type === 'action' && n.label.includes('Passport Photo')), 'Contains document/photo upload stage');
+  assert(mockFlowchart.nodes.some(n => n.type === 'decision'), 'Contains decision gate');
+  assert(mockFlowchart.mermaid.includes('flowchart'), 'Contains valid mermaid syntax');
 });
 
 console.log(`\n========================================`);

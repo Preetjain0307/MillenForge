@@ -1,7 +1,7 @@
 /**
- * NeuraMind — AI Website Architect Service
+ * NeuraMinds — AI Website Architect Service
  *
- * Senior Developer & Creative Director Agent for NeuraMind.
+ * Senior Developer & Creative Director Agent for NeuraMinds.
  *
  * Responsibilities:
  * 1. Intent & Product Reasoning: Translates tiny user prompts into a structured WebsitePlan
@@ -65,7 +65,7 @@ const analyzeAndPlanWebsite = async (userPrompt = '') => {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: modelName,
-      systemInstruction: `You are NeuraMind's Lead AI Website Architect and Senior Creative Director.
+      systemInstruction: `You are NeuraMinds's Lead AI Website Architect and Senior Creative Director.
 Your task is to analyze a user prompt and output a complete, highly structured WebsitePlan JSON object.
 
 Output ONLY valid JSON matching this schema:

@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Login & Registration Page
+ * NeuraMindss — Login & Registration Page
  */
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -104,7 +104,7 @@ const LoginPage = () => {
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--nm-accent)] to-[var(--nm-accent-glow)] flex items-center justify-center mx-auto mb-3 shadow-[0_0_24px_var(--nm-accent-glow)]">
             <i className="pi pi-bolt text-white text-2xl" aria-hidden="true" />
           </div>
-          <h1 className="text-2xl font-bold nm-gradient-text tracking-tight">NeuraMinds</h1>
+          <h1 className="text-2xl font-bold nm-gradient-text tracking-tight">NeuraMindss</h1>
           <p className="text-sm text-[var(--nm-text-muted)] mt-1">
             Sign in or create an account to start building
           </p>

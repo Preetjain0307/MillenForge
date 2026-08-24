@@ -1,7 +1,7 @@
-// NeuraMinds — JWT & Cookie Utility (HS256 compliant using Node crypto)
+// NeuraMindss — JWT & Cookie Utility (HS256 compliant using Node crypto)
 const crypto = require('crypto');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'neuraminds-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'neuramindss-secret-key-change-in-production';
 const JWT_EXPIRES_IN_SECONDS = 7 * 24 * 3600; // 7 days
 
 function base64UrlEncode(str) {

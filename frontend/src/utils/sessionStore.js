@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Session & Cookie Data Persistence Utility
+ * NeuraMindss — Session & Cookie Data Persistence Utility
  * Manages user session state, cookies, theme preferences, and recent UI generations.
  */
 

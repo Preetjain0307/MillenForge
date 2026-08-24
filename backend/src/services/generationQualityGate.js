@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Generation Quality Gate
+ * NeuraMindss — Generation Quality Gate
  *
  * Runs every generated UIPage through a deterministic pipeline:
  *   1. Schema Validation  (validateUIPage)

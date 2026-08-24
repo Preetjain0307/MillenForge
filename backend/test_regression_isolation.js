@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Prompt Isolation & Brand Grounding Regression Test Suite
+ * NeuraMinds — Prompt Isolation & Brand Grounding Regression Test Suite
  */
 
 const { extractPromptRequirements } = require('./src/services/promptRequirementExtractor');
@@ -21,7 +21,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind Generation Isolation & Brand Grounding Regression Tests ===\n');
+console.log('\n=== NeuraMinds Generation Isolation & Brand Grounding Regression Tests ===\n');
 
 // ── TEST 1: Zaika Hotel Prompt Grounding ──────────────────────────────────────
 console.log('--- 1. Hotel Zaika Prompt Grounding ---');
@@ -75,19 +75,19 @@ const foodStr = JSON.stringify(enrichedFood).toLowerCase();
 assert(!foodStr.includes('hotel room'), 'No hotel room content leakage in Zaika Kitchen site');
 assert(!foodStr.includes('maldives'), 'No travel content leakage in Zaika Kitchen site');
 
-// ── TEST 3: NeuraMind SaaS Analytics Prompt ────────────────────────────────────
-console.log('--- 3. NeuraMind SaaS Dashboard Isolation ---');
-const saasPrompt = 'Create a SaaS analytics dashboard for NeuraMind.';
+// ── TEST 3: NeuraMinds SaaS Analytics Prompt ────────────────────────────────────
+console.log('--- 3. NeuraMinds SaaS Dashboard Isolation ---');
+const saasPrompt = 'Create a SaaS analytics dashboard for NeuraMinds.';
 const saasReq = extractPromptRequirements(saasPrompt);
-assert(saasReq.domain === 'saas', 'Identifies SaaS domain for NeuraMind');
+assert(saasReq.domain === 'saas', 'Identifies SaaS domain for NeuraMinds');
 
 const mockSaasPage = {
-  page: 'NeuraMind',
+  page: 'NeuraMinds',
   sections: [
-    { type: 'navbar', elements: [{ type: 'text', content: 'NeuraMind AI' }] },
+    { type: 'navbar', elements: [{ type: 'text', content: 'NeuraMinds AI' }] },
     { type: 'hero', elements: [{ type: 'text', content: 'Real-Time Analytics Platform' }, { type: 'button', content: 'Start Free Trial' }] },
     { type: 'cards', elements: [{ type: 'card', props: { title: 'Uptime Metrics', price: '99.99%', src: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71' } }] },
-    { type: 'footer', elements: [{ type: 'text', content: 'NeuraMind Technologies' }] },
+    { type: 'footer', elements: [{ type: 'text', content: 'NeuraMinds Technologies' }] },
   ],
 };
 

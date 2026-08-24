@@ -1,5 +1,5 @@
 /**
- * AppShell — Top navigation header bar for NeuraMinds with Auth awareness
+ * AppShell — Top navigation header bar for NeuraMindss with Auth awareness
  */
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -25,13 +25,13 @@ const AppShell = () => {
         aria-label="Main Navigation"
       >
         {/* Left: Brand Identity */}
-        <Link to="/" className="flex items-center gap-3 no-underline group" aria-label="NeuraMinds Home">
+        <Link to="/" className="flex items-center gap-3 no-underline group" aria-label="NeuraMindss Home">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.3)] group-hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition-all">
             <i className="pi pi-bolt text-white text-sm" aria-hidden="true" />
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-base tracking-tight text-[#F8FAFC] flex items-center gap-1.5 leading-none">
-              NeuraMinds
+              NeuraMindss
               <span className="px-1.5 py-0.5 rounded text-[9px] font-mono tracking-wider font-semibold bg-[#8B5CF6]/20 text-[#A78BFA] border border-[#8B5CF6]/30 uppercase">
                 Studio
               </span>

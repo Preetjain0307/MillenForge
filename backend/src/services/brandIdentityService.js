@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Brand Identity & Emotional Direction Generator
+ * NeuraMinds — Brand Identity & Emotional Direction Generator
  *
  * Generates bespoke brand identity, emotional direction, visual metaphor,
  * typography philosophy, and color palette based on prompt and domain intent.

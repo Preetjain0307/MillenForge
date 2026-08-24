@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — AI Pipeline Test Script
+ * NeuraMindss — AI Pipeline Test Script
  * Run: node test_pipeline.js
  */
 

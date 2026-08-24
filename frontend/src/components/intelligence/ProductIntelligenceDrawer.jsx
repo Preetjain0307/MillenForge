@@ -206,7 +206,7 @@ const ProductIntelligenceDrawer = ({ isOpen, onClose, pageData, prompt }) => {
         {/* Drawer Footer */}
         <div className="p-4 border-t border-[var(--nm-border-subtle)] bg-[var(--nm-bg-surface-elevated)] flex items-center justify-between">
           <span className="text-[11px] text-[var(--nm-text-muted)]">
-            Powered by NeuraMinds AI Intelligence Engine
+            Powered by NeuraMindss AI Intelligence Engine
           </span>
           <NmButton variant="secondary" label="Close Panel" onClick={onClose} />
         </div>

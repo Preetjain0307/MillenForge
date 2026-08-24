@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — AI Service (Gemini)
+ * NeuraMindss — AI Service (Gemini)
  *
  * This is the SOLE abstraction boundary for AI/LLM calls.
  * Controllers must NEVER contain provider-specific logic.
@@ -55,7 +55,7 @@ const getConfig = () => {
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are NeuraMinds, a world-class AI Creative Director and Chief Product Designer (ex-Lovable, Stripe, Airbnb).
+const SYSTEM_PROMPT = `You are NeuraMindss, a world-class AI Creative Director and Chief Product Designer (ex-Lovable, Stripe, Airbnb).
 You produce ONLY valid JSON — no markdown fences, no backticks, no explanatory text before or after.
 
 Your mission is to generate HACKATHON-WINNING, visually stunning, ultra-colorful, production-ready web applications that outshine Lovable, Gemini, and ChatGPT.
@@ -572,7 +572,7 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
     }
   }
 
-  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMinds Intelligent Generation Fallback engine.');
+  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMindss Intelligent Generation Fallback engine.');
   return buildSmartFallbackPage(pageName, prompt);
 };
 
@@ -763,13 +763,13 @@ const generateUIFromDiagram = async ({ imagePath, diagramCode, diagramType = 'au
  * @param {string} [params.prompt] - optional extra instructions
  * @returns {Promise<object>} flowchart JSON with nodes, edges, mermaid, and insights
  */
-const generateUiToFlow = async ({ imagePath, uiPage, prompt }) => {
+const generateUiToFlow = async ({ imagePath, uiPage, uiContent, prompt }) => {
   const config = getConfig();
-  console.log(`[AI] generateUiToFlow — model: ${config.model}, image: "${imagePath || 'none'}"`);
+  console.log(`[AI] generateUiToFlow — model: ${config.model}, image: "${imagePath || 'none'}", hasUiContent: ${Boolean(uiContent)}`);
 
   const genAI = new GoogleGenerativeAI(config.apiKey);
 
-  const flowSystemPrompt = `You are NeuraMinds Flowchart Architect.
+  const flowSystemPrompt = `You are NeuraMindss Flowchart Architect.
 Analyze the provided UI screenshot, photo, form, or application mockup and extract a complete, granular, step-by-step User Navigation & Interaction Flowchart.
 
 Capture all sequential interaction stages such as:
@@ -895,7 +895,10 @@ Output ONLY a single valid JSON object matching this schema:
 }
 Output pure JSON with no markdown fences or surrounding prose.`;
 
-  let userMessage = `Analyze this UI screenshot/photo/specification and extract the complete, granular step-by-step user interaction flowchart (including authentication, filling details, document/passport photo uploads, course selections, decision checks, payments, and submission).`;
+  let userMessage = `Analyze this UI screenshot/photo/code/specification and extract the complete, granular step-by-step user interaction flowchart (including authentication, filling details, document/passport photo uploads, course selections, decision checks, payments, and submission).`;
+  if (uiContent) {
+    userMessage += `\n\nProvided UI Code / HTML Form / Schema / Specification:\n\`\`\`\n${uiContent.slice(0, 4000)}\n\`\`\``;
+  }
   if (uiPage) {
     userMessage += `\n\nExisting UI Page Structure:\n\`\`\`json\n${JSON.stringify(uiPage, null, 2).slice(0, 3000)}\n\`\`\``;
   }
@@ -905,7 +908,7 @@ Output pure JSON with no markdown fences or surrounding prose.`;
 
   // Smart domain-aware Fallback builder
   const buildFallbackFlow = () => {
-    const rawText = `${prompt || ''} ${uiPage?.page || ''}`.toLowerCase();
+    const rawText = `${prompt || ''} ${uiContent || ''} ${uiPage?.page || ''}`.toLowerCase();
     
     // 1. Hospital & Healthcare Patient Workflow
     if (/\bhospital\b|\bclinic\b|\bpatient\b|\bdoctor\b|\bmedical\b|\bhealth\b|\bopd\b|\btelehealth\b/i.test(rawText)) {

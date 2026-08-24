@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Website Blueprint Service
+ * NeuraMinds — Website Blueprint Service
  *
  * Generates an architectural WebsiteBlueprint before UIPage generation.
  * Reason about product, audience, brand, visual storytelling, information hierarchy,

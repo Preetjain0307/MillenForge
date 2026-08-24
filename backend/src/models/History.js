@@ -1,4 +1,4 @@
-// NeuraMinds — Generation History Mongoose Model
+// NeuraMindss — Generation History Mongoose Model
 // Minimal schema for persisting UI generation history records.
 
 const mongoose = require('mongoose');

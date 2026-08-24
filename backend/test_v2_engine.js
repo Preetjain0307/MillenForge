@@ -1,5 +1,5 @@
 /**
- * NeuraMind — V2 Engine Unit & Integration Test Suite
+ * NeuraMinds — V2 Engine Unit & Integration Test Suite
  */
 
 const { generateWebsiteBlueprint } = require('./src/services/blueprintService');
@@ -18,7 +18,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind V2 Engine Test Suite ===\n');
+console.log('\n=== NeuraMinds V2 Engine Test Suite ===\n');
 
 // 1. Blueprint Generation Tests
 console.log('--- 1. Website Blueprint Generation ---');

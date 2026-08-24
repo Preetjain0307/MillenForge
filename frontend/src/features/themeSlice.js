@@ -3,7 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   brand: {
     logo: '',
-    name: 'NeuraMinds',
+    name: 'NeuraMindss',
     primaryColor: '#6c63ff',
     secondaryColor: '#f43f5e',
     typography: 'Inter',

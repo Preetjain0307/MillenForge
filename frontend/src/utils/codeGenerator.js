@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Code Generator Utility
+ * NeuraMindss — Code Generator Utility
  * Converts UIPage JSON schema into clean, formatted React (JSX) and HTML/Tailwind code strings.
  */
 

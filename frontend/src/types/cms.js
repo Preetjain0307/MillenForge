@@ -1,5 +1,5 @@
 /**
- * NeuraMinds – CMS Data Contract & Binding Foundation
+ * NeuraMindss – CMS Data Contract & Binding Foundation
  *
  * Provides a clean architecture for CMS-bound generated UI elements
  * and reusable repeating components (e.g. loops for cards/lists).

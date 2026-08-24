@@ -1,12 +1,12 @@
 ﻿/**
- * LandingPage — NeuraMinds Product Showcase & Entry Page
+ * LandingPage — NeuraMindss Product Showcase & Entry Page
  *
  * Demonstrates:
  * 1. Product Value Proposition & Headline
  * 2. Visual Workflow (Wireframe → AI → UI → Live CMS Edit)
  * 3. Feature Highlights (Vision AI, Reusable Contracts, CMS Live Edit, Production Export)
  * 4. Sample Showcase Prompts
- * 5. Responsive Design with NeuraMinds Design Tokens
+ * 5. Responsive Design with NeuraMindss Design Tokens
  */
 
 import { Link } from 'react-router-dom';
@@ -90,7 +90,7 @@ const LandingPage = () => {
         </h1>
 
         <p className="text-base sm:text-lg text-[var(--nm-text-secondary)] max-w-2xl leading-relaxed">
-          Upload hand-drawn wireframes or describe your vision. NeuraMinds compiles structured, responsive web components coupled with a real-time visual CMS editor.
+          Upload hand-drawn wireframes or describe your vision. NeuraMindss compiles structured, responsive web components coupled with a real-time visual CMS editor.
         </p>
 
         <div className="flex items-center justify-center flex-wrap gap-4 pt-2">
@@ -117,7 +117,7 @@ const LandingPage = () => {
       <section className="flex flex-col gap-8">
         <div className="text-center max-w-xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold text-[var(--nm-text-primary)] mb-2">
-            How NeuraMinds Works
+            How NeuraMindss Works
           </h2>
           <p className="text-sm text-[var(--nm-text-secondary)]">
             A seamless bridge between visual wireframes, AI code generation, and live content management.
@@ -195,7 +195,7 @@ const LandingPage = () => {
             <span>Supported Domain Applications</span>
           </h2>
           <p className="text-xs text-[var(--nm-text-secondary)]">
-            NeuraMinds generates realistic, contextual layouts tailored to your industry.
+            NeuraMindss generates realistic, contextual layouts tailored to your industry.
           </p>
         </div>
 
@@ -236,7 +236,7 @@ const LandingPage = () => {
           <div className="w-5 h-5 rounded bg-[var(--nm-accent)] flex items-center justify-center text-white text-xs">
             <i className="pi pi-bolt" />
           </div>
-          <span className="font-semibold text-[var(--nm-text-secondary)]">NeuraMinds AI Engine</span>
+          <span className="font-semibold text-[var(--nm-text-secondary)]">NeuraMindss AI Engine</span>
           <span>· Real-time UI & CMS Generation</span>
         </div>
         <div>

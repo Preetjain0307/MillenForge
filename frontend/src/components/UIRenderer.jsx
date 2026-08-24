@@ -631,7 +631,7 @@ const ELEMENT_REGISTRY = {
   testimonial: (element) => {
     const props = safeProps(element);
     const items = Array.isArray(props.items) ? props.items : [
-      { name: 'Sarah Jenkins', role: 'Product Lead, TechCorp', quote: 'NeuraMind completely transformed our design workflow. The output is breathtaking!', rating: '5' },
+      { name: 'Sarah Jenkins', role: 'Product Lead, TechCorp', quote: 'NeuraMinds completely transformed our design workflow. The output is breathtaking!', rating: '5' },
       { name: 'David Chen', role: 'Founder, StudioX', quote: 'Incredible speed, beautiful color palettes, and production-ready UX in seconds.', rating: '5' },
     ];
 

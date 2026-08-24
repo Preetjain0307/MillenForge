@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Representative CMS Datasets
+ * NeuraMindss — Representative CMS Datasets
  *
  * Demonstrates the CMS data foundation for:
  * 1. Text element
@@ -18,7 +18,7 @@ export const EXAMPLE_TEXT_ELEMENT = {
   id: 'hero-title',
   type: ELEMENT_TYPES.TEXT,
   content: {
-    text: 'Build faster with NeuraMinds',
+    text: 'Build faster with NeuraMindss',
   },
   fallback: 'Build faster with AI',
   props: {
@@ -33,7 +33,7 @@ export const EXAMPLE_IMAGE_ELEMENT = {
   type: ELEMENT_TYPES.IMAGE,
   content: {
     src: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80',
-    alt: 'NeuraMinds AI Generator Workspace Preview',
+    alt: 'NeuraMindss AI Generator Workspace Preview',
   },
   fallback: 'AI Dashboard Preview',
   props: {
@@ -147,7 +147,7 @@ export const EXAMPLE_CMS_BOUND_PAGE = {
           id: 'features-header',
           type: ELEMENT_TYPES.TEXT,
           content: {
-            text: 'Why Choose NeuraMinds',
+            text: 'Why Choose NeuraMindss',
           },
           fallback: 'Features',
           props: { tag: 'h2', className: 'text-3xl font-bold mb-4' },
@@ -228,7 +228,7 @@ export const EXAMPLE_CMS_BOUND_PAGE = {
     },
   ],
   meta: {
-    title: 'NeuraMinds — Landing Page',
+    title: 'NeuraMindss — Landing Page',
     description: 'CMS-bound generated UI with reusable repeating components',
   },
 };

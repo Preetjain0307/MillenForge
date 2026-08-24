@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Anti-AI-Template Engine & Quality Inspection
+ * NeuraMinds — Anti-AI-Template Engine & Quality Inspection
  *
  * Detects generic AI website cliches:
  *  1. Repetitive 3-card grid loops across consecutive sections

@@ -1,4 +1,4 @@
-// NeuraMinds — Google OAuth Service
+// NeuraMindss — Google OAuth Service
 // Standard OAuth 2.0 / OpenID Connect authorization code flow.
 // Safe environment-variable-driven implementation using native fetch.
 

@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — Frontend Prompt Accuracy & Contract Verification Test Suite
+ * NeuraMindss — Frontend Prompt Accuracy & Contract Verification Test Suite
  *
  * Verifies UIPage structural validity under validateUiPage, safe value normalization,
  * image URL presence, and zero React object-child errors across multiple domain prompts.
@@ -24,7 +24,7 @@ function runTest(name, fn) {
   }
 }
 
-console.log('\n--- Running NeuraMinds Frontend Prompt Accuracy & Visual Fidelity Tests ---\n');
+console.log('\n--- Running NeuraMindss Frontend Prompt Accuracy & Visual Fidelity Tests ---\n');
 
 runTest('1. Food delivery UIPage with GST breakdown passes validateUiPage', () => {
   const page = {

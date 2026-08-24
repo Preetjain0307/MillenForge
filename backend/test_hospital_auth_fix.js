@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Hospital & Auth Portal Domain Fix Test Suite
+ * NeuraMinds — Hospital & Auth Portal Domain Fix Test Suite
  *
  * Verifies that authentication / hospital login prompts generate:
  *  - Healthcare authentication portal cards (Doctor Login & Patient Login)
@@ -24,7 +24,7 @@ function assert(condition, label) {
   }
 }
 
-console.log('\n=== NeuraMind Hospital & Auth Portal Fix Test Suite ===\n');
+console.log('\n=== NeuraMinds Hospital & Auth Portal Fix Test Suite ===\n');
 
 // ── TEST 1: Exact Hospital Prompt Requirements & Color Extraction ─────────────
 console.log('--- 1. Exact Hospital Prompt Requirement & Color Parsing ---');

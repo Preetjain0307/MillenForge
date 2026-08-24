@@ -1,5 +1,5 @@
 /**
- * NeuraMinds — CMS Utilities & Stable ID Management
+ * NeuraMindss — CMS Utilities & Stable ID Management
  *
  * Helpers for ID stabilization, content fallback resolution,
  * and CMS data lifecycle operations.
