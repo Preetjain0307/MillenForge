@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Mega Sprint AI Website Quality & Domain Intelligence Verification
+ * NeuraMindss — Mega Sprint AI Website Quality & Domain Intelligence Verification
  *
  * Verifies all 10 required domain prompts:
  * 1. Food Ordering
@@ -85,7 +85,7 @@ function assert(condition, message) {
 
 async function runDemoQualitySuite() {
   console.log('\n===========================================================');
-  console.log('  NEURAMIND — 10-DOMAIN INTELLIGENCE & VERIFICATION SUITE');
+  console.log('  NEURAMINDSS — 10-DOMAIN INTELLIGENCE & VERIFICATION SUITE');
   console.log('===========================================================\n');
 
   for (let i = 0; i < DEMO_PROMPTS.length; i++) {

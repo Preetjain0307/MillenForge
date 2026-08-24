@@ -1,5 +1,5 @@
 /**
- * NeuraMind Backend Utilities
+ * NeuraMindss Backend Utilities
  */
 
 /**

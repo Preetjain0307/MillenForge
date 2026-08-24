@@ -1,5 +1,5 @@
 /**
- * NeuraMind — AI Service (Gemini)
+ * NeuraMindss — AI Service (Gemini)
  *
  * This is the SOLE abstraction boundary for AI/LLM calls.
  * Controllers must NEVER contain provider-specific logic.
@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const { geminiProviderManager } = require('./geminiProviderManager');
 const { resolveContextualImage } = require('./imageService');
+const { extractPromptRequirements, formatRequirementSpecPrompt, extractCleanTopicTitle } = require('./promptRequirementExtractor');
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -54,7 +55,7 @@ const getConfig = () => {
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are NeuraMind, a world-class AI Creative Director and Chief Product Designer (ex-Lovable, Stripe, Airbnb).
+const SYSTEM_PROMPT = `You are NeuraMindss, a world-class AI Creative Director and Chief Product Designer (ex-Lovable, Stripe, Airbnb).
 You produce ONLY valid JSON — no markdown fences, no backticks, no explanatory text before or after.
 
 Your mission is to generate HACKATHON-WINNING, visually stunning, ultra-colorful, production-ready web applications that outshine Lovable, Gemini, and ChatGPT.
@@ -86,33 +87,34 @@ Output a single JSON object matching this exact schema:
 }
 
 HACKATHON-WINNING VISUAL & AESTHETIC DIRECTIVES:
-1. COLORFUL & VIBRANT DOMAIN-SPECIFIC THEMING:
-   - NEVER generate monotone, plain black, or dull gray pages. Use vibrant, rich, colorful domain palettes:
-     * Food & Dining: Crimson Flame (#E11D48) & Sunfire Amber (#F97316) over Warm Charcoal (#181216) or Ivory (#FDFBF7)
-     * College & Education: Royal Imperial Blue (#2563EB) & Emerald (#059669) over Crisp Royal Slate (#F8FAFC)
-     * Hospital & Healthcare: Health Mint Teal (#0D9488) & Crimson (#E11D48) over Soft Medical White (#F0FDFA)
-     * Travel & Resort: Tropical Azure (#0284C7) & Golden Sunset (#F59E0B) over Deep Ocean (#0C1B2A)
-     * Fashion & E-Commerce: Luxe Rose (#F43F5E) & Champagne Gold (#F59E0B) over Velvet Night (#0F0E17)
-     * Gaming & Esports: Cyber Lime (#84CC16) & Electric Cyan (#06B6D4) over Carbon Dark (#090A0F)
-     * SaaS & AI Tech: Neon Violet (#8B5CF6) & Hyper Cyan (#06B6D4) over Obsidian Deep (#090814)
+1. DESIGN INTELLIGENCE & DOMAIN-AWARE VISUAL DIRECTION:
+   - Perform internal reasoning before generating UI: infer industry category, audience, conversion goals, and optimal layout.
+   - Food/Restaurant: Warm appetising palettes (#E11D48 crimson, #F97316 amber), rich food photography, menu cards with prices, ratings, and "Order Online" CTAs.
+   - Travel/Hospitality: Cinematic ocean (#0284C7 sky blue, #F59E0B sunset gold), destination cards, search/booking widgets, pricing, and ratings.
+   - SaaS/AI Tech: Modern indigo/violet (#8B5CF6, #06B6D4 cyan), subtle dark glassmorphism, analytics dashboard cards, statistics, and conversion CTAs.
+   - Fashion/E-Commerce: Editorial monochrome (#F43F5E rose, #F59E0B gold), high-impact product grids, promotional sale badges, and pricing.
+   - Real Estate: Modern architectural blue/emerald (#10B981), property search filters, house imagery, and location badges.
 
-2. FULL 6-8 MULTI-SECTION RICHNESS (DO NOT GENERATE BRIEF OR SMALL PAGES):
-   Every generated website MUST include 6 to 8 full-sized sections:
-     Section 1) Navbar: Brand logo with glowing icon badge, navigation links, search input, role switcher / login CTA button.
-     Section 2) Hero: High-impact bold headline, subheadline, dual primary/secondary CTA buttons, trust badges ("★ 4.9/5 Rating · 50,000+ Active Users"), and high-res Unsplash hero photography.
-     Section 3) Category Filter & Control Bar: Interactive pill badges ("All", "Popular", "Top Rated", "Featured") and search bar.
-     Section 4) Core Cards Grid (6 to 8 detailed items): Each card MUST have title, price (with GST if food/checkout), star rating badge ("★ 4.9"), description, category badge, Unsplash imageQuery, and "Add to Cart" or "Book Now" CTA button.
-     Section 5) Core Pillars / Features Grid (4 cards): Highlighting key domain advantages with colorful icon badges.
-     Section 6) Stat Counter Bar: 4 large numerical metrics (e.g., "99.9% Uptime", "50k+ Happy Customers", "100+ Awards").
-     Section 7) Testimonials & FAQ Accordion: Authentic customer review cards with star ratings and avatar badges.
-     Section 8) Grand Footer: Brand mission, multi-column navigation links, newsletter email signup input form, social media icons, and legal links.
+2. DISTINCT HERO & SECTION COMPOSITION:
+   - Vary the hero section layout intentionally per domain:
+     * Split Hero: Text on left, product/dashboard preview or imagery on right.
+     * Centered Hero: High-impact title with dual CTAs and trust badges.
+     * Full-Bleed Hero: Cinematic background with bold overlay content.
+   - Do NOT use the exact same layout or 3-card structure for every prompt.
 
-3. ZERO PLACEHOLDERS & ABSOLUTE CONTENT REALISM:
-   - NEVER output "Lorem ipsum", "Sample text", or generic placeholders.
-   - Use exact realistic prices (e.g. "$14.99", "₹349", "$1,450/mo"), accurate ratings ("★ 4.9 (320+ reviews)"), explicit button labels ("Order Fresh Now", "Book Free Consultation", "Explore Collection", "Sign In to Student Portal").
+3. FULL MULTI-SECTION RICHNESS (6 to 8 SECTIONS):
+   - Every page MUST include 6 to 8 purpose-driven sections (Navbar, Hero, Features/Categories, Products/Cards, Testimonials/Social Proof, FAQ/Accordion, Secondary CTA, Grand Footer).
 
-4. HIGH-RESOLUTION CONTEXTUAL IMAGE QUERIES:
-   - EVERY image element and EVERY card item MUST include a domain-specific "imageQuery" so real Unsplash photos render automatically across all elements!
+4. HIGH-RESOLUTION CONTEXTUAL IMAGERY:
+   - EVERY image element and card MUST include a domain-specific "imageQuery" so real Unsplash photos render across all elements. Never use empty images.
+
+5. ABSOLUTE PROMPT GROUNDING & BRAND ISOLATION:
+   - Extract and incorporate the user's EXACT brand name. Never leak content or imagery across unrelated domains.
+
+6. RESPONSIVE DESIGN INTELLIGENCE (DESKTOP, TABLET, MOBILE):
+   - Desktop (>=1024px): 3-4 column grids, generous whitespace.
+   - Tablet (768-1023px): 2-column grids, balanced padding.
+   - Mobile (<768px): 1-column cards, 100% full-width CTA buttons, compact mobile navigation header, zero horizontal overflow.
 
 OUTPUT ONLY THE JSON OBJECT. ZERO TEXT BEFORE OR AFTER.`;
 
@@ -221,33 +223,74 @@ const buildGenerationConfig = (model) => {
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-/**
- * Generate a UIPage from a text prompt (no wireframe).
- *
- * @param {object} params
- * @param {string} params.prompt
- * @param {string} [params.pageName]
- * @param {string} [params.existingCode]
- * @param {string} [params.architectureFlow]
- * @returns {Promise<object>} parsed UIPage JSON
- */
 const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
+  const reqSpec = extractPromptRequirements(prompt);
   const promptLower = String(prompt).toLowerCase();
-  const name = pageName || 'Home';
+  const topicTitle = reqSpec.explicitBrand || reqSpec.brandName || extractCleanTopicTitle(prompt);
+  const name = pageName && pageName !== 'Home' ? pageName : topicTitle;
 
-  const contextAsset = resolveContextualImage(prompt || pageName, 'Hero visual asset');
-  let heroTitle = `${name} Portal`;
-  let heroDesc = `Discover modern solutions designed for exceptional digital experiences.`;
+  const contextAsset = resolveContextualImage(prompt || topicTitle, 'Hero visual asset');
+  let heroTitle = `${topicTitle} — Designed for Excellence`;
+  let heroDesc = `Discover modern solutions, signature offerings, and exceptional experiences designed for ${topicTitle}.`;
   let heroImage = contextAsset.src;
-  let heroCta = 'Explore Now';
-  let cardTitle = 'Core Services & Programs';
+  let heroCta = reqSpec.requiredActions?.[0] || 'Explore Features';
+  let cardTitle = `Featured ${topicTitle} Offerings & Services`;
   let items = [
-    { id: 'item-1', title: 'Streamlined Analytics', description: 'Real-time performance tracking and actionable business metrics.', price: '$29/mo' },
-    { id: 'item-2', title: 'Automated Workflows', description: 'Intelligent process automation designed for modern teams.', price: '$49/mo' },
-    { id: 'item-3', title: 'Enterprise Security', description: 'Bank-grade encryption and access controls across all touchpoints.', price: '$99/mo' },
+    { id: 'item-1', title: `${topicTitle} Signature Experience`, description: `Handcrafted solution engineered for modern benchmarks and seamless usability.`, price: 'Featured' },
+    { id: 'item-2', title: `${topicTitle} Interactive Suite`, description: `Streamlined interface designed for optimal engagement, performance, and speed.`, price: 'Popular' },
+    { id: 'item-3', title: `${topicTitle} Premium Capability`, description: `Comprehensive end-to-end service tailored for excellence and reliability.`, price: 'Enterprise' },
   ];
 
-  if (promptLower.includes('college') || promptLower.includes('university') || promptLower.includes('campus') || promptLower.includes('academic')) {
+  const isAuthPortalPrompt = reqSpec.loginTypes.length > 0 || promptLower.includes('login') || promptLower.includes('auth');
+  const isChinesePrompt = promptLower.includes('chinese') || promptLower.includes('asian') || promptLower.includes('dim sum') || promptLower.includes('noodle') || promptLower.includes('dumpling');
+
+  if (isAuthPortalPrompt) {
+    const brandName = promptLower.includes('zaika') ? 'Zaika' : topicTitle;
+    heroTitle = `Welcome to ${brandName} Digital Portal`;
+    heroDesc = `Secure, encrypted access for ${reqSpec.loginTypes.join(' and ') || 'authorized users'}. Choose your portal below to sign in.`;
+    heroImage = reqSpec.domain === 'hospital'
+      ? 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80'
+      : 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80';
+    heroCta = reqSpec.loginTypes[0] || 'Sign In';
+    cardTitle = 'Select Your Authentication Portal';
+
+    items = [];
+    if (reqSpec.loginTypes.includes('Doctor Login') || promptLower.includes('doctor')) {
+      items.push({
+        id: 'auth-doc',
+        title: 'Doctor Portal',
+        description: 'Access your clinical dashboard, manage patient appointments, view EHR records, and update prescriptions securely.',
+        buttonText: 'Doctor Login',
+        imageQuery: 'doctor medical professional clinic'
+      });
+    }
+    if (reqSpec.loginTypes.includes('Patient Login') || promptLower.includes('patient')) {
+      items.push({
+        id: 'auth-pat',
+        title: 'Patient Portal',
+        description: 'Schedule medical appointments, view lab test reports, request prescription refills, and message your care team.',
+        buttonText: 'Patient Login',
+        imageQuery: 'patient healthcare consultation'
+      });
+    }
+    if (items.length === 0) {
+      items = [
+        { id: 'auth-user', title: 'User Account Portal', description: 'Sign in to access your personal dashboard, settings, and secure services.', buttonText: 'User Login', imageQuery: 'secure portal login' },
+        { id: 'auth-admin', title: 'Administrator Portal', description: 'Access system controls, user management, and security audit logs.', buttonText: 'Admin Login', imageQuery: 'admin dashboard' }
+      ];
+    }
+  } else if (isChinesePrompt) {
+    heroTitle = `${topicTitle} — Authentic Chinese Culinary Experience`;
+    heroDesc = `Savor handcrafted Cantonese delicacies, authentic Sichuan specialties, and artisanal dim sum prepared by master chefs.`;
+    heroImage = 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'View Menu & Order';
+    cardTitle = 'Signature Dim Sum & Wok Specialties';
+    items = [
+      { id: 'chn-1', title: 'Signature Steamed Pork Dim Sum', description: 'Handmade dumpling baskets with succulent pork, chives, and hot chili oil dipping sauce.', price: '₹320', imageQuery: 'chinese dim sum dumplings' },
+      { id: 'chn-2', title: 'Wok-Fried Sichuan Chilli Noodles', description: 'Fresh egg noodles tossed with wok-charred garlic, Sichuan peppercorns, and crisp bok choy.', price: '₹280', imageQuery: 'chinese wok fried noodles' },
+      { id: 'chn-3', title: 'Artisanal Crispy Peking Duck Rolls', description: 'Roasted Peking duck wrapped in delicate steamed pancakes with scallions and sweet bean sauce.', price: '₹390', imageQuery: 'peking duck chinese food' },
+    ];
+  } else if (reqSpec.domain === 'college' || promptLower.includes('college') || promptLower.includes('university') || promptLower.includes('campus') || promptLower.includes('academic')) {
     heroTitle = 'Excellence in Higher Education & Academic Innovation';
     heroDesc = 'Empowering future leaders through world-class degree programs, pioneering research, and vibrant campus life.';
     heroImage = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80';
@@ -258,7 +301,7 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       { id: 'edu-2', title: 'Department of Business Administration', description: 'MBA and Undergraduate programs in Global Finance, Leadership, and Marketing.', price: 'Admissions Open' },
       { id: 'edu-3', title: 'College of Engineering & Architecture', description: 'ABET-accredited majors in Electrical, Mechanical, and Sustainable Design.', price: 'Admissions Open' },
     ];
-  } else if (promptLower.includes('hospital') || promptLower.includes('medical') || promptLower.includes('clinic') || promptLower.includes('doctor')) {
+  } else if (reqSpec.domain === 'hospital' || promptLower.includes('hospital') || promptLower.includes('medical') || promptLower.includes('clinic') || promptLower.includes('doctor')) {
     heroTitle = 'World-Class Healthcare & Compassionate Patient Care';
     heroDesc = 'Advanced clinical care, state-of-the-art diagnostic facilities, and dedicated medical specialists available 24/7.';
     heroImage = 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80';
@@ -269,7 +312,7 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       { id: 'hosp-2', title: 'Orthopedics & Joint Replacement', description: 'Robotic joint surgery, sports medicine, and specialized rehabilitation therapies.', price: 'Consultation Available' },
       { id: 'hosp-3', title: 'Pediatric & Neonatal Care Center', description: 'Specialized pediatric ICU, emergency care, and child development specialists.', price: 'Consultation Available' },
     ];
-  } else if (promptLower.includes('bank') || promptLower.includes('banking') || promptLower.includes('fintech')) {
+  } else if (reqSpec.domain === 'banking' || promptLower.includes('bank') || promptLower.includes('banking') || promptLower.includes('fintech')) {
     heroTitle = 'Next-Generation Digital Banking & Financial Freedom';
     heroDesc = 'Manage accounts, transfer funds instantly, and grow investments with institutional-grade security.';
     heroImage = 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=1200&q=80';
@@ -280,7 +323,7 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       { id: 'bank-2', title: 'Cashback World Rewards Card', description: '3% unlimited cashback on dining and travel with zero foreign transaction fees.', price: 'No Annual Fee' },
       { id: 'bank-3', title: 'Automated Portfolio Investment', description: 'AI-driven robo-advisory portfolio rebalancing tailored to your risk profile.', price: '$0 Commission' },
     ];
-  } else if (promptLower.includes('job') || promptLower.includes('career') || promptLower.includes('hiring')) {
+  } else if (reqSpec.domain === 'jobportal' || promptLower.includes('job') || promptLower.includes('career') || promptLower.includes('hiring')) {
     heroTitle = 'Discover Your Next Career at Leading Tech Enterprises';
     heroDesc = 'Connect with top engineering, design, and product roles offering competitive compensation and remote flexibility.';
     heroImage = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80';
@@ -291,7 +334,7 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       { id: 'job-2', title: 'Lead Product Designer (UX/UI)', description: 'Figma, Design Systems, Mobile Apps • San Francisco, CA', price: '$130k - $165k' },
       { id: 'job-3', title: 'Principal Cloud Architect', description: 'AWS, Kubernetes, Terraform • New York, NY / Remote', price: '$170k - $210k' },
     ];
-  } else if (promptLower.includes('food') || promptLower.includes('pizza') || promptLower.includes('burger') || promptLower.includes('restaurant')) {
+  } else if (reqSpec.domain === 'food' || promptLower.includes('food') || promptLower.includes('pizza') || promptLower.includes('burger') || promptLower.includes('restaurant')) {
     heroTitle = 'Artisan Culinary Delivered Fresh to Your Door';
     heroDesc = 'Savor hand-crafted gourmet meals prepared by master chefs using locally sourced organic ingredients.';
     heroImage = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1200&q=80';
@@ -302,7 +345,19 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       { id: 'food-2', title: 'Gourmet Wagyu Burger', description: 'Double wagyu beef patty, aged cheddar, and smoked aioli on brioche.', price: '₹280' },
       { id: 'food-3', title: 'Artisan Rigatoni Carbonara', description: 'Handmade pasta with crispy guanciale, pecorino romano, and egg yolk.', price: '₹320' },
     ];
-  } else if (promptLower.includes('travel') || promptLower.includes('resort') || promptLower.includes('hotel')) {
+  } else if (reqSpec.domain === 'hotel' || promptLower.includes('hotel') || promptLower.includes('lodging') || promptLower.includes('suite')) {
+    const brandName = promptLower.includes('zaika') ? 'Zaika' : (reqSpec.brandName || 'Zaika Hotel & Suites');
+    heroTitle = `${brandName} — A Refined Boutique Stay & Luxury Experience`;
+    heroDesc = `Welcome to ${brandName}. Experience exceptional hospitality, sophisticated luxury suites, private wellness spa, and signature fine dining.`;
+    heroImage = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Book Your Stay';
+    cardTitle = 'Luxurious Accommodations & Executive Suites';
+    items = [
+      { id: 'hotel-1', title: 'Deluxe Garden View Suite', description: 'Spacious king suite with private balcony, marble bathroom, and garden views.', price: '₹4,500/night', imageQuery: 'luxury hotel room' },
+      { id: 'hotel-2', title: 'Executive Skyline Suite', description: 'Panoramic city skyline views, plush king bedding, spa bath, and complimentary breakfast.', price: '₹7,200/night', imageQuery: 'modern hotel suite luxury bed' },
+      { id: 'hotel-3', title: 'Presidential Penthouse Villa', description: 'Exclusive penthouse featuring private plunge pool, 24/7 butler service, and private terrace dining.', price: '₹14,500/night', imageQuery: 'luxury penthouse hotel suite' },
+    ];
+  } else if (reqSpec.domain === 'travel' || promptLower.includes('travel') || promptLower.includes('tour') || promptLower.includes('vacation')) {
     heroTitle = 'Explore Breathtaking Global Destinations';
     heroDesc = 'Plan your next dream luxury escape with curated resort packages, private tours, and exclusive travel deals.';
     heroImage = 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80';
@@ -313,7 +368,7 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       { id: 'travel-2', title: 'Swiss Alpine Lodge', description: 'Panoramic mountain views with ski-in access and luxury spa amenities.', price: '$480/night' },
       { id: 'travel-3', title: 'Santorini Cliffside Suites', description: 'Sunset ocean views overlooking the Caldera with private terrace dining.', price: '$520/night' },
     ];
-  } else if (promptLower.includes('fashion') || promptLower.includes('clothes') || promptLower.includes('store') || promptLower.includes('ecommerce')) {
+  } else if (reqSpec.domain === 'fashion' || promptLower.includes('fashion') || promptLower.includes('clothes') || promptLower.includes('store') || promptLower.includes('ecommerce')) {
     heroTitle = 'Elevate Your Style with Autumn Luxe Collection';
     heroDesc = 'Discover minimalist luxury apparel crafted with sustainable textiles and timeless design aesthetics.';
     heroImage = 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=80';
@@ -324,7 +379,7 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       { id: 'fashion-2', title: 'Italian Leather Jacket', description: 'Hand-finished full-grain leather jacket with matte black hardware.', price: '$490.00' },
       { id: 'fashion-3', title: 'Minimalist Designer Sneakers', description: 'Premium calfskin leather low-top sneakers with ergonomic insoles.', price: '$220.00' },
     ];
-  } else if (promptLower.includes('estate') || promptLower.includes('villa') || promptLower.includes('house') || promptLower.includes('property')) {
+  } else if (reqSpec.domain === 'realestate' || promptLower.includes('estate') || promptLower.includes('villa') || promptLower.includes('house') || promptLower.includes('property')) {
     heroTitle = 'Discover Exceptional Architectural Properties';
     heroDesc = 'Browse luxury waterfront estates, modern architectural villas, and exclusive penthouse residences.';
     heroImage = 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80';
@@ -334,6 +389,28 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       { id: 'estate-1', title: 'Modern Oceanfront Villa', description: '5 Beds • 6 Baths • 6,500 Sq Ft with private beach access.', price: '$3,850,000' },
       { id: 'estate-2', title: 'Contemporary Hillside Estate', description: '4 Beds • 5 Baths • Infinity pool overlooking city skyline.', price: '$2,750,000' },
       { id: 'estate-3', title: 'Luxury Penthouse Residence', description: '3 Beds • 3.5 Baths • Private rooftop terrace and concierge.', price: '$1,950,000' },
+    ];
+  } else if (reqSpec.domain === 'gaming' || promptLower.includes('game') || promptLower.includes('esports')) {
+    heroTitle = 'Next-Gen Esports & Interactive Gaming Universe';
+    heroDesc = 'Compete in high-stakes tournaments, stream live matches, and join an elite gaming community.';
+    heroImage = 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Play Now';
+    cardTitle = 'Featured Tournaments & Games';
+    items = [
+      { id: 'game-1', title: 'Cyber Arena Championship', description: 'Global FPS tournament with $50,000 prize pool.', price: 'Free Registration' },
+      { id: 'game-2', title: 'Apex Legends Master League', description: 'Ranked battle royale series with live Twitch streaming.', price: 'Live Now' },
+      { id: 'game-3', title: 'Quantum Tactics Pro Cup', description: 'Strategic turn-based esports ladder competition.', price: 'Registration Open' },
+    ];
+  } else if (reqSpec.domain === 'salon' || promptLower.includes('salon') || promptLower.includes('spa') || promptLower.includes('beauty')) {
+    heroTitle = 'Luxury Beauty, Wellness & Botanical Spa Treatments';
+    heroDesc = 'Rejuvenate mind and body with personalized skin care, hair styling, and holistic therapeutic treatments.';
+    heroImage = 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&w=1200&q=80';
+    heroCta = 'Book Treatment';
+    cardTitle = 'Signature Spa & Beauty Experiences';
+    items = [
+      { id: 'spa-1', title: 'Hydra-Radiance Facial Therapy', description: 'Deep cleansing and botanical hydration treatment.', price: '₹1,500' },
+      { id: 'spa-2', title: 'Aromatherapy Full Body Massage', description: 'Essential oil massage targeting muscle tension and stress relief.', price: '₹2,200' },
+      { id: 'spa-3', title: 'Haute Couture Hair Styling & Color', description: 'Precision haircut, organic balayage, and restorative treatment.', price: '₹1,800' },
     ];
   } else if (promptLower.includes('architecture') || promptLower.includes('diagram') || promptLower.includes('dataflow') || promptLower.includes('microservice') || promptLower.includes('usecase') || promptLower.includes('pipeline') || promptLower.includes('system')) {
     heroTitle = 'Software System & Architecture Management Console';
@@ -427,9 +504,6 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
     }
   );
 
-  const { extractPromptRequirements } = require('./promptRequirementExtractor');
-  const reqSpec = extractPromptRequirements(prompt);
-
   const finalProps = {
     ...(pageProps || {}),
     themeTokens: reqSpec.themeTokens,
@@ -498,7 +572,7 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
     }
   }
 
-  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMind Intelligent Generation Fallback engine.');
+  console.warn('[AI] Remote AI models exhausted quota limits — engaging NeuraMindss Intelligent Generation Fallback engine.');
   return buildSmartFallbackPage(pageName, prompt);
 };
 
@@ -513,7 +587,6 @@ const executeWithModelFallback = async (genAI, primaryModel, buildRequestFn, pro
  * @returns {Promise<object>} parsed UIPage JSON
  */
 const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectureFlow }) => {
-  const { extractPromptRequirements, formatRequirementSpecPrompt } = require('./promptRequirementExtractor');
   const reqSpec = extractPromptRequirements(prompt);
   const reqSpecPrompt = formatRequirementSpecPrompt(reqSpec);
 
@@ -534,7 +607,13 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
   }, null, 2));
   console.log(`====================================================\n`);
 
+  const { analyzeAndPlanWebsite } = require('./websiteArchitectService');
+  const websitePlan = await analyzeAndPlanWebsite(prompt);
+
   let userMessage = `Generate a complete UI page named "${pageName || 'Home'}".\n\nUser prompt:\n${prompt}${reqSpecPrompt}`;
+  if (websitePlan) {
+    userMessage += `\n\nWEBSITE ARCHITECT PLAN (COMPLY 100% WITH THIS SPECIFICATION):\n${JSON.stringify(websitePlan, null, 2)}`;
+  }
   if (existingCode) userMessage += `\n\nExisting code context (use as reference for styling/structure):\n${existingCode}`;
   if (architectureFlow) userMessage += `\n\nArchitecture / user flow:\n${architectureFlow}`;
 
@@ -550,6 +629,9 @@ const generateUIFromPrompt = async ({ prompt, pageName, existingCode, architectu
       prompt,
       pageName
     );
+  }).catch((err) => {
+    console.warn(`[AI-SERVICE] Offline/Fallback generation engaged: ${err.message}`);
+    return buildSmartFallbackPage(pageName || 'Home', prompt);
   });
 };
 
@@ -580,11 +662,33 @@ const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
   console.log(`====================================================\n`);
 
   const imagePart = imageFileToPart(imagePath);
+  const { analyzeAndPlanWebsite } = require('./websiteArchitectService');
+  const websitePlan = await analyzeAndPlanWebsite(prompt || 'wireframe architectural layout');
 
-  let userMessage = `Analyse this wireframe image carefully and generate a structured UI page named "${pageName || 'Home'}" that faithfully reproduces its layout, sections, and component hierarchy.`;
-  if (prompt) {
-    userMessage += `\n\nAdditional instructions from the user:\n${prompt}${formatRequirementSpecPrompt(reqSpec)}`;
-  }
+  let userMessage = `CRITICAL INSTRUCTION: You are analyzing an uploaded wireframe image.
+The wireframe image is the PRIMARY STRUCTURAL BLUEPRINT for page layout, section sequence, and component hierarchy.
+
+BEFORE GENERATING THE FINAL UI JSON, DEEPLY ANALYZE THE WIREFRAME IMAGE:
+1. Identify major section boundaries (Navbar, Hero, Feature Grid, Sidebar, Card Collections, Forms, Search Bars, Footer).
+2. Identify column relationships (e.g. Left Text + Right Image hero, 3-column cards grid, Sidebar + Main Content).
+3. Identify card counts, repeated component patterns, and image placeholders (rectangular, wide banner, circular avatar).
+4. Identify placement of primary buttons, search inputs, filters, and forms.
+
+STRUCTURAL FIDELITY REQUIREMENTS (COMPLY 100%):
+- Preserve the exact section order and major column count shown in the wireframe image.
+- If wireframe has a Split Hero (Text Left + Image Right), output a split hero — do NOT replace with text-only or centered.
+- If wireframe has a Sidebar + Main Content, retain the sidebar layout structure.
+- If wireframe shows 3 food/product cards, generate 3 detailed domain cards.
+- Upgrade visual fidelity: apply professional domain color palettes, typography scale, responsive breakpoints, and domain photography for image placeholders.
+
+User Prompt & Domain Context:
+"${prompt || 'wireframe layout'}"
+${formatRequirementSpecPrompt(reqSpec)}
+
+WEBSITE ARCHITECT PLAN:
+${JSON.stringify(websitePlan, null, 2)}
+
+OUTPUT ONLY THE VALID UIPAGE JSON OBJECT.`;
 
   return geminiProviderManager.generateWithFailover(async ({ apiKey, model: providerModel }) => {
     const genAI = new GoogleGenerativeAI(apiKey);
@@ -603,6 +707,9 @@ const generateUIFromWireframe = async ({ imagePath, prompt, pageName }) => {
       prompt,
       pageName
     );
+  }).catch((err) => {
+    console.warn(`[AI-SERVICE] Wireframe fallback engaged: ${err.message}`);
+    return buildSmartFallbackPage(pageName || 'Home', prompt || 'Wireframe Layout');
   });
 };
 
@@ -710,7 +817,7 @@ const generateUiToFlow = async ({ imagePath, uiPage, uiContent, prompt }) => {
 
   const genAI = new GoogleGenerativeAI(config.apiKey);
 
-  const flowSystemPrompt = `You are NeuraMind Flowchart Architect.
+  const flowSystemPrompt = `You are NeuraMindss Flowchart Architect.
 Analyze the provided UI screenshot, photo, form, or application mockup and extract a complete, granular, step-by-step User Navigation & Interaction Flowchart.
 
 Capture all sequential interaction stages such as:

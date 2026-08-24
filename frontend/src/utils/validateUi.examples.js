@@ -1,5 +1,5 @@
 ﻿/**
- * NeuraMind - UIPage Validation Examples / Isolated Tests
+ * NeuraMindss - UIPage Validation Examples / Isolated Tests
  *
  * This file exercises validateUiPage against 8 representative cases.
  * It does NOT depend on React, Redux, a test runner, or the backend.
@@ -48,7 +48,7 @@ const CASE_VALID_PAGE = {
       props: { layout: 'center' },
     },
   ],
-  meta: { title: 'Home - NeuraMind' },
+  meta: { title: 'Home - NeuraMindss' },
 };
 
 /** Case 2: Missing page entirely (null) */

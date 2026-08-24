@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Production Deployment Readiness Test Suite
+ * NeuraMindss — Production Deployment Readiness Test Suite
  * Run: node backend/test_deployment.js
  */
 
@@ -43,7 +43,7 @@ function httpRequest(options, body = null) {
 }
 
 async function runTests() {
-  console.log('\n--- Running NeuraMind Production Deployment Audit Test Suite ---\n');
+  console.log('\n--- Running NeuraMindss Production Deployment Audit Test Suite ---\n');
 
   // 1. Deployment Audit Engine
   console.log('── 1. Deployment Readiness Audit Utility ───────────────────────');

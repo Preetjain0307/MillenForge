@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Comprehensive Authentication Test Suite
+ * NeuraMindss — Comprehensive Authentication Test Suite
  * Covers 20 mandatory security, API, OTP, session, and regression test cases.
  * Run: node backend/test_auth.js
  */
@@ -74,7 +74,7 @@ function httpRequest(port, method, path, headers = {}, body = null) {
 
 async function runAuthTests() {
   console.log('\n============================================================');
-  console.log(' NEURAMIND AUTHENTICATION TEST SUITE');
+  console.log(' NEURAMINDSS AUTHENTICATION TEST SUITE');
   console.log('============================================================\n');
 
   // Setup Test Express Server

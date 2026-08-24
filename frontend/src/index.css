@@ -1,4 +1,4 @@
-/* Neuramind — Frontend UI/UX Premium Design System */
+/* NeuraMindss — Frontend UI/UX Premium Design System */
 @import "tailwindcss";
 
 /* PrimeReact theme */
@@ -317,3 +317,40 @@ html, body {
   border-color: var(--nm-accent-hover) !important;
   box-shadow: 0 0 16px var(--nm-accent-glow) !important;
 }
+
+/* ── Fluid Responsive Typography & Stacking Rules ────────────────────────── */
+h1 {
+  font-size: clamp(1.75rem, 4vw + 1rem, 3.75rem);
+  line-height: 1.15;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+h2 {
+  font-size: clamp(1.35rem, 2.5vw + 0.8rem, 2.5rem);
+  line-height: 1.2;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+h3 {
+  font-size: clamp(1.1rem, 1.8vw + 0.6rem, 1.75rem);
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
+/* Mobile Viewport Responsive CTA Stacking */
+.nm-viewport-mobile .flex-row,
+.nm-viewport-mobile .nm-cta-container,
+.nm-viewport-mobile .hero-actions {
+  flex-direction: column !important;
+  width: 100% !important;
+  align-items: stretch !important;
+}
+
+.nm-viewport-mobile button,
+.nm-viewport-mobile .p-button {
+  width: 100% !important;
+  justify-content: center !important;
+}
+

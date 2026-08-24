@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Visual Design Intelligence Data Contracts & Helpers
+ * NeuraMindss — Visual Design Intelligence Data Contracts & Helpers
  *
  * Provides:
  * 1. Pattern Diagram Schema & Validation ({ nodes: [], edges: [] })

@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Frontend API Service Layer
+ * NeuraMindss — Frontend API Service Layer
  *
  * ALL HTTP calls to the backend must go through this module.
  * Components must NOT scatter fetch/axios calls throughout the app.

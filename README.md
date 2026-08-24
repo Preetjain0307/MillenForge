@@ -1,10 +1,10 @@
-# NeuraMind
+# NeuraMindss
 
 **AI-Assisted UI Generation from Wireframe, Code & Prompt**
 
 > SIH Hackathon Project | MillenForge Team
 
-NeuraMind converts wireframe sketches, natural language prompts, and existing code into production-ready UI components using AI.
+NeuraMindss converts wireframe sketches, natural language prompts, and existing code into production-ready UI components using AI.
 
 ---
 
@@ -135,7 +135,7 @@ npm run dev:backend
 
 ```
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/neuramind
+MONGODB_URI=mongodb://localhost:27017/neuramindss
 AI_API_KEY=                   # Future LLM/Vision API key
 AI_API_BASE_URL=              # Future AI service URL
 NODE_ENV=development
@@ -213,5 +213,5 @@ This repository is worked on by multiple developers. Please follow these rules:
 
 ---
 
-*NeuraMind — Foundation v1.0 | SIH Hackathon*
+*NeuraMindss — Foundation v1.0 | SIH Hackathon*
 

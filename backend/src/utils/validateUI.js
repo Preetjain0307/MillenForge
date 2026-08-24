@@ -1,5 +1,5 @@
 /**
- * NeuraMind — UI Structure Validator
+ * NeuraMindss — UI Structure Validator
  *
  * Lightweight validation for AI-generated UIPage JSON.
  * Ensures the structure is safe for the React renderer before sending to frontend.

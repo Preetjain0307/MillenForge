@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Backend Realistic Image & Domain Generation Tests
+ * NeuraMindss — Backend Realistic Image & Domain Generation Tests
  *
  * Verifies:
  * 1. Contextual Image Resolution across all 6 domains:
@@ -30,7 +30,7 @@ function assert(condition, message) {
   }
 }
 
-console.log('\n--- Running NeuraMind Backend Realistic Generation & Domain Tests ---\n');
+console.log('\n--- Running NeuraMindss Backend Realistic Generation & Domain Tests ---\n');
 
 // ── 1. Image Resolution Tests ─────────────────────────────────────────────────
 

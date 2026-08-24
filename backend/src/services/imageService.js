@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Image Resolution Service
+ * NeuraMindss — Image Resolution Service
  *
  * Resolves contextual image queries into legitimate, high-quality,
  * responsive image URLs with appropriate aspect ratios and alt text.
@@ -282,13 +282,20 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
   }
 
   // Hospital & Healthcare
-  if (q.includes('hospital') || q.includes('health') || q.includes('med') || q.includes('doctor') || q.includes('clinic') || q.includes('patient') || q.includes('surgery') || q.includes('emergency')) {
+  const isExplicitHealthcareQuery = /\b(hospital|healthcare|doctor|clinic|surgery|patient|emergency|medical)\b/i.test(q);
+  if (isExplicitHealthcareQuery) {
     if (q.includes('clinic') || q.includes('reception')) return CURATED_IMAGE_CATALOG.clinic;
     return CURATED_IMAGE_CATALOG.doctor_consultation;
   }
 
   // Food & Dining
-  if (q.includes('food') || q.includes('pizza') || q.includes('burger') || q.includes('restaurant') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal') || q.includes('sushi') || q.includes('pasta') || q.includes('salad') || q.includes('dessert') || q.includes('bakery') || q.includes('cafe')) {
+  if (q.includes('food') || q.includes('chinese') || q.includes('asian') || q.includes('noodle') || q.includes('dumpling') || q.includes('pizza') || q.includes('burger') || q.includes('restaurant') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal') || q.includes('sushi') || q.includes('pasta') || q.includes('salad') || q.includes('dessert') || q.includes('bakery') || q.includes('cafe')) {
+    if (q.includes('chinese') || q.includes('asian') || q.includes('noodle') || q.includes('dumpling')) {
+      return {
+        src: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Authentic Chinese dim sum dumplings and wok-fired noodles',
+      };
+    }
     if (q.includes('pizza')) return CURATED_IMAGE_CATALOG.pizza;
     if (q.includes('burger')) return CURATED_IMAGE_CATALOG.burger;
     if (q.includes('sushi')) return CURATED_IMAGE_CATALOG.sushi;
@@ -402,13 +409,13 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
   }
 
   // 3. Fallback inline SVG placeholder with high aesthetic contrast (offline, guaranteed load)
-  const cleanTitle = (query.slice(0, 30) || 'Visual Asset').replace(/[<>&"]/g, '');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#11111a"/><stop offset="50%" stop-color="#181826"/><stop offset="100%" stop-color="#23213a"/></linearGradient><linearGradient id="ic" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#bg)"/><g transform="translate(400, 220)"><circle cx="0" cy="0" r="32" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/><path d="M-12 8 L-3 -9 L6 3 L13 -4 L18 8 Z" fill="url(#ic)"/><circle cx="7" cy="-12" r="4" fill="#fbbf24"/></g><text x="50%" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#94a3b8" text-anchor="middle">${cleanTitle}</text></svg>`;
+  const cleanTitle = (query.slice(0, 30) || 'Visual Asset').replace(/\b(create|make|generate|build|a|an|the|website|page|for)\b/gi, '').trim() || 'Visual Feature';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#11111a"/><stop offset="50%" stop-color="#181826"/><stop offset="100%" stop-color="#23213a"/></linearGradient><linearGradient id="ic" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#bg)"/><g transform="translate(400, 220)"><circle cx="0" cy="0" r="32" fill="rgba(139,92,246,0.12)" stroke="rgba(139,92,246,0.3)" stroke-width="1.5"/><path d="M-12 8 L-3 -9 L6 3 L13 -4 L18 8 Z" fill="url(#ic)"/><circle cx="7" cy="-12" r="4" fill="#fbbf24"/></g><text x="50%" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#94a3b8" text-anchor="middle">${cleanTitle.replace(/[<>&"]/g, '')}</text></svg>`;
   const fallbackDataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 
   return {
     src: fallbackDataUri,
-    alt: defaultAlt || query || 'Generated visual',
+    alt: defaultAlt || cleanTitle || 'Generated visual',
   };
 };
 

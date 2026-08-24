@@ -1,7 +1,7 @@
 /**
  * GeneratePage — /generate
  *
- * Neuramind 3-Panel AI UI Engineering Studio
+ * NeuraMindss 3-Panel AI UI Engineering Studio
  */
 
 import { useState, useCallback, useEffect } from 'react';
@@ -34,12 +34,13 @@ import { setPage, setActivePage } from '../features/pages/pagesSlice';
 
 // Generation stage labels (truthful server pipeline)
 const GENERATION_STAGES = [
-  { key: 'analyze',  label: '01 Analyze Input & Wireframe',  icon: 'pi pi-eye' },
-  { key: 'layout',   label: '02 Understand Layout Geometry', icon: 'pi pi-compass' },
-  { key: 'detect',   label: '03 Detect Component Trees',    icon: 'pi pi-sitemap' },
-  { key: 'generate', label: '04 Generate React Structure',   icon: 'pi pi-code' },
-  { key: 'cms',      label: '05 Map CMS Binding Elements',   icon: 'pi pi-database' },
-  { key: 'preview',  label: '06 Prepare Live Canvas',        icon: 'pi pi-desktop' },
+  { key: 'understand', label: '01 UNDERSTANDING Product & Intent', icon: 'pi pi-compass' },
+  { key: 'design',     label: '02 DESIGNING Design System & Theme', icon: 'pi pi-palette' },
+  { key: 'build',      label: '03 BUILDING UI Component Tree',      icon: 'pi pi-sitemap' },
+  { key: 'visuals',    label: '04 FINDING VISUALS & Photography',   icon: 'pi pi-image' },
+  { key: 'validate',   label: '05 VALIDATING Design & Contrast',   icon: 'pi pi-shield' },
+  { key: 'polish',     label: '06 POLISHING & Quality Critic',     icon: 'pi pi-star' },
+  { key: 'ready',      label: '07 READY Live Canvas',              icon: 'pi pi-desktop' },
 ];
 
 const friendlyError = (raw = '') => {
@@ -270,8 +271,8 @@ const GeneratePage = () => {
       {/* ── Main 3-Panel Studio Layout ──────────────────────────────────── */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden">
         
-        {/* ── PANEL 1: INPUT WORKSPACE (Left 4 cols) ───────────────────── */}
-        <div className="lg:col-span-4 border-r border-[#2A2A30] bg-[#111113] flex flex-col h-full overflow-hidden">
+        {/* ── PANEL 1: INPUT WORKSPACE (Left 3 cols) ───────────────────── */}
+        <div className="lg:col-span-3 border-r border-[#2A2A30] bg-[#111113] flex flex-col h-full overflow-hidden">
           {/* Input Mode Selector Tabs */}
           <div className="flex items-center border-b border-[#2A2A30] bg-[#18181B] px-2 py-1.5 gap-1">
             <button
@@ -453,8 +454,8 @@ const GeneratePage = () => {
           )}
         </div>
 
-        {/* ── PANEL 2: LIVE PREVIEW CANVAS (Center 5 cols) ────────────── */}
-        <div className="lg:col-span-5 border-r border-[#2A2A30] bg-[#09090B] flex flex-col h-full overflow-hidden p-3">
+        {/* ── PANEL 2: LIVE PREVIEW CANVAS (Center 6 cols) ────────────── */}
+        <div className="lg:col-span-6 border-r border-[#2A2A30] bg-[#09090B] flex flex-col h-full overflow-hidden p-3">
           <PreviewContainer
             pageName={generation.pageName || 'Home'}
             isEmpty={!pageResult && !isGenerating}

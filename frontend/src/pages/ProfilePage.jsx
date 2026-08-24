@@ -1,5 +1,5 @@
 /**
- * NeuraMind — User Profile & Account Page
+ * NeuraMindss — User Profile & Account Page
  */
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

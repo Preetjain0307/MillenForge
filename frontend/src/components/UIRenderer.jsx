@@ -568,6 +568,186 @@ const ELEMENT_REGISTRY = {
       </span>
     );
   },
+
+  // ── Bento Grid Primitive ──────────────────────────────────────────────────
+  bento: (element) => {
+    const props = safeProps(element);
+    const items = Array.isArray(props.items) ? props.items : [];
+
+    return (
+      <div id={element.id} className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full my-4">
+        {items.map((item, idx) => (
+          <div
+            key={item.id || `bento-${idx}`}
+            className={`p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-[var(--primary)] ${
+              idx === 0 ? 'md:col-span-2 md:row-span-2' : ''
+            }`}
+          >
+            {item.icon && (
+              <div className="w-12 h-12 rounded-xl bg-[var(--primary)] text-[var(--primary-text)] flex items-center justify-center text-xl mb-4 font-bold">
+                <i className={typeof item.icon === 'string' ? item.icon : 'pi pi-sparkles'} />
+              </div>
+            )}
+            <h4 className="text-xl font-bold text-[var(--heading-color)] mb-2">{resolveDisplayString(item.title, 'Feature', 'title')}</h4>
+            <p className="text-sm text-[var(--text)] leading-relaxed flex-1">{resolveDisplayString(item.description || item.content, '', 'description')}</p>
+            {item.badge && (
+              <span className="mt-4 inline-self-start px-3 py-1 rounded-full text-xs font-mono font-bold bg-[var(--primary)] text-[var(--primary-text)]">
+                {item.badge}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  },
+
+  // ── Stats / Metric Cards Primitive ────────────────────────────────────────
+  stats: (element) => {
+    const props = safeProps(element);
+    const items = Array.isArray(props.items) ? props.items : [
+      { metric: '99.9%', label: 'Uptime SLA' },
+      { metric: '50k+', label: 'Active Users' },
+      { metric: '4.9 ★', label: 'Customer Rating' },
+      { metric: '< 20ms', label: 'Global Latency' },
+    ];
+
+    return (
+      <div id={element.id} className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full my-6 p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-lg">
+        {items.map((item, idx) => (
+          <div key={idx} className="flex flex-col items-center text-center p-3">
+            <span className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--primary)] font-mono tracking-tight">
+              {resolveDisplayString(item.metric || item.value || item.title, '100%')}
+            </span>
+            <span className="text-xs sm:text-sm font-medium text-[var(--muted-text)] mt-1">
+              {resolveDisplayString(item.label || item.description || item.name, 'Metric')}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  },
+
+  // ── Testimonial Primitive ─────────────────────────────────────────────────
+  testimonial: (element) => {
+    const props = safeProps(element);
+    const items = Array.isArray(props.items) ? props.items : [
+      { name: 'Sarah Jenkins', role: 'Product Lead, TechCorp', quote: 'NeuraMinds completely transformed our design workflow. The output is breathtaking!', rating: '5' },
+      { name: 'David Chen', role: 'Founder, StudioX', quote: 'Incredible speed, beautiful color palettes, and production-ready UX in seconds.', rating: '5' },
+    ];
+
+    return (
+      <div id={element.id} className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full my-6">
+        {items.map((item, idx) => (
+          <div key={idx} className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-md flex flex-col justify-between gap-4">
+            <div className="flex items-center gap-1 text-amber-400 text-sm">
+              <i className="pi pi-star-fill" />
+              <i className="pi pi-star-fill" />
+              <i className="pi pi-star-fill" />
+              <i className="pi pi-star-fill" />
+              <i className="pi pi-star-fill" />
+            </div>
+            <p className="text-sm italic text-[var(--text)] leading-relaxed">&ldquo;{resolveDisplayString(item.quote || item.content || item.description, 'Amazing platform!')}&rdquo;</p>
+            <div className="flex items-center gap-3 pt-3 border-t border-[var(--border)]">
+              <div className="w-9 h-9 rounded-full bg-[var(--primary)] text-[var(--primary-text)] font-bold flex items-center justify-center text-xs">
+                {resolveDisplayString(item.name, 'U')[0]}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-[var(--heading-color)]">{resolveDisplayString(item.name, 'Customer')}</span>
+                <span className="text-[11px] text-[var(--muted-text)]">{resolveDisplayString(item.role || item.title, 'Verified User')}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  },
+
+  // ── FAQ / Accordion Primitive ─────────────────────────────────────────────
+  faq: (element) => {
+    const props = safeProps(element);
+    const items = Array.isArray(props.items) ? props.items : [
+      { question: 'How quickly can I deploy the generated website?', answer: 'Instantly! You can export React JSX, Tailwind HTML, or raw JSON schema with one click.' },
+      { question: 'Is the generated code responsive?', answer: 'Yes, every generated layout explicitly supports Desktop, Tablet, and Mobile viewports.' },
+    ];
+
+    return (
+      <div id={element.id} className="flex flex-col gap-3 w-full max-w-3xl mx-auto my-6">
+        {items.map((item, idx) => (
+          <details key={idx} className="group p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-sm transition-all">
+            <summary className="font-bold text-sm sm:text-base text-[var(--heading-color)] cursor-pointer list-none flex items-center justify-between gap-4">
+              <span>{resolveDisplayString(item.question || item.title, 'Frequently Asked Question')}</span>
+              <i className="pi pi-chevron-down text-xs text-[var(--muted-text)] transition-transform group-open:rotate-180" />
+            </summary>
+            <p className="text-xs sm:text-sm text-[var(--text)] mt-3 leading-relaxed pt-2 border-t border-[var(--border)]">
+              {resolveDisplayString(item.answer || item.description || item.content, 'Detailed answer.')}
+            </p>
+          </details>
+        ))}
+      </div>
+    );
+  },
+
+  // ── Logo Cloud / Social Proof Primitive ────────────────────────────────────
+  logocloud: (element) => {
+    const props = safeProps(element);
+    const brands = Array.isArray(props.brands) ? props.brands : ['Stripe', 'Airbnb', 'Linear', 'Vercel', 'GitHub', 'Figma'];
+
+    return (
+      <div id={element.id} className="py-6 px-4 w-full flex flex-col items-center gap-3 my-4">
+        <span className="text-xs font-semibold uppercase tracking-widest text-[var(--muted-text)]">Trusted by Industry Leaders Worldwide</span>
+        <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap opacity-75 grayscale hover:grayscale-0 transition-all">
+          {brands.map((brand, idx) => (
+            <span key={idx} className="text-sm sm:text-base font-bold font-mono text-[var(--text)] tracking-tight">
+              {resolveDisplayString(brand, 'Brand')}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  },
+
+  // ── Newsletter Subscription Form Primitive ────────────────────────────────
+  newsletter: (element) => {
+    const { showToast } = useInteractiveUI();
+    const props = safeProps(element);
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (showToast) showToast('Subscribed!', 'Thank you for subscribing to updates.', 'success');
+    };
+
+    return (
+      <form id={element.id} onSubmit={handleSubmit} className="flex items-center gap-2 w-full max-w-md my-4">
+        <input
+          type="email"
+          required
+          placeholder={resolveDisplayString(props.placeholder, 'Enter your email address')}
+          className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--background)] border border-[var(--border)] text-xs text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+        />
+        <button
+          type="submit"
+          className="px-5 py-2.5 rounded-xl bg-[var(--primary)] text-[var(--primary-text)] text-xs font-bold shadow-md hover:brightness-110 transition-all whitespace-nowrap"
+        >
+          {resolveDisplayString(props.buttonLabel, 'Subscribe')}
+        </button>
+      </form>
+    );
+  },
+
+  // ── Rating & Avatar Stack Primitive ────────────────────────────────────────
+  rating: (element) => {
+    const props = safeProps(element);
+
+    return (
+      <div id={element.id} className="flex items-center gap-2 my-2">
+        <div className="flex items-center gap-1 text-amber-400 text-xs">
+          <i className="pi pi-star-fill" />
+          <span className="font-bold text-[var(--heading-color)] ml-1">{resolveDisplayString(props.score, '4.9')}</span>
+        </div>
+        <span className="text-xs text-[var(--muted-text)]">({resolveDisplayString(props.reviews, '500+ reviews')})</span>
+      </div>
+    );
+  },
 };
 
 const propsLabel = (element) => {
@@ -577,8 +757,20 @@ const propsLabel = (element) => {
 };
 
 const getRenderer = (type) => {
-  if (type === 'textfield') return ELEMENT_REGISTRY.input;
-  return ELEMENT_REGISTRY[type] ?? null;
+  const t = (type || '').toLowerCase().replace(/[-_]/g, '');
+  if (t === 'textfield' || t === 'input') return ELEMENT_REGISTRY.input;
+  if (t === 'bentogrid' || t === 'bento') return ELEMENT_REGISTRY.bento;
+  if (t === 'metriccard' || t === 'stats' || t === 'metrics' || t === 'stat') return ELEMENT_REGISTRY.stats;
+  if (t === 'testimonialcarousel' || t === 'testimonial' || t === 'quote') return ELEMENT_REGISTRY.testimonial;
+  if (t === 'pricingcomparison' || t === 'pricing') return ELEMENT_REGISTRY.pricing;
+  if (t === 'accordion' || t === 'faq') return ELEMENT_REGISTRY.faq;
+  if (t === 'imagegallery' || t === 'gallery') return ELEMENT_REGISTRY.gallery;
+  if (t === 'productcard' || t === 'productgrid' || t === 'categorygrid') return ELEMENT_REGISTRY.cards;
+  if (t === 'filterbar' || t === 'searchbar') return ELEMENT_REGISTRY.searchbar;
+  if (t === 'socialproof' || t === 'logocloud' || t === 'marquee') return ELEMENT_REGISTRY.logocloud;
+  if (t === 'newsletter' || t === 'contactform') return ELEMENT_REGISTRY.newsletter;
+  if (t === 'avatargroup' || t === 'rating') return ELEMENT_REGISTRY.rating;
+  return ELEMENT_REGISTRY[t] ?? ELEMENT_REGISTRY[type] ?? null;
 };
 
 // ─── ElementRenderer with Interactive Electric Violet Inspector Overlay ─────

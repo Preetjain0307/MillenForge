@@ -1,5 +1,5 @@
 /**
- * NeuraMind – Shared UI Data Contract
+ * NeuraMindss – Shared UI Data Contract
  *
  * This module defines the canonical data structures for generated UI pages.
  * All consumers (AI service, backend, React renderer, Redux store) must
@@ -173,5 +173,5 @@ export const EXAMPLE_UI_PAGE = {
       props: { layout: 'center', background: 'gradient' },
     },
   ],
-  meta: { title: 'Home — NeuraMind', description: 'AI-powered UI generator.' },
+  meta: { title: 'Home — NeuraMindss', description: 'AI-powered UI generator.' },
 };

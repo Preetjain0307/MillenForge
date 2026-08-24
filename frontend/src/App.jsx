@@ -1,5 +1,5 @@
 /**
- * NeuraMind App — Root component with routing and Auth restoration
+ * NeuraMindss App — Root component with routing and Auth restoration
  */
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';

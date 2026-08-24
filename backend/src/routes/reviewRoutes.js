@@ -1,5 +1,5 @@
 /**
- * NeuraMind — AI Review & Self-Improvement Routes
+ * NeuraMindss — AI Review & Self-Improvement Routes
  */
 
 const express = require('express');

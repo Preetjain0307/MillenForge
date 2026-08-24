@@ -1,5 +1,5 @@
 ﻿/**
- * NeuraMind — Visual Design Intelligence & Diagram Tools Test Suite
+ * NeuraMindss — Visual Design Intelligence & Diagram Tools Test Suite
  *
  * Exercises:
  * 1. Diagram Schema Validation (validateDiagram)
@@ -45,7 +45,7 @@ function runTest(name, fn) {
   }
 }
 
-console.log('\n--- Running NeuraMind Diagram Tools & Visual Intelligence Tests ---\n');
+console.log('\n--- Running NeuraMindss Diagram Tools & Visual Intelligence Tests ---\n');
 
 // ── 1. Diagram Schema & Empty Creation ──────────────────────────────────────
 runTest('1. Diagram Schema: Creates valid empty diagram structure', () => {

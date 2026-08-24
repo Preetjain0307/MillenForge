@@ -1,5 +1,5 @@
 /**
- * NeuraMind — AI Product Intelligence Service
+ * NeuraMindss — AI Product Intelligence Service
  *
  * AI-assisted requirement gap detection, requirement prioritization,
  * frontend architecture recommendations, MVC/MVVM pattern analysis,

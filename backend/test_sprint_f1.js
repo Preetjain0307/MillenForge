@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Sprint F1: Wireframe → Gemini Vision → UIPage Production Pipeline Test Suite
+ * NeuraMindss — Sprint F1: Wireframe → Gemini Vision → UIPage Production Pipeline Test Suite
  *
  * Exercises:
  * 1. Task 1: Gemini Configuration (Backend-only key, valid model gemini-3.6-flash)
@@ -56,7 +56,7 @@ function httpRequest(options, postData = null) {
 
 async function runSprintF1Tests() {
   console.log('\n===============================================================');
-  console.log('   NEURAMIND — SPRINT F1 INTEGRATION & VERIFICATION TEST RUN   ');
+  console.log('   NEURAMINDSS — SPRINT F1 INTEGRATION & VERIFICATION TEST RUN   ');
   console.log('===============================================================\n');
 
   // ── TASK 1: GEMINI CONFIGURATION ───────────────────────────────────────────

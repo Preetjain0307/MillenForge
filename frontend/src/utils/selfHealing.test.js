@@ -1,5 +1,5 @@
 /**
- * NeuraMind — Frontend Self-Healing & Review Engine Unit Tests
+ * NeuraMindss — Frontend Self-Healing & Review Engine Unit Tests
  */
 
 import { resolveDisplayString, normalizeElementData } from './valueNormalizer.js';
@@ -18,7 +18,7 @@ function assert(condition, message) {
   }
 }
 
-console.log('\n--- Running NeuraMind Frontend Self-Healing & Contract Safety Tests ---\n');
+console.log('\n--- Running NeuraMindss Frontend Self-Healing & Contract Safety Tests ---\n');
 
 // 1. Repair missing element ID & fallback in element normalization
 const rawEl = {
