@@ -486,6 +486,31 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
     });
   }
 
+  const isFoodPage = reqSpec.domain === 'food' || isChinesePrompt || promptLower.includes('food') || promptLower.includes('restaurant') || promptLower.includes('dish');
+
+  if (isFoodPage) {
+    pageSections.push({
+      id: 'sec-food-reviews',
+      type: 'testimonials',
+      elements: [
+        { id: 'reviews-header', type: 'text', content: 'What Our Culinary Guests Say', props: { tag: 'h2' }, fallback: 'Guest Testimonials' },
+        {
+          id: 'reviews-cards',
+          type: 'cards',
+          props: {
+            columns: 3,
+            items: [
+              { id: 'rev-1', title: '⭐ 4.9 — Absolute Perfection!', description: 'The steamed dim sum and Sichuan noodles were bursting with authentic flavor. Delivered hot in 25 mins!', price: 'Verified Order • Priya S.' },
+              { id: 'rev-2', title: '⭐ 5.0 — Authentic Culinary Craft', description: 'Best crispy Peking duck in town! Premium packaging and top-notch taste.', price: 'Verified Order • Rahul M.' },
+              { id: 'rev-3', title: '⭐ 4.9 — Favorite Food Destination', description: 'Fresh ingredients, amazing presentation, and quick delivery every single time.', price: 'Verified Order • Ananya R.' },
+            ],
+          },
+          fallback: 'Reviews',
+        },
+      ],
+    });
+  }
+
   pageSections.push(
     {
       id: 'sec-cards',
@@ -499,7 +524,7 @@ const buildSmartFallbackPage = (pageName = 'Home', prompt = '') => {
       id: 'sec-footer',
       type: 'footer',
       elements: [
-        { id: 'footer-text', type: 'text', content: `© ${new Date().getFullYear()} ${name}. All rights reserved.`, props: { tag: 'p' }, fallback: `© ${name}` },
+        { id: 'footer-text', type: 'text', content: `© ${new Date().getFullYear()} ${name}. All rights reserved. • Fast 25-Min Delivery & Table Reservations`, props: { tag: 'p' }, fallback: `© ${name}` },
       ],
     }
   );
