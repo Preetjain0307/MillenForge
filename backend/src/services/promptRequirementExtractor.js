@@ -98,8 +98,15 @@ const DOMAIN_PATTERNS = [
     defaultSections: ['hero', 'categories', 'cards', 'checkout', 'footer'],
   },
   {
+    domain: 'hotel',
+    keywords: ['hotel', 'resort stay', 'boutique hotel', 'luxury suite', 'inn', 'lodging', 'accommodation', 'book room', 'hotel room'],
+    defaultPageType: 'luxury hotel booking website',
+    defaultActions: ['Book Your Stay', 'Explore Rooms', 'View Amenities'],
+    defaultSections: ['hero', 'rooms', 'amenities', 'dining', 'gallery', 'testimonials', 'location', 'footer'],
+  },
+  {
     domain: 'travel',
-    keywords: ['travel', 'hotel', 'resort', 'tour', 'vacation', 'holiday', 'flight', 'destination', 'trip', 'hospitality', 'cabin'],
+    keywords: ['travel', 'tour', 'vacation', 'holiday', 'flight', 'destination', 'trip', 'cabin'],
     defaultPageType: 'travel booking page',
     defaultActions: ['Book Now', 'Explore Destination', 'Check Availability'],
     defaultSections: ['hero', 'destinations', 'hotel-cards', 'search', 'footer'],
@@ -254,10 +261,24 @@ const calculateFinancials = ({
 const extractPromptRequirements = (prompt = '') => {
   const p = String(prompt).toLowerCase().trim();
 
-  // 1. Domain Detection
-  let matchedDomainPattern = DOMAIN_PATTERNS.find((item) =>
-    item.keywords.some((kw) => p.includes(kw))
-  );
+  // 1. Domain Detection (Rank patterns by total keyword match count)
+  let bestDomainPattern = null;
+  let maxScore = 0;
+
+  for (const pattern of DOMAIN_PATTERNS) {
+    let score = 0;
+    for (const kw of pattern.keywords) {
+      if (new RegExp(`\\b${kw}\\b`, 'i').test(p)) {
+        score += kw.length > 4 ? 2 : 1;
+      }
+    }
+    if (score > maxScore) {
+      maxScore = score;
+      bestDomainPattern = pattern;
+    }
+  }
+
+  let matchedDomainPattern = bestDomainPattern;
 
   if (!matchedDomainPattern) {
     matchedDomainPattern = {
@@ -620,23 +641,23 @@ const extractColorSpec = (prompt = '') => {
     buttonBackground = hexBtnMatch[1];
   }
 
-  // 1. Compound phrase parsing (e.g. "background should in yellow and button should in green", "yellow background and green buttons")
-  const compoundMatch = p.match(new RegExp(`(?:background|bg|page)\\s*(?:color|colors|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})\\s*(?:and|,)?\\s*(?:buttons?|ctas?)\\s*(?:color|colors|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i'));
+  // 1. Compound phrase parsing (e.g. "background should in yellow and button should in green", "background screen blue and button should be pink")
+  const compoundMatch = p.match(new RegExp(`(?:background|bg|page|screen|canvas)\\s*(?:screen|color|colors|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})\\s*(?:and|,)?\\s*(?:buttons?|ctas?)\\s*(?:color|colors|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i'));
   if (compoundMatch) {
     background = compoundMatch[1].trim();
     buttonBackground = compoundMatch[2].trim();
   }
 
-  const compoundMatchRev = p.match(new RegExp(`(${colorTerms})\\s*(?:background|bg|page)\\s*(?:and|,)?\\s*(${colorTerms})\\s*(?:buttons?|ctas?)`, 'i'));
+  const compoundMatchRev = p.match(new RegExp(`(${colorTerms})\\s*(?:background|bg|page|screen|canvas)\\s*(?:and|,)?\\s*(${colorTerms})\\s*(?:buttons?|ctas?)`, 'i'));
   if (compoundMatchRev) {
     background = compoundMatchRev[1].trim();
     buttonBackground = compoundMatchRev[2].trim();
   }
 
-  // 1b. Background regex pattern (handles: "background color is yellow", "background should be in yellow", "page to grey", "yellow background", etc.)
+  // 1b. Background regex pattern (handles: "background color is yellow", "background screen blue", "page to grey", "yellow background", etc.)
   if (!background) {
-    const bgRegex = new RegExp(`(?:background|bg|canvas|page)\\s*(?:color|colors|style|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i');
-    const bgRegexRev = new RegExp(`(${colorTerms})\\s*(?:color|colors|style|theme)?\\s*(?:background|bg|canvas|page)`, 'i');
+    const bgRegex = new RegExp(`(?:background|bg|canvas|screen|page)\\s*(?:screen|color|colors|style|theme)?\\s*(?:should\\s*)?(?:be\\s*)?(?:in\\s*|to\\s*|is\\s*|=|:)?\\s*(${colorTerms})`, 'i');
+    const bgRegexRev = new RegExp(`(${colorTerms})\\s*(?:color|colors|style|theme)?\\s*(?:background|bg|canvas|screen|page)`, 'i');
     const bgMatch = p.match(bgRegex) || p.match(bgRegexRev);
     if (bgMatch) {
       background = bgMatch[1].trim();
@@ -885,6 +906,25 @@ const formatRequirementSpecPrompt = (spec) => {
   return text;
 };
 
+/**
+ * Dynamically synthesizes a clean, title-cased topic or brand name for ANY custom domain prompt
+ * (e.g. "create a chinese corner website" -> "Chinese Corner", "indie music festival" -> "Indie Music Festival").
+ */
+const extractCleanTopicTitle = (prompt = '') => {
+  if (!prompt || typeof prompt !== 'string') return 'Digital Experience';
+  let cleaned = prompt
+    .replace(/\b(create|make|generate|build|a|an|the|website|page|for|named|called|best|ever|with|app|portal|platform|site)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!cleaned || cleaned.length < 2) return 'Digital Experience';
+
+  return cleaned
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 module.exports = {
   extractPromptRequirements,
   extractColorSpec,
@@ -892,5 +932,6 @@ module.exports = {
   resolveColorToHex,
   calculateFinancials,
   formatRequirementSpecPrompt,
+  extractCleanTopicTitle,
   DOMAIN_PATTERNS,
 };

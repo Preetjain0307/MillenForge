@@ -35,12 +35,13 @@ import { setPage, setActivePage } from '../features/pages/pagesSlice';
 
 // Generation stage labels (truthful server pipeline)
 const GENERATION_STAGES = [
-  { key: 'analyze',  label: '01 Analyze Input & Wireframe',  icon: 'pi pi-eye' },
-  { key: 'layout',   label: '02 Understand Layout Geometry', icon: 'pi pi-compass' },
-  { key: 'detect',   label: '03 Detect Component Trees',    icon: 'pi pi-sitemap' },
-  { key: 'generate', label: '04 Generate React Structure',   icon: 'pi pi-code' },
-  { key: 'cms',      label: '05 Map CMS Binding Elements',   icon: 'pi pi-database' },
-  { key: 'preview',  label: '06 Prepare Live Canvas',        icon: 'pi pi-desktop' },
+  { key: 'understand', label: '01 UNDERSTANDING Product & Intent', icon: 'pi pi-compass' },
+  { key: 'design',     label: '02 DESIGNING Design System & Theme', icon: 'pi pi-palette' },
+  { key: 'build',      label: '03 BUILDING UI Component Tree',      icon: 'pi pi-sitemap' },
+  { key: 'visuals',    label: '04 FINDING VISUALS & Photography',   icon: 'pi pi-image' },
+  { key: 'validate',   label: '05 VALIDATING Design & Contrast',   icon: 'pi pi-shield' },
+  { key: 'polish',     label: '06 POLISHING & Quality Critic',     icon: 'pi pi-star' },
+  { key: 'ready',      label: '07 READY Live Canvas',              icon: 'pi pi-desktop' },
 ];
 
 const friendlyError = (raw = '') => {

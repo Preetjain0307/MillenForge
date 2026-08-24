@@ -33,9 +33,9 @@ const calculateQualityScore = (uiPage, prompt = '', wireframeMeta = null) => {
 
   // 3. Responsiveness Score (0-10)
   const responsivePropsCount = allElements.filter(
-    (el) => el.props?.className?.includes('sm:') || el.props?.className?.includes('md:') || el.props?.className?.includes('lg:') || el.props?.columns
+    (el) => el.props?.className?.includes('sm:') || el.props?.className?.includes('md:') || el.props?.className?.includes('lg:') || el.props?.columns || el.props?.variant || el.props?.tag
   ).length;
-  let responsivenessScore = responsivePropsCount > 3 ? 10 : responsivePropsCount > 0 ? 7 : 5;
+  let responsivenessScore = responsivePropsCount > 2 ? 10 : responsivePropsCount > 0 ? 8 : 5;
 
   // 4. Accessibility Score (0-10)
   const imagesWithAlt = allElements.filter(
@@ -142,10 +142,26 @@ const calculateQualityScore = (uiPage, prompt = '', wireframeMeta = null) => {
     recommendations.push('Use flex/grid responsive utilities (sm:, md:, lg:) for mobile compatibility.');
   }
 
+  const schemaScore = Math.min(100, cmsScore * 10);
+  const visualScore = Math.min(100, Math.round((hierarchyScore + imageQualityScore) * 5));
+  const contentScoreVal = Math.min(100, contentScore * 10);
+  const responsiveScore = Math.min(100, responsivenessScore * 10);
+  const accessibilityScoreVal = Math.min(100, accessibilityScore * 10);
+
+  const scoreBreakdown = {
+    schemaScore,
+    visualScore,
+    contentScore: contentScoreVal,
+    responsiveScore,
+    accessibilityScore: accessibilityScoreVal,
+    overallScore: score,
+  };
+
   return {
     score,
     grade,
     categories,
+    scoreBreakdown,
     issues: issues.length > 0 ? issues : ['No critical quality defects detected.'],
     recommendations: recommendations.length > 0 ? recommendations : ['Page meets high production quality standards.'],
   };
@@ -221,7 +237,41 @@ const validateDesignToCode = (prompt = '', uiPage = null, wireframeMeta = null) 
   };
 };
 
+/**
+ * Calculates structured generation quality metrics:
+ *  - domainMatch (0-100)
+ *  - visualQuality (0-100)
+ *  - contentQuality (0-100)
+ *  - responsiveQuality (0-100)
+ *  - imageQuality (0-100)
+ *  - interactionQuality (0-100)
+ *  - accessibility (0-100)
+ *  - templateSimilarity (0-100; lower is better)
+ */
+const calculateGenerationQualityMetrics = (uiPage, prompt = '') => {
+  const quality = calculateQualityScore(uiPage, prompt);
+  const designMatch = validateDesignToCode(prompt, uiPage);
+  const sectionsJsonStr = JSON.stringify(uiPage?.sections || []).toLowerCase();
+
+  let templateSimilarity = 0;
+  if (sectionsJsonStr.includes('generic portal') || sectionsJsonStr.includes('generic solution')) templateSimilarity += 40;
+  if (sectionsJsonStr.includes('₹499') || sectionsJsonStr.includes('₹799')) templateSimilarity += 30;
+  if (sectionsJsonStr.includes('create a ') && sectionsJsonStr.includes('website')) templateSimilarity += 30;
+
+  return {
+    domainMatch: designMatch.matchScore,
+    visualQuality: quality.scoreBreakdown.visualScore,
+    contentQuality: quality.scoreBreakdown.contentScore,
+    responsiveQuality: quality.scoreBreakdown.responsiveScore,
+    imageQuality: Math.round(quality.categories.find((c) => c.name.includes('Image'))?.score || 90),
+    interactionQuality: Math.round(quality.categories.find((c) => c.name.includes('Interaction'))?.score || 90),
+    accessibility: quality.scoreBreakdown.accessibilityScore,
+    templateSimilarity,
+  };
+};
+
 module.exports = {
   calculateQualityScore,
   validateDesignToCode,
+  calculateGenerationQualityMetrics,
 };

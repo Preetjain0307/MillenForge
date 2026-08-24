@@ -173,6 +173,49 @@ const rejectIrrelevantImages = (uiPage, domainRule) => {
   return { ...uiPage, sections: cleanedSections };
 };
 
+/**
+ * Cleans non-semantic ecommerce artifacts (price, rating, reviews, quantity, select buttons)
+ * from authentication pages or non-ecommerce domain pages.
+ */
+const cleanAuthenticationAndDomainSemantics = (uiPage, reqSpec) => {
+  if (!uiPage || !Array.isArray(uiPage.sections)) return uiPage;
+  const isAuthPage = reqSpec.pageType?.includes('auth') || reqSpec.pageType?.includes('login') || reqSpec.loginTypes?.length > 0;
+  if (!isAuthPage) return uiPage;
+
+  const cleanedSections = uiPage.sections.map((section) => {
+    if (!Array.isArray(section.elements)) return section;
+
+    const cleanedElements = section.elements.map((el) => {
+      if (el.type === 'cards' || el.type === 'card') {
+        const props = { ...(el.props || {}) };
+        if (Array.isArray(props.items)) {
+          props.items = props.items.map((item) => {
+            const copy = { ...item };
+            delete copy.price;
+            delete copy.rating;
+            delete copy.reviews;
+            delete copy.quantity;
+            if (copy.buttonText === 'Select' || copy.buttonText === 'Add to Cart') {
+              copy.buttonText = 'Login';
+            }
+            return copy;
+          });
+        }
+        delete props.price;
+        delete props.rating;
+        delete props.reviews;
+        delete props.quantity;
+        return { ...el, props };
+      }
+      return el;
+    });
+
+    return { ...section, elements: cleanedElements };
+  });
+
+  return { ...uiPage, sections: cleanedSections };
+};
+
 // ── Domain-specific missing section detection ─────────────────────────────────
 
 /**
@@ -611,7 +654,8 @@ const runGenerationQualityGate = (rawPage, userPrompt = '') => {
   const cleanedPage = rejectIrrelevantImages(page, domainRule);
 
   // ── Step 5: Requirement Coverage & Financial Healing Pass ──────────────────
-  const { page: reqHealedPage, reqSpec, missingRequirements } = healMissingPromptRequirements(cleanedPage, userPrompt);
+  const { page: rawReqHealedPage, reqSpec, missingRequirements } = healMissingPromptRequirements(cleanedPage, userPrompt);
+  const reqHealedPage = cleanAuthenticationAndDomainSemantics(rawReqHealedPage, reqSpec);
   if (missingRequirements.length > 0) {
     repairsApplied.push(...missingRequirements.map((m) => ({ type: 'requirement-heal', detail: m })));
   }

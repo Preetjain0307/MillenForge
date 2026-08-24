@@ -282,13 +282,20 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
   }
 
   // Hospital & Healthcare
-  if (q.includes('hospital') || q.includes('health') || q.includes('med') || q.includes('doctor') || q.includes('clinic') || q.includes('patient') || q.includes('surgery') || q.includes('emergency')) {
+  const isExplicitHealthcareQuery = /\b(hospital|healthcare|doctor|clinic|surgery|patient|emergency|medical)\b/i.test(q);
+  if (isExplicitHealthcareQuery) {
     if (q.includes('clinic') || q.includes('reception')) return CURATED_IMAGE_CATALOG.clinic;
     return CURATED_IMAGE_CATALOG.doctor_consultation;
   }
 
   // Food & Dining
-  if (q.includes('food') || q.includes('pizza') || q.includes('burger') || q.includes('restaurant') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal') || q.includes('sushi') || q.includes('pasta') || q.includes('salad') || q.includes('dessert') || q.includes('bakery') || q.includes('cafe')) {
+  if (q.includes('food') || q.includes('chinese') || q.includes('asian') || q.includes('noodle') || q.includes('dumpling') || q.includes('pizza') || q.includes('burger') || q.includes('restaurant') || q.includes('dish') || q.includes('menu') || q.includes('lunch') || q.includes('dinner') || q.includes('meal') || q.includes('sushi') || q.includes('pasta') || q.includes('salad') || q.includes('dessert') || q.includes('bakery') || q.includes('cafe')) {
+    if (q.includes('chinese') || q.includes('asian') || q.includes('noodle') || q.includes('dumpling')) {
+      return {
+        src: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=1200&q=80',
+        alt: 'Authentic Chinese dim sum dumplings and wok-fired noodles',
+      };
+    }
     if (q.includes('pizza')) return CURATED_IMAGE_CATALOG.pizza;
     if (q.includes('burger')) return CURATED_IMAGE_CATALOG.burger;
     if (q.includes('sushi')) return CURATED_IMAGE_CATALOG.sushi;
@@ -394,11 +401,10 @@ const resolveContextualImage = (query = '', defaultAlt = 'Contextual image') => 
     }
   }
 
-  // 3. Fallback placeholder with high aesthetic contrast
-  const encodedQuery = encodeURIComponent(query.slice(0, 30) || 'Visual Asset');
+  // 3. Fallback placeholder with high aesthetic contrast (Clean label — NEVER raw user prompt!)
   return {
-    src: `https://placehold.co/800x500/1a1a2e/6c63ff?text=${encodedQuery}`,
-    alt: defaultAlt || query || 'Generated visual',
+    src: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80',
+    alt: defaultAlt || 'Featured visual asset',
   };
 };
 
