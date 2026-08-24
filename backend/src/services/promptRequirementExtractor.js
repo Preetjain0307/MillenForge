@@ -452,14 +452,53 @@ const extractPromptRequirements = (prompt = '') => {
   }
 
   let customBgColor = colorSpec.background || null;
-
   if (primaryButtonColor) checklist.push({ id: 'req-btn-color', label: `Primary Button Color: ${primaryButtonColor}`, type: 'color' });
   if (customBgColor) checklist.push({ id: 'req-bg-color', label: `Background Canvas: ${customBgColor}`, type: 'color' });
+
+  // 9. Exact User Instruction Extraction (Brand Name, Headline, Items, Interactive Components)
+  let explicitBrand = null;
+  const brandMatch = prompt.match(/(?:for|named|called|brand)\s+["'“]([^"'“”]+)["'”]/i) ||
+                     prompt.match(/(?:website|page|portal|app)\s+for\s+([A-Z][a-zA-Z0-9\s&]+?)(?:\s+(?:with|that|having|featuring|,|\.|$))/);
+  if (brandMatch) {
+    explicitBrand = brandMatch[1].trim();
+  }
+
+  let explicitHeadline = null;
+  const headlineMatch = prompt.match(/(?:title|headline|heading)\s+["'“]([^"'“”]+)["'”]/i) ||
+                        prompt.match(/(?:titled|headed)\s+["'“]([^"'“”]+)["'”]/i);
+  if (headlineMatch) {
+    explicitHeadline = headlineMatch[1].trim();
+  }
+
+  // Explicit Section Demands
+  if (p.includes('faq') || p.includes('frequently asked') || p.includes('questions') || p.includes('accordion')) requiredSections.add('faq');
+  if (p.includes('contact form') || p.includes('contact us') || p.includes('inquiry form') || p.includes('get in touch')) requiredSections.add('contact');
+  if (p.includes('testimonial') || p.includes('review') || p.includes('feedback') || p.includes('client stories')) requiredSections.add('testimonials');
+  if (p.includes('pricing') || p.includes('plans') || p.includes('tiers') || p.includes('subscription')) requiredSections.add('pricing');
+  if (p.includes('team') || p.includes('faculty') || p.includes('staff') || p.includes('instructors') || p.includes('doctors')) requiredSections.add('team');
+  if (p.includes('gallery') || p.includes('photos') || p.includes('portfolio') || p.includes('showcase')) requiredSections.add('gallery');
+
+  // Interactive Features Detection
+  const interactiveFeatures = [];
+  if (p.includes('search') || p.includes('filter')) interactiveFeatures.push('search');
+  if (p.includes('faq') || p.includes('accordion')) interactiveFeatures.push('accordion');
+  if (p.includes('contact form') || p.includes('inquiry')) interactiveFeatures.push('contactForm');
+  if (p.includes('pricing') || p.includes('toggle') || p.includes('tabs')) interactiveFeatures.push('pricingToggle');
+  if (p.includes('book') || p.includes('appointment') || p.includes('reserve')) interactiveFeatures.push('bookingModal');
+  if (requiresAuth || loginTypes.length > 0) interactiveFeatures.push('loginModal');
+  if (domain === 'food' || domain === 'fashion' || domain === 'grocery' || p.includes('cart')) interactiveFeatures.push('cart');
+
+  if (explicitBrand) checklist.push({ id: 'req-brand', label: `Brand Name: "${explicitBrand}"`, type: 'brand' });
+  if (explicitHeadline) checklist.push({ id: 'req-headline', label: `Hero Headline: "${explicitHeadline}"`, type: 'headline' });
+  if (interactiveFeatures.length > 0) checklist.push({ id: 'req-interactive', label: `Interactive Features: ${interactiveFeatures.join(', ')}`, type: 'interactive' });
 
   return {
     domain,
     pageType: matchedDomainPattern.defaultPageType,
     rawPrompt: prompt,
+    explicitBrand,
+    explicitHeadline,
+    interactiveFeatures,
     designPersonality,
     heroPattern,
     primaryButtonColor,
@@ -798,6 +837,30 @@ const formatRequirementSpecPrompt = (spec) => {
     text += `  • GST Amount: ${spec.financials.gstAmountFormatted}\n`;
     text += `  • Final Total Price: ${spec.financials.totalPriceFormatted}\n`;
     text += `  Include a clear price breakdown element/card showing Subtotal, GST Amount, and Final Total.\n`;
+  }
+
+  if (spec.explicitBrand) {
+    text += `- EXACT BRAND NAME: MUST use "${spec.explicitBrand}" as the website brand logo and navbar title.\n`;
+  }
+
+  if (spec.explicitHeadline) {
+    text += `- EXACT HERO HEADLINE: MUST use "${spec.explicitHeadline}" as the main hero H1 heading.\n`;
+  }
+
+  if (spec.interactiveFeatures?.length > 0) {
+    text += `- INTERACTIVE FUNCTIONALITY REQUIREMENTS:\n`;
+    if (spec.interactiveFeatures.includes('accordion')) {
+      text += `  • MUST include an interactive FAQ section (type "faq" or "accordion") with questions and answers.\n`;
+    }
+    if (spec.interactiveFeatures.includes('contactForm')) {
+      text += `  • MUST include a working contact/inquiry form (type "contact") with Name, Email, Phone/Message inputs and a Submit button.\n`;
+    }
+    if (spec.interactiveFeatures.includes('pricingToggle')) {
+      text += `  • MUST include a multi-tier pricing section (type "pricing") with 3 distinct plans (e.g. Starter, Pro, Enterprise) and features list.\n`;
+    }
+    if (spec.interactiveFeatures.includes('search')) {
+      text += `  • MUST include search & filter capabilities for the items/cards collection.\n`;
+    }
   }
 
   text += `\nMANDATORY ACTION BUTTONS:\n`;
